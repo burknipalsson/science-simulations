@@ -1,0 +1,31 @@
+
+<section class="wrap" id="numbers">
+  <div class="eyebrow">Honest numbers</div>
+  <h2>Checked against <em>experiments</em></h2>
+  <div class="numbers">
+    <div>
+      <p>Before any graphics, each part of the model was run headless and compared with measurements or exact theory: first the membrane alone, then the fluid alone, then the two together, then crowds of cells.</p>
+      <p>Most of it agrees within a few per cent. The places where it doesn't are listed too: a red cell pulled by laser tweezers narrows <b>less</b> than real ones do at low force, the cells crowd toward the middle of a tube <b>less</b> than in glass-tube experiments, and the live arteriole's coarse grid reads <b>15–20% thick</b>.</p>
+      <p class="note">Sources: Evans &amp; Fung 1972; Mills et al. 2004 (via Suresh 2005 data); Barthès-Biesel &amp; Rallison 1981 and Krüger et al. 2011; Pries et al. 1992; Fedosov et al. 2010 (Microcirculation 17:615).</p>
+    </div>
+    <div class="table-wrap">
+      <table class="cmp">
+        <thead><tr><th>Quantity</th><th>Simulation</th><th>Reference</th></tr></thead>
+        <tbody>
+          <tr><td>Resting cell: diameter, area, volume<span class="why">Evans–Fung shape on a 642-vertex mesh</span></td><td>7.82 µm · 133 µm² · 93 µm³</td><td>7.8 µm · 135 µm² · 94 µm³</td></tr>
+          <tr><td>Stretched by 38 / 88 / 193 pN: length<span class="why">optical tweezers, healthy cells</span></td><td>11.0 / 13.4 / 16.5 µm</td><td>11.1 / 13.8 / 16.3 µm</td></tr>
+          <tr><td>Same, width<span class="why">too wide at low force: the model cell folds less</span></td><td>6.5 / 5.8 / 5.0 µm</td><td>5.4 / 4.6 / 4.4 µm</td></tr>
+          <tr><td>Elastic capsule in shear: deformation<span class="why">small-deformation theory, capillary numbers 0.0125 and 0.05</span></td><td>0.028 · 0.107</td><td>0.026 · 0.104</td></tr>
+          <tr><td>Plasma flow in a tube<span class="why">Hagen–Poiseuille</span></td><td>within 0.2%</td><td>exact</td></tr>
+          <tr><td>Blood in a 20 µm tube, 15% cells: thickness<span class="why">0.25 µm grid, after 0.7 s of flow</span></td><td>1.19×</td><td>1.19× (Pries) · 1.17× (Fedosov)</td></tr>
+          <tr><td>Same tube: centre speed / mean speed<span class="why">a flatter profile than plasma's 2.0</span></td><td>1.58</td><td>1.60 (Fedosov)</td></tr>
+          <tr><td>Blood in a 10 µm tube, 17% cells: thickness</td><td>1.21×</td><td>1.12× (Pries)</td></tr>
+          <tr><td>Share of cells in the tube vs leaving it<span class="why">the Fåhræus effect, 20 µm tube</span></td><td>0.71</td><td>0.62 (Pries)</td></tr>
+          <tr><td>Fine-grid replay, 20 µm arteriole, 20% cells<span class="why">0.25 µm grid, recorded on your GPU above</span></td><td>1.32×</td><td>1.25× (Pries)</td></tr>
+          <tr><td>Live arteriole, 20 / 30 µm<span class="why">0.5 µm grid</span></td><td>1.46× · 1.59×</td><td>1.25× · 1.31× (Pries)</td></tr>
+          <tr><td>Capillary, 6 µm, blood at 1 mm/s<span class="why">pressure needed; cells faster than plasma</span></td><td>14 mmHg/mm · 1.11×</td><td>no direct measurement</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>

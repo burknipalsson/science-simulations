@@ -1,0 +1,1858 @@
+<title>The Cosmic Web</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root {
+    color-scheme: dark;
+    --void: #05060b;
+    --deep: #0a0b14;
+    --ink: #e8e7f1;
+    --muted: #a09fb7;
+    --faint: #6b6a86;
+    --line: rgba(232, 231, 241, 0.12);
+    --line-strong: rgba(232, 231, 241, 0.24);
+    --node: #ffc47e;
+    --thread: #8fb1ff;
+    --hollow: #b79cff;
+    --obs: #6a8ce6;
+    --sim: #c0823a;
+    --display: "Newsreader", "Iowan Old Style", Georgia, serif;
+    --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { background: var(--void); color: var(--ink); }
+  body { font-family: var(--body); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding-inline: 16px; }
+  @media (min-width: 720px) { .wrap { padding-inline: 32px; } }
+
+  header.top { padding-block: 40px 22px; display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px 40px; }
+  .eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--node); }
+  h1 { font-family: var(--display); font-weight: 300; font-size: clamp(46px, 8.4vw, 104px); line-height: 0.92; letter-spacing: -0.025em; margin: 10px 0 0; text-wrap: balance; }
+  h1 em { font-style: italic; color: var(--thread); }
+  .lede { max-width: 46ch; color: var(--muted); margin: 0; font-size: 17px; }
+  .lede strong { color: var(--ink); font-weight: 500; }
+
+  .stage { position: relative; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: #000; scroll-margin-top: env(safe-area-inset-top, 0px); overflow: hidden; }
+  #sky { display: block; width: 100%; height: clamp(440px, 74vh, 860px); cursor: grab; touch-action: none; }
+  #sky:active { cursor: grabbing; }
+  .readout { position: absolute; top: 14px; left: 14px; display: grid; grid-template-columns: auto auto; gap: 2px 14px; padding: 10px 14px; background: rgba(5, 6, 11, 0.62); backdrop-filter: blur(6px); border: 1px solid var(--line); border-radius: 4px; font-family: var(--mono); font-size: 12px; line-height: 1.55; font-variant-numeric: tabular-nums; pointer-events: none; max-width: calc(100% - 28px); }
+  .readout dt { color: var(--faint); }
+  .readout dd { margin: 0; text-align: right; }
+  .readout .boost { color: var(--hollow); }
+  .phase { position: absolute; left: 14px; bottom: 14px; font-family: var(--display); font-style: italic; font-weight: 300; font-size: clamp(22px, 3vw, 34px); color: var(--ink); pointer-events: none; text-shadow: 0 1px 12px #000; max-width: calc(100% - 28px); }
+  .phase small { display: block; font-family: var(--mono); font-style: normal; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+  .hint { position: absolute; right: 14px; bottom: 12px; font-family: var(--mono); font-size: 11px; color: rgba(232, 231, 241, 0.5); pointer-events: none; }
+  .building { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; font-family: var(--display); font-style: italic; font-size: 26px; color: var(--muted); background: rgba(0, 0, 0, 0.45); pointer-events: none; }
+  .tag { position: absolute; left: 0; top: 0; pointer-events: none; font-family: var(--mono); font-size: 11px; line-height: 1.35; color: var(--ink); background: rgba(5, 6, 11, 0.7); border: 1px solid var(--line-strong); border-radius: 3px; padding: 4px 7px; white-space: nowrap; transform: translate(12px, -50%); }
+  .tag b { color: var(--node); font-weight: 500; }
+  .nogl { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: var(--muted); }
+  .count-note { margin: 0; font-size: 13px; color: var(--faint); max-width: 56ch; }
+
+  .transport { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; padding-block: 16px 4px; }
+  .btn { appearance: none; font: 500 14px/1 var(--body); color: var(--void); background: var(--ink); border: 1px solid var(--ink); border-radius: 999px; padding: 10px 18px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+  .btn.ghost { background: transparent; color: var(--ink); border-color: var(--line-strong); }
+  .btn:hover { filter: brightness(1.1); }
+  .btn.ghost:hover { border-color: rgba(232, 231, 241, 0.5); }
+  .speed { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); flex: 1 1 280px; max-width: 460px; }
+  .speed output { font-family: var(--mono); font-size: 12px; color: var(--ink); min-width: 11em; text-align: right; font-variant-numeric: tabular-nums; }
+
+  .controls { display: grid; gap: 22px 36px; grid-template-columns: 1fr; padding-block: 18px 8px; }
+  @media (min-width: 900px) { .controls { grid-template-columns: 1.15fr 1fr; } }
+  .group { display: grid; gap: 10px; align-content: start; }
+  .group-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--faint); }
+  .group-label + .chips { margin-top: -2px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { appearance: none; font: 500 13px/1 var(--body); color: var(--muted); background: transparent; border: 1px solid var(--line-strong); border-radius: 999px; padding: 9px 14px; cursor: pointer; transition: color .15s, border-color .15s, background .15s; display: inline-flex; align-items: center; gap: 8px; }
+  .chip:hover { color: var(--ink); border-color: rgba(232, 231, 241, 0.45); }
+  .chip:focus-visible, .btn:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--thread); outline-offset: 2px; }
+  .chip[aria-pressed="true"] { color: var(--void); background: var(--ink); border-color: var(--ink); }
+  .chip .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; opacity: .55; }
+  .chip[aria-pressed="true"] .dot { opacity: 1; }
+  .chip.era[aria-pressed="true"] { background: var(--node); border-color: var(--node); }
+  .chip.grav[aria-pressed="true"] { background: var(--hollow); border-color: var(--hollow); }
+  .caption { margin: 4px 0 0; padding-left: 14px; border-left: 2px solid var(--node); color: var(--muted); font-size: 15px; max-width: 62ch; min-height: 3.2em; }
+  .caption b { color: var(--ink); font-weight: 500; }
+
+  input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 22px; background: transparent; }
+  input[type=range]::-webkit-slider-runnable-track { height: 2px; background: var(--line-strong); }
+  input[type=range]::-moz-range-track { height: 2px; background: var(--line-strong); }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--thread); margin-top: -6px; border: 0; }
+  input[type=range]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: var(--thread); border: 0; }
+
+  section { padding-block: 72px 8px; }
+  h2 { font-family: var(--display); font-weight: 300; font-size: clamp(34px, 5vw, 58px); line-height: 1.02; letter-spacing: -0.015em; margin: 8px 0 14px; text-wrap: balance; }
+  h2 em { font-style: italic; color: var(--thread); }
+  .section-lede { color: var(--muted); max-width: 62ch; margin: 0 0 28px; }
+  .section-lede strong { color: var(--ink); font-weight: 500; }
+
+  .guide { display: grid; gap: 1px; grid-template-columns: 1fr; background: var(--line); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+  @media (min-width: 700px) { .guide { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 1040px) { .guide { grid-template-columns: 1fr 1fr 1fr; } }
+  .entry { background: var(--void); padding: 26px 24px 24px; display: grid; grid-template-rows: auto auto 1fr auto; gap: 10px; }
+  .entry .where { font-family: var(--mono); font-size: 12px; color: var(--node); letter-spacing: 0.04em; }
+  .entry h3 { font-family: var(--display); font-weight: 400; font-size: 27px; line-height: 1.12; margin: 0; text-wrap: balance; }
+  .entry p { margin: 0; color: var(--muted); font-size: 15px; }
+  .entry p b { color: var(--ink); font-weight: 500; }
+  .show { justify-self: start; margin-top: 8px; appearance: none; background: none; border: 0; border-bottom: 1px solid var(--thread); color: var(--thread); font: 500 14px/1.4 var(--body); padding: 2px 0; cursor: pointer; text-align: left; }
+  .show:hover { color: var(--ink); border-color: var(--ink); }
+
+  .numbers { display: grid; gap: 28px; grid-template-columns: 1fr; align-items: start; }
+  @media (min-width: 900px) { .numbers { grid-template-columns: 1.1fr 1fr; } }
+  .numbers p { margin: 0 0 14px; color: var(--muted); max-width: 60ch; }
+  .numbers p b { color: var(--ink); font-weight: 500; }
+  .facts { display: grid; grid-template-columns: 1fr auto; gap: 0; margin: 0; border-top: 1px solid var(--line); }
+  .facts dt, .facts dd { padding: 12px 0; border-bottom: 1px solid var(--line); margin: 0; }
+  .facts dt { color: var(--muted); font-size: 14px; padding-right: 16px; }
+  .facts dd { font-family: var(--mono); font-size: 13px; text-align: right; font-variant-numeric: tabular-nums; }
+
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 4px; }
+  table { width: 100%; border-collapse: collapse; min-width: 720px; font-size: 14px; }
+  th, td { text-align: left; padding: 14px 18px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  th { font-family: var(--mono); font-weight: 400; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); }
+  td.num { font-family: var(--mono); font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td .name { font-family: var(--display); font-size: 21px; display: block; }
+  td .sub { color: var(--faint); font-size: 13px; }
+  td button { margin-top: 6px; display: block; }
+  tr.kind td { padding-block: 10px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--node); background: var(--deep); }
+
+  .history { display: grid; gap: 28px; grid-template-columns: 1fr; align-items: start; }
+  @media (min-width: 960px) { .history { grid-template-columns: 1.7fr 1fr; } }
+  .chart-wrap { position: relative; border: 1px solid var(--line); border-radius: 4px; padding: 14px 14px 6px; background: var(--deep); }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--muted); margin: 0 0 6px 4px; }
+  .legend span { display: inline-flex; align-items: center; gap: 8px; }
+  .legend i { width: 18px; height: 2px; border-radius: 1px; display: inline-block; }
+  .chart-title { font-size: 14px; color: var(--ink); margin: 0 0 4px 4px; font-weight: 500; }
+  .chart-unit { font-size: 12px; color: var(--faint); margin: 0 0 8px 4px; }
+  #sfrChart { display: block; width: 100%; touch-action: pan-y; }
+  #sfrChart .grid { stroke: var(--line); stroke-width: 1; }
+  #sfrChart .tick { fill: var(--faint); font: 11px var(--mono); }
+  #sfrChart .axis { fill: var(--muted); font: 12px var(--body); }
+  #sfrChart .lbl { fill: var(--muted); font: 12px var(--body); }
+  #sfrChart .zt { stroke: var(--line-strong); }
+  #sfrChart .obs { fill: none; stroke: var(--obs); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+  #sfrChart .sim { fill: none; stroke: var(--sim); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+  #sfrChart .now { stroke: var(--line-strong); stroke-dasharray: 3 3; }
+  #sfrChart .cross { stroke: var(--muted); stroke-width: 1; }
+  .tip { position: absolute; top: 44px; left: 0; min-width: 180px; pointer-events: none; background: rgba(5, 6, 11, 0.92); border: 1px solid var(--line-strong); border-radius: 4px; padding: 8px 10px; font-size: 12px; display: grid; gap: 4px; }
+  .tip .when { color: var(--muted); font-family: var(--mono); font-size: 11px; }
+  .tip .row { display: flex; align-items: center; gap: 8px; }
+  .tip .row i { width: 12px; height: 2px; display: inline-block; }
+  .tip .row b { font-family: var(--mono); font-weight: 500; color: var(--ink); min-width: 3.5em; }
+  .tip .row span { color: var(--muted); }
+  details.data { margin-top: 10px; font-size: 13px; color: var(--muted); }
+  details.data summary { cursor: pointer; padding: 6px 4px; }
+  details.data table { min-width: 0; font-size: 13px; }
+  details.data th, details.data td { padding: 6px 10px; }
+  .history p { margin: 0 0 14px; color: var(--muted); max-width: 60ch; }
+  .history p b { color: var(--ink); font-weight: 500; }
+
+  footer { padding-block: 64px 48px; color: var(--faint); font-size: 13px; }
+  footer p { max-width: 76ch; margin: 0 0 8px; }
+  footer i { color: var(--muted); }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">Large-scale structure · live simulation</div>
+      <h1>The Cosmic <em>Web</em></h1>
+    </div>
+    <p class="lede">A cube of space <strong>a billion light-years</strong> across, filled with millions of parcels of dark matter and gas. It starts almost perfectly smooth, 47 million years after the Big Bang. Gravity builds the web, the gas heats up, and <strong>galaxies light up</strong> at the knots. Drag to turn it, and scroll or pinch to zoom.</p>
+  </header>
+</div>
+
+<div class="stage" id="stage">
+  <canvas id="sky" aria-label="Simulation of dark matter clumping into the cosmic web"></canvas>
+  <dl class="readout">
+    <dt>age of universe</dt><dd id="rAge">—</dd>
+    <dt>redshift z</dt><dd id="rZ">—</dd>
+    <dt>scale factor a</dt><dd id="rA">—</dd>
+    <dt>box size then</dt><dd id="rBox">—</dd>
+    <dt>heaviest clump</dt><dd id="rClump">—</dd>
+    <dt>stars formed</dt><dd id="rStars">—</dd>
+    <dt>gas above 10⁵ K</dt><dd id="rHot">—</dd>
+    <dt class="boost" id="rBoostL" hidden>ripples shown</dt><dd class="boost" id="rBoost" hidden>—</dd>
+  </dl>
+  <div class="phase" id="phase"><small id="phaseSmall">ripples of a few percent</small><span id="phaseText">The smooth universe</span></div>
+  <div class="hint" id="hint">drag · scroll · pinch</div>
+  <div class="tag" id="tag" hidden></div>
+  <div class="building" id="building" hidden>Seeding the universe…</div>
+</div>
+
+<div class="wrap">
+  <div class="transport">
+    <button class="btn" id="playBtn" aria-pressed="true">Pause</button>
+    <button class="btn ghost" id="restartBtn">Restart</button>
+    <button class="btn ghost" id="newBtn">New random universe</button>
+    <label class="speed" for="speed">Speed <input id="speed" type="range" min="0" max="100" value="46"><output id="speedOut" for="speed">13.8 billion years in 40 s</output></label>
+  </div>
+
+  <div class="controls">
+    <div class="group">
+      <div class="group-label">Jump to</div>
+      <div class="chips" id="eras">
+        <button class="chip era" data-z="50">Start · z = 50</button>
+        <button class="chip era" data-z="10">z = 10</button>
+        <button class="chip era" data-z="3">z = 3</button>
+        <button class="chip era" data-z="1">z = 1</button>
+        <button class="chip era" data-z="0">Today</button>
+      </div>
+      <p class="caption" id="caption">Every dot is a clump of dark matter. At first they are spread almost evenly, with ripples of only a few percent. Denser patches pull in their neighbors, and the ripples grow into <b>walls, threads and knots</b>.</p>
+      <div class="group-label" style="margin-top:8px">Layers</div>
+      <div class="chips" id="layers">
+        <button class="chip" data-key="dmLayer" aria-pressed="true"><span class="dot"></span>Dark matter</button>
+        <button class="chip" data-key="gasLayer" aria-pressed="true"><span class="dot"></span>Gas</button>
+        <button class="chip" data-key="galLayer" aria-pressed="true"><span class="dot"></span>Starlight</button>
+      </div>
+      <div class="group-label" style="margin-top:8px">Color by</div>
+      <div class="chips" id="modes">
+        <button class="chip" data-mode="3" aria-pressed="true"><span class="dot"></span>Gas temperature</button>
+        <button class="chip" data-mode="0" aria-pressed="false"><span class="dot"></span>Glow</button>
+        <button class="chip" data-mode="1" aria-pressed="false"><span class="dot"></span>Density</button>
+        <button class="chip" data-mode="2" aria-pressed="false"><span class="dot"></span>Speed</button>
+      </div>
+      <div class="group-label" style="margin-top:8px">Show</div>
+      <div class="chips" id="toggles">
+        <button class="chip" data-key="slice" aria-pressed="true"><span class="dot"></span>Thin slice</button>
+        <button class="chip" data-key="physical" aria-pressed="false"><span class="dot"></span>True size (expansion)</button>
+        <button class="chip" data-key="boost" aria-pressed="true"><span class="dot"></span>Boost faint ripples</button>
+        <button class="chip" data-key="box" aria-pressed="true"><span class="dot"></span>Box edges</button>
+        <button class="chip" data-key="spin" aria-pressed="true"><span class="dot"></span>Slow rotate</button>
+        <button class="chip" id="resetView"><span class="dot"></span>Reset view</button>
+      </div>
+    </div>
+    <div class="group">
+      <div class="group-label">Gravity comes from</div>
+      <div class="chips" id="gravity">
+        <button class="chip grav" data-dm="1" aria-pressed="true">All matter, dark and ordinary</button>
+        <button class="chip grav" data-dm="0" aria-pressed="false">Ordinary matter only</button>
+      </div>
+      <p class="count-note">Dark matter is 84% of all matter. Switch its pull off and the same starting ripples have to grow on the gravity of the other 16% alone, and galaxies never get going.</p>
+      <div class="group-label" style="margin-top:6px">Particles, half dark matter and half gas</div>
+      <div class="chips" id="counts">
+        <button class="chip" data-q="q0" aria-pressed="false">0.5 million</button>
+        <button class="chip" data-q="q1" aria-pressed="false">2 million</button>
+        <button class="chip" data-q="q2" aria-pressed="false">4.2 million</button>
+        <button class="chip" data-q="q3" aria-pressed="false">8.2 million</button>
+      </div>
+      <p class="count-note" id="countNote">The graphics card moves every particle and solves for gravity, gas pressure and heating on a grid of millions of cells, over and over. The top two settings need a strong card. On a slower card the clock runs slower rather than the picture stuttering.</p>
+    </div>
+  </div>
+
+  <section id="guide">
+    <div class="eyebrow">Field guide</div>
+    <h2>What you are <em>watching</em></h2>
+    <p class="section-lede">Each note below can set up the simulation to show you. The box is <strong>1 billion light-years</strong> (307 megaparsecs) across today. It wraps around at the edges, so matter leaving one face comes back through the opposite one, as if the box were one tile of an endless universe.</p>
+    <div class="guide">
+      <article class="entry">
+        <div class="where">380,000 years · 1 part in 100,000</div>
+        <h3>It starts as ripples</h3>
+        <p>The cosmic microwave background shows the early universe was smooth to about <b>1 part in 100,000</b>. Dark matter had already begun to clump by then, and by the start here (redshift 50) its ripples are several percent. They are too faint to see directly, so the view boosts them and says by how much.</p>
+        <button class="show" data-show="cmb">Show the starting ripples →</button>
+      </article>
+      <article class="entry">
+        <div class="where">walls · filaments · voids</div>
+        <h3>Threads and empty space</h3>
+        <p>Gravity collapses matter along one direction first, into thin <b>walls</b>. Then walls meet and form <b>filaments</b>. In between, <b>voids</b> empty out and grow until they fill most of the volume. A thin slice shows it best, the way galaxy surveys map the sky in wedges.</p>
+        <button class="show" data-show="web">Cut a slice through today →</button>
+      </article>
+      <article class="entry">
+        <div class="where">10¹⁴–10¹⁵ suns</div>
+        <h3>Clusters sit at the knots</h3>
+        <p>Where several filaments cross, matter keeps flowing in and piles up into <b>galaxy clusters</b>, the heaviest objects held together by gravity. Matter keeps streaming in along the threads. Color by speed to see it falling in at over <b>1,000 km/s</b>.</p>
+        <button class="show" data-show="nodes">Fly to the heaviest cluster →</button>
+      </article>
+      <article class="entry">
+        <div class="where">84% of all matter</div>
+        <h3>Why dark matter is needed</h3>
+        <p>Ordinary matter was locked to light until 380,000 years and could not clump. After that, its tiny ripples had too little time and too little gravity to grow into galaxies. Dark matter ignores light, so its clumps got a head start. Rerun this universe with the gravity of <b>ordinary matter only</b>: the web barely forms and not a single galaxy lights up.</p>
+        <button class="show" data-show="nodm">Switch dark matter's pull off →</button>
+      </article>
+      <article class="entry">
+        <div class="where">box grows 51× in size</div>
+        <h3>Expansion against gravity</h3>
+        <p>The usual view divides out the expansion of space so the box keeps one size. In reality it was <b>51 times smaller</b> at the start. Clumps hold themselves together while space between them stretches. For the last 6 billion years or so, dark energy has sped the expansion up, and the web has nearly <b>stopped growing</b>.</p>
+        <button class="show" data-show="expand">Show the true size →</button>
+      </article>
+      <article class="entry">
+        <div class="where">≈ 54 million ly from Virgo</div>
+        <h3>A place like ours</h3>
+        <p>The Milky Way and Andromeda form a small group in a thin wall called the Local Sheet, at the edge of a void and about <b>54 million light-years</b> from the Virgo Cluster. The simulation can't show us exactly, but it can find a spot with the same surroundings. Our galaxy's dark matter would be a couple of these dots.</p>
+        <button class="show" data-show="home">Find a spot like home →</button>
+      </article>
+      <article class="entry">
+        <div class="where">10⁵ K in threads · 10⁸ K in clusters</div>
+        <h3>Gas falls in and heats up</h3>
+        <p>Dark matter passes through itself, but gas can't. When gas streams collide on a filament they <b>shock</b>, and their motion turns into heat. Cluster gas reaches <b>100 million degrees</b>, hot enough to shine in X-rays. Much of the ordinary matter in the universe is this thin, hot gas, hard to see in any telescope.</p>
+        <button class="show" data-show="heat">Show the gas by temperature →</button>
+      </article>
+      <article class="entry">
+        <div class="where">peak ≈ 10 billion years ago</div>
+        <h3>Galaxies light up at the knots</h3>
+        <p>Where gas collects in small dark-matter halos, it cools and forms stars. Blue points are young stars, fading to gold as they age. The universe made stars fastest about <b>3.5 billion years</b> after the Big Bang and has slowed by about ten times since. The chart below compares this run with the measured history.</p>
+        <button class="show" data-show="galaxies">Watch cosmic noon →</button>
+      </article>
+      <article class="entry">
+        <div class="where">quenched: too hot to cool</div>
+        <h3>Red and dead in the clusters</h3>
+        <p>Inside the heaviest clusters the gas is so hot that it can't cool enough to make new stars. The galaxies there age into <b>red, old-star systems</b>, while galaxies out in the filaments keep forming stars. Astronomers see exactly this split between crowded and quiet parts of the universe.</p>
+        <button class="show" data-show="reddead">Fly into a cluster →</button>
+      </article>
+    </div>
+  </section>
+
+  <section id="history">
+    <div class="eyebrow">Cosmic star formation</div>
+    <h2>When the <em>stars</em> were made</h2>
+    <div class="history">
+      <div class="chart-wrap">
+        <p class="chart-title">New stars made per year</p>
+        <p class="chart-unit">suns per year in each cubic megaparsec (a cube 3.3 million light-years on a side)</p>
+        <div class="legend"><span><i style="background:var(--obs)"></i>Observed (Madau &amp; Dickinson 2014)</span><span><i style="background:var(--sim)"></i>This simulated universe</span></div>
+        <svg id="sfrChart" role="img" aria-label="Star-formation rate over cosmic time: observed curve and this simulation"></svg>
+        <div class="tip" id="sfrTip" hidden>
+          <div class="when" id="tipAge">—</div>
+          <div class="row"><i style="background:var(--obs)"></i><b id="tipObs">—</b><span>observed</span></div>
+          <div class="row"><i style="background:var(--sim)"></i><b id="tipSim">—</b><span>this universe</span></div>
+        </div>
+        <details class="data"><summary>Show the numbers as a table</summary>
+          <div class="table-wrap"><table><thead><tr><th>Age (billion years)</th><th>Redshift</th><th>Observed</th><th>This universe</th></tr></thead><tbody id="sfrRows"></tbody></table></div>
+        </details>
+      </div>
+      <div>
+        <p>Deep surveys with Hubble and other telescopes count the stars being made at each cosmic age. The rate climbed for the first 3 billion years, peaked around <b>redshift 2</b>, and has been falling ever since. Galaxies today make stars about ten times more slowly than at that peak.</p>
+        <p>The gold line is measured live from this run, from how fast its gas turns into stars. It is drawn as the simulation plays, so start from the beginning to see it all. The simulation is tuned to form the right total of stars, but the shape of the curve comes from the physics: halos form, gas falls in, and heating, dark energy and a dwindling supply of fresh gas slow things down.</p>
+        <dl class="facts">
+          <dt>Peak in this run</dt><dd id="sfrPeak">not reached yet</dd>
+          <dt>Stars formed so far, share of ordinary matter</dt><dd id="sfrStars">—</dd>
+          <dt>Gas above 100,000 K now</dt><dd id="sfrHot">—</dd>
+          <dt>Real universe, stars today</dt><dd>~8%</dd>
+          <dt>Real universe, gas above 10⁵ K</dt><dd>~40–50%</dd>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <section id="numbers">
+    <div class="eyebrow">By the numbers</div>
+    <h2>A billion light-years in a <em>box</em></h2>
+    <div class="numbers">
+      <div>
+        <p>Each dot is not a star or a galaxy. A dark matter dot is a parcel weighing <b id="dotMass">about 460 billion suns</b>, roughly the mass of the Milky Way's own dark matter halo. A gas dot carries <b id="gasMass">about 90 billion suns</b> of hydrogen and helium, and as it turns into stars it holds roughly one galaxy's worth. The simulation follows how all of them pull on each other while the space around them expands.</p>
+        <p>Gravity is worked out the way cosmologists do it in <b>particle-mesh</b> codes. The mass of every dot is spread onto a 3D grid, a Fourier transform solves for the gravitational pull on the whole grid at once, and every dot is pushed along. Gas also feels its own pressure, heats in shocks, and cools by glowing. This page does all of that on your graphics card <b>400 times</b> between redshift 50 and today.</p>
+        <p>The starting ripples follow the measured spectrum of density ripples, so the sizes of voids and filaments come out close to those in real galaxy maps. The exact arrangement is random, and each new universe gets a different one.</p>
+      </div>
+      <dl class="facts">
+        <dt>Box size today</dt><dd>1.0 billion ly · 307 Mpc</dd>
+        <dt>Mass in the box</dt><dd>1.1 × 10¹⁸ suns</dd>
+        <dt>Gravity grid</dt><dd id="gridFact">256³ = 16.8 million cells</dd>
+        <dt>Starting time</dt><dd>z = 50 · 47 million years</dd>
+        <dt>Matter, dark energy</dt><dd>31% · 69%</dd>
+        <dt>Dark share of matter</dt><dd>84%</dd>
+        <dt>Ordinary share of matter</dt><dd>16%</dd>
+        <dt>Hubble constant</dt><dd>68 km/s per Mpc</dd>
+      </dl>
+    </div>
+  </section>
+
+  <section id="real">
+    <div class="eyebrow">In the telescope</div>
+    <h2>The real web, <em>mapped</em></h2>
+    <p class="section-lede">Galaxies trace the dark matter, so maps of where galaxies sit show the same pattern. Surveys measure each galaxy's redshift to find its distance, then plot millions of them in 3D. Use the buttons to lay a real structure over the box at its true size.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Name</th><th>Year</th><th>Size or reach</th><th>What it showed</th></tr></thead>
+        <tbody>
+          <tr class="kind"><td colspan="4">Surveys</td></tr>
+          <tr><td><span class="name">CfA Redshift Survey</span><span class="sub">Harvard-Smithsonian, Geller &amp; Huchra</span><button class="show" data-show="slice">View a slice →</button></td><td class="num">1977–1995</td><td class="num">~18,000 galaxies</td><td>The first slice maps. Galaxies sat on the walls of bubbles, and a "stick figure" appeared at the Coma Cluster.</td></tr>
+          <tr><td><span class="name">2dF Galaxy Redshift Survey</span><span class="sub">Anglo-Australian Telescope</span><button class="show" data-show="slice">View a slice →</button></td><td class="num">1997–2002</td><td class="num">~220,000 galaxies</td><td>Two fan-shaped slices reaching billions of light-years out, full of the same filaments and voids that simulations make.</td></tr>
+          <tr><td><span class="name">Sloan Digital Sky Survey</span><span class="sub">SDSS, Apache Point Observatory</span><button class="show" data-show="slice">View a slice →</button></td><td class="num">2000–</td><td class="num">millions of galaxies</td><td>Spectra for millions of galaxies over a third of the sky. It found the Sloan Great Wall and measured the web's pattern of spacings.</td></tr>
+          <tr><td><span class="name">DESI</span><span class="sub">Dark Energy Spectroscopic Instrument, Kitt Peak</span><button class="show" data-show="today">Go to today →</button></td><td class="num">2021–</td><td class="num">~40 million targets</td><td>The largest 3D map so far, reaching back 11 billion years. It is testing whether dark energy changes over time.</td></tr>
+          <tr class="kind"><td colspan="4">Hot gas and starlight</td></tr>
+          <tr><td><span class="name">Madau &amp; Dickinson</span><span class="sub">review of cosmic star formation</span><button class="show" data-show="chart">See the chart →</button></td><td class="num">2014</td><td class="num">peak at z ≈ 1.9</td><td>Combined decades of deep-field counts into one history: star formation peaked about 3.5 billion years after the Big Bang.</td></tr>
+          <tr><td><span class="name">eROSITA</span><span class="sub">X-ray telescope on Spektr-RG</span><button class="show" data-show="reddead">Fly into a cluster →</button></td><td class="num">2019–2022</td><td class="num">~12,000 clusters</td><td>An all-sky X-ray map. Galaxy clusters show up as glowing clouds of gas at tens of millions of degrees.</td></tr>
+          <tr><td><span class="name">Fast radio bursts</span><span class="sub">Macquart et al., ASKAP</span><button class="show" data-show="heat">Show the hot gas →</button></td><td class="num">2020</td><td class="num">5 bursts, billions of ly</td><td>Radio flashes slowed by the thin gas they cross. The delay weighed the "missing" ordinary matter hiding between galaxies.</td></tr>
+          <tr class="kind"><td colspan="4">Structures</td></tr>
+          <tr><td><span class="name">Sloan Great Wall</span><span class="sub">Gott et al.</span><button class="show" data-size="sgw">Size it up →</button></td><td class="num">2003</td><td class="num">~1.4 billion ly long</td><td>A wall of galaxies longer than this whole box. It is one of the largest known structures.</td></tr>
+          <tr><td><span class="name">CfA2 Great Wall</span><span class="sub">Geller &amp; Huchra</span><button class="show" data-size="cfa">Size it up →</button></td><td class="num">1989</td><td class="num">~500 × 300 × 15 million ly</td><td>The first "wall" found: a thin sheet of galaxies passing through the Coma Cluster.</td></tr>
+          <tr><td><span class="name">Laniakea Supercluster</span><span class="sub">Tully et al.; "immense heaven" in Hawaiian</span><button class="show" data-size="lan">Size it up →</button></td><td class="num">2014</td><td class="num">~520 million ly across</td><td>Our home supercluster: about 100,000 galaxies and 10¹⁷ suns, defined by where galaxies flow.</td></tr>
+          <tr><td><span class="name">Boötes Void</span><span class="sub">Kirshner et al.</span><button class="show" data-size="boo">Size it up →</button></td><td class="num">1981</td><td class="num">~330 million ly across</td><td>A huge, nearly empty region about 700 million light-years away, with only about 60 galaxies found inside.</td></tr>
+          <tr><td><span class="name">Coma Cluster</span><span class="sub">Abell 1656</span><button class="show" data-size="coma">Size it up →</button></td><td class="num">1933</td><td class="num">~20 million ly across</td><td>Fritz Zwicky found its galaxies moving far too fast for the visible mass to hold them. He named the missing mass <i>dunkle Materie</i>, dark matter.</td></tr>
+          <tr><td><span class="name">Virgo Cluster</span><span class="sub">our nearest big cluster</span><button class="show" data-show="home">Find a spot like home →</button></td><td class="num">—</td><td class="num">54 million ly away</td><td>1,300 to 2,000 galaxies and about 10¹⁵ suns. Its pull slows our own motion away from it.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    <p>Gas and galaxies: half the particles are gas (16% of the mass). Their pressure is computed on the same grid as gravity. Gas streams can't pass through each other: each gas particle is steered toward the local mean flow, and the lost motion becomes heat. Converging flows get a von Neumann–Richtmyer shock viscosity, compression heats and expansion cools, and a real cooling curve (hydrogen, helium and some metals) lets dense gas radiate. Reionization heats all gas to 10,000 K by redshift 7.5. Galaxies are far smaller than a grid cell, so star formation uses the extended Press–Schechter theory to estimate how much of each cell's gas sits in halos above 10¹¹ suns. New gas arriving in such halos turns into stars with a 15% efficiency, unless it is above about a million degrees. That efficiency is the one tuned number; it sets the total. The gas physics was checked against a CPU version of the same code.</p>
+    <p>How it works: a periodic particle-mesh (PM) N-body simulation of cold dark matter in a flat ΛCDM universe (Ωm = 0.31, ΩΛ = 0.69, h = 0.68, σ₈ = 0.81, nₛ = 0.965). Starting positions and velocities come from the Zel'dovich approximation applied to Gaussian ripples with the Eisenstein &amp; Hu (1998) power spectrum. Each step spreads mass onto the grid with cloud-in-cell weights, solves Poisson's equation with a 3D fast Fourier transform, takes 4-point gradients, and advances particles with a leapfrog in the scale factor. All of it runs in WebGL 2 shaders; the physics was checked against a CPU version of the same code.</p>
+    <p>Simplifications: there is no heating from supernovae or black holes, which is one reason this run has less hot gas than the real universe. Gravity is smoothed over one grid cell (1.2–2.4 million parsecs), so clusters look puffier than they are and single galaxies are too small to form. The "heaviest clump" readout adds up the mass in a 30-million-light-year cube. The ordinary-matter-only run keeps the real expansion history and removes only dark matter's pull.</p>
+  </footer>
+</div>
+
+<script>
+// Flat ΛCDM background, growth, power spectrum and PM time-step factors.
+// Units: H0 = 1, lengths in units of the box (comoving). Physical conversions via Cosmo.P.
+const Cosmo = (() => {
+  const P = { Om: 0.31, Ob: 0.049, OL: 0.69, h: 0.68, ns: 0.965, s8: 0.81, Tcmb: 2.7255, boxMpc: 306.6 };
+  const tH = 977.79 / (100 * P.h); // Hubble time in Gyr (14.38)
+
+  const E = a => Math.sqrt(P.Om / (a*a*a) + P.OL);
+
+  // integrate in y = ln a with Simpson's rule
+  function simpson(f, y0, y1, n = 64){
+    if (y1 === y0) return 0;
+    const h = (y1 - y0) / n; let s = f(y0) + f(y1);
+    for (let i = 1; i < n; i++) s += f(y0 + i*h) * (i & 1 ? 4 : 2);
+    return s * h / 3;
+  }
+  // age in Gyr: ∫ da/(aE) from 0; analytic for flat ΛCDM without radiation
+  function age(a){
+    const r = Math.sqrt(P.OL / P.Om) * Math.pow(a, 1.5);
+    return tH * 2 / (3 * Math.sqrt(P.OL)) * Math.asinh(r);
+  }
+  const driftFac = (a0, a1) => simpson(y => { const a = Math.exp(y); return 1 / (a*a*E(a)); }, Math.log(a0), Math.log(a1));
+  // kick: dp = -1.5 Ωsrc ∇ψ ∫ da/(a² E), with ∇²ψ = δ
+  const kickFac = (a0, a1) => simpson(y => { const a = Math.exp(y); return 1 / (a*E(a)); }, Math.log(a0), Math.log(a1));
+
+  // Growth for a universe where only a fraction fsrc of the matter clusters (fsrc = 1: normal ΛCDM).
+  // Returns table over y = ln a of D (unnormalized) and f = dlnD/dlna.
+  function growthTable(fsrc){
+    const y0 = Math.log(1e-3), y1 = 0, n = 4000, h = (y1 - y0) / n;
+    const p = (-1 + Math.sqrt(1 + 24 * fsrc)) / 4;
+    const Y = new Float64Array(n + 1), D = new Float64Array(n + 1), F = new Float64Array(n + 1);
+    const rhs = (y, d, dp) => {
+      const a = Math.exp(y), e2 = P.Om / (a*a*a) + P.OL;
+      const dlnH = -1.5 * P.Om / (a*a*a) / e2;
+      return [dp, -(2 + dlnH) * dp + 1.5 * fsrc * P.Om / (a*a*a) / e2 * d];
+    };
+    let d = Math.exp(p * y0), dp = p * d;
+    for (let i = 0; i <= n; i++){
+      const y = y0 + i*h;
+      Y[i] = y; D[i] = d; F[i] = dp / d;
+      const k1 = rhs(y, d, dp), k2 = rhs(y + h/2, d + h/2*k1[0], dp + h/2*k1[1]);
+      const k3 = rhs(y + h/2, d + h/2*k2[0], dp + h/2*k2[1]), k4 = rhs(y + h, d + h*k3[0], dp + h*k3[1]);
+      d += h/6 * (k1[0] + 2*k2[0] + 2*k3[0] + k4[0]); dp += h/6 * (k1[1] + 2*k2[1] + 2*k3[1] + k4[1]);
+    }
+    const at = (arr, a) => { const t = (Math.log(a) - y0) / h, i = Math.max(0, Math.min(n - 1, Math.floor(t))), w = t - i; return arr[i]*(1-w) + arr[i+1]*w; };
+    return { D: a => at(D, a), f: a => at(F, a) };
+  }
+  const G1 = growthTable(1);
+  const D1 = G1.D(1);
+  const growth = a => G1.D(a) / D1; // normalized D(1) = 1
+
+  // Eisenstein & Hu (1998) transfer function without baryon wiggles; k in 1/Mpc
+  function transfer(k){
+    const h = P.h, omh2 = P.Om*h*h, obh2 = P.Ob*h*h, fb = P.Ob/P.Om, th = P.Tcmb / 2.7;
+    const s = 44.5 * Math.log(9.83/omh2) / Math.sqrt(1 + 10 * Math.pow(obh2, 0.75));
+    const aG = 1 - 0.328 * Math.log(431*omh2) * fb + 0.38 * Math.log(22.3*omh2) * fb*fb;
+    const G = P.Om * h * (aG + (1 - aG) / (1 + Math.pow(0.43*k*s, 4)));
+    const q = k / h * th*th / G;
+    const L0 = Math.log(2*Math.E + 1.8*q), C0 = 14.2 + 731 / (1 + 62.5*q);
+    return L0 / (L0 + C0*q*q);
+  }
+  const shape = k => Math.pow(k, P.ns) * transfer(k) ** 2;
+  // normalize to σ8 at z = 0 (R = 8 Mpc/h)
+  function sigmaR(R, amp){
+    let s = 0; const n = 4000, l0 = Math.log(1e-4), l1 = Math.log(1e2), dl = (l1 - l0) / n;
+    for (let i = 0; i <= n; i++){
+      const k = Math.exp(l0 + i*dl), x = k*R;
+      const W = x < 1e-3 ? 1 : 3 * (Math.sin(x) - x*Math.cos(x)) / (x*x*x);
+      s += (i === 0 || i === n ? 0.5 : 1) * amp * shape(k) * W*W * k*k*k / (2*Math.PI*Math.PI) * dl;
+    }
+    return Math.sqrt(s);
+  }
+  const AMP = (P.s8 / sigmaR(8 / P.h, 1)) ** 2;
+  const power = k => AMP * shape(k); // Mpc³, linear, z = 0
+
+  // elapsed time ∫ da/(aE) in units of 1/H0; also the kick factor for pressure forces
+  const timeFac = (a0, a1) => simpson(y => 1 / E(Math.exp(y)), Math.log(a0), Math.log(a1), 32);
+  // gas heated to 10⁴ K by the first stars and quasars (reionization, finished by z ≈ 7.5)
+  const Tfloor = a => { const z = 1 / a - 1; return z > 9 ? 0 : z < 7.5 ? 1e4 : 1e4 * (9 - z) / 1.5; };
+  const RHO_M = P.Om * 2.775e11 * P.h * P.h; // Msun per Mpc³
+  const sigmaM = M => sigmaR(Math.cbrt(3 * M / (4 * Math.PI * RHO_M)), AMP);
+  // gas and star-formation parameters for a grid of NG cells per side
+  function gasParams(NG){
+    const secH0 = tH * 3.156e16, cell = P.boxMpc / NG;
+    return {
+      KT: 3.165e-11,                              // kT/(μ m_p) per kelvin, in (box·H0)²
+      K: 5, Cq: 2,                                 // stream relaxation rate, shock viscosity
+      eps: 0.15, Tsf: 1e6, Mmin: 1e11,             // star formation: efficiency, too-hot-to-cool scale, smallest galaxy halo
+      cool: 3.45 * 1.381e-16 / (1.933e-7 * secH0), // cooling-time constant for mean hydrogen density 1.933e-7 cm⁻³
+      Sdiff: sigmaM(1e11) ** 2 - sigmaR(1.7 * cell, AMP) ** 2,
+    };
+  }
+  function stepParams(a0, a1, aph, fsrc){
+    const ah = Math.sqrt(a0 * a1);
+    return { ah, kick: 1.5 * P.Om * fsrc * kickFac(aph, ah), drift: driftFac(a0, a1), kickH: timeFac(aph, ah), dt: timeFac(a0, a1),
+      a: a0, H: E(a0), Tf: Tfloor(a1), dtGyr: timeFac(a0, a1) * tH, D: growth(a0) };
+  }
+  const T0 = 2.725 * 151 * (51 / 151) ** 2; // gas follows the CMB temperature until z ≈ 150, then cools adiabatically
+
+  return { P, tH, E, age, driftFac, kickFac, timeFac, Tfloor, sigmaM, gasParams, stepParams, T0, growthTable, growth, transfer, power, sigmaR: R => sigmaR(R, AMP) };
+})();
+
+</script>
+<script>
+// GPU particle-mesh engine (WebGL 2) for dark matter + gas. The 3D grid lives in a 2D "atlas" texture:
+// NG slices of NG×NG tiled TX across and NG/TX down. Particles live in transform-feedback buffers.
+// Particles [0, NDM) are dark matter; [NDM, 2·NDM) are gas, each carrying (temperature, star fraction,
+// young-star fraction, collapsed fraction already counted) in an aux vec4.
+const PMEngine = (gl) => {
+  const ext = {
+    cbf: gl.getExtension('EXT_color_buffer_float'),
+    fblend: gl.getExtension('EXT_float_blend'),
+  };
+  if (!ext.cbf) throw new Error('EXT_color_buffer_float unavailable');
+
+  const QUAD_VS = `#version 300 es
+  void main(){ vec2 p = vec2((gl_VertexID << 1) & 2, gl_VertexID & 2); gl_Position = vec4(p * 2.0 - 1.0, 0.0, 1.0); }`;
+
+  const header = (NG, TX, NP) => `#version 300 es
+  precision highp float; precision highp int; precision highp sampler2D;
+  #define NG ${NG}
+  #define TX ${TX}
+  #define TY ${NG / TX}
+  #define NP ${NP}
+  #define NDM ${NP * NP * NP}
+  ivec3 cellOf(ivec2 t){ return ivec3(t.x % NG, t.y % NG, t.x / NG + TX * (t.y / NG)); }
+  ivec2 texOf(ivec3 c){ c = c & (NG - 1); return ivec2(c.x + NG * (c.z % TX), c.y + NG * (c.z / TX)); }
+  ivec3 freqOf(ivec3 c){ return c - NG * ivec3(greaterThan(c, ivec3(NG / 2))); }
+  // cloud-in-cell interpolation of a grid at a position in box units
+  vec4 cic(sampler2D s, vec3 x){
+    vec3 u = x * float(NG); ivec3 i0 = ivec3(floor(u)); vec3 f = u - vec3(i0);
+    vec4 acc = vec4(0.0);
+    for (int k = 0; k < 8; k++){
+      ivec3 d = ivec3(k & 1, (k >> 1) & 1, (k >> 2) & 1);
+      vec3 w = mix(1.0 - f, f, vec3(d));
+      acc += w.x * w.y * w.z * texelFetch(s, texOf(i0 + d), 0);
+    }
+    return acc;
+  }
+  `;
+
+  const FS = {
+    noise: `uniform uint uSeed; out vec4 o;
+      uint pcg(uint v){ uint st = v * 747796405u + 2891336453u; uint w = ((st >> ((st >> 28u) + 4u)) ^ st) * 277803737u; return (w >> 22u) ^ w; }
+      void main(){
+        ivec3 c = cellOf(ivec2(gl_FragCoord.xy));
+        uint i = uint(c.x + NG * (c.y + NG * c.z)), sh = uSeed * 0x9E3779B9u;
+        float u = (float(pcg((2u * i) ^ sh)) + 1.0) / 4294967296.0, v = float(pcg((2u * i + 1u) ^ sh)) / 4294967296.0;
+        o = vec4(sqrt(-2.0 * log(u)) * cos(6.283185307 * v), 0.0, 0.0, 0.0);
+      }`,
+    pack: `uniform sampler2D uRho; uniform float uMfac; out vec4 o;
+      void main(){ o = vec4(texelFetch(uRho, ivec2(gl_FragCoord.xy), 0).r * uMfac - 1.0, 0.0, 0.0, 0.0); }`,
+    // one radix-2 Stockham pass along one axis; output lands in natural order after all passes
+    fft: `uniform sampler2D uSrc; uniform int uAxis, uNs; uniform float uSign; out vec4 o;
+      void main(){
+        ivec3 c = cellOf(ivec2(gl_FragCoord.xy));
+        int oi = c[uAxis], blk = oi / (2 * uNs), r = oi - blk * 2 * uNs, jm = r % uNs, j = blk * uNs + jm;
+        ivec3 c0 = c, c1 = c; c0[uAxis] = j; c1[uAxis] = j + NG / 2;
+        vec2 a = texelFetch(uSrc, texOf(c0), 0).xy, b = texelFetch(uSrc, texOf(c1), 0).xy;
+        float ang = uSign * 3.14159265358979 * float(jm) / float(uNs);
+        vec2 w = vec2(cos(ang), sin(ang));
+        vec2 bw = vec2(b.x * w.x - b.y * w.y, b.x * w.y + b.y * w.x);
+        o = vec4(r < uNs ? a + bw : a - bw, 0.0, 0.0);
+      }`,
+    // Poisson: ψ_k = -δ_k / k²
+    green: `uniform sampler2D uSrc; out vec4 o;
+      void main(){
+        ivec2 t = ivec2(gl_FragCoord.xy); vec3 n = vec3(freqOf(cellOf(t)));
+        float k2 = dot(n, n) * 39.4784176;
+        o = vec4(k2 > 0.0 ? -texelFetch(uSrc, t, 0).xy / k2 : vec2(0.0), 0.0, 0.0);
+      }`,
+    // Zel'dovich displacement component: Ψ_k = i n / (2π n²) · amp(|n|) · W_k
+    disp: `uniform sampler2D uSrc, uLut; uniform int uComp; uniform float uLutScale; out vec4 o;
+      void main(){
+        ivec2 t = ivec2(gl_FragCoord.xy); ivec3 ni = freqOf(cellOf(t)); vec3 n = vec3(ni);
+        float nm = length(n);
+        if (nm == 0.0 || abs(ni[uComp]) == NG / 2){ o = vec4(0.0); return; }
+        float x = nm * uLutScale; int i = int(x);
+        float amp = mix(texelFetch(uLut, ivec2(i, 0), 0).r, texelFetch(uLut, ivec2(i + 1, 0), 0).r, x - float(i));
+        vec2 d = texelFetch(uSrc, t, 0).xy * amp;
+        float f = n[uComp] / (6.283185307 * nm * nm);
+        o = vec4(-d.y * f, d.x * f, 0.0, 0.0);
+      }`,
+    copyReal: `uniform sampler2D uSrc; uniform float uScale; out vec4 o;
+      void main(){ o = vec4(texelFetch(uSrc, ivec2(gl_FragCoord.xy), 0).x * uScale); }`,
+    // g = -∇ψ with 4-point differences
+    grad: `uniform sampler2D uSrc; uniform float uScale; out vec4 o;
+      float P(ivec3 c){ return texelFetch(uSrc, texOf(c), 0).x; }
+      void main(){
+        ivec3 c = cellOf(ivec2(gl_FragCoord.xy));
+        ivec3 ex = ivec3(1, 0, 0), ey = ivec3(0, 1, 0), ez = ivec3(0, 0, 1);
+        vec3 g = vec3(
+          8.0 * (P(c + ex) - P(c - ex)) - (P(c + 2 * ex) - P(c - 2 * ex)),
+          8.0 * (P(c + ey) - P(c - ey)) - (P(c + 2 * ey) - P(c - 2 * ey)),
+          8.0 * (P(c + ez) - P(c - ez)) - (P(c + 2 * ez) - P(c - 2 * ez)));
+        o = vec4(-g * uScale * float(NG) / 12.0, 0.0);
+      }`,
+    // [1,2,1]/4 along one axis: smoothing that removes the particle-lattice pattern
+    blur: `uniform sampler2D uSrc; uniform int uAxis; out vec4 o;
+      void main(){
+        ivec3 c = cellOf(ivec2(gl_FragCoord.xy)), e = ivec3(0); e[uAxis] = 1;
+        o = vec4(0.25 * texelFetch(uSrc, texOf(c - e), 0).r + 0.5 * texelFetch(uSrc, texOf(c), 0).r + 0.25 * texelFetch(uSrc, texOf(c + e), 0).r, 0.0, 0.0, 0.0);
+      }`,
+    // gas cell state: mean flow and thermal pressure
+    gasCell: `uniform sampler2D uGA, uGB; uniform float uMfac, uKT; out vec4 o;
+      void main(){
+        ivec2 t = ivec2(gl_FragCoord.xy);
+        vec4 a = texelFetch(uGA, t, 0), b = texelFetch(uGB, t, 0);
+        float m = a.r;
+        vec3 v = m > 0.0 ? a.gba / m : vec3(0.0);
+        float T = m > 0.0 ? b.r / m : 0.0;
+        o = vec4(v, m * uMfac * T * uKT);
+      }`,
+    // physical divergence of the gas flow (Hubble + peculiar) and von Neumann–Richtmyer viscosity q
+    gasDiv: `uniform sampler2D uHA, uGA; uniform float uA, uH, uCq, uMfac; out vec4 o;
+      void main(){
+        ivec3 c = cellOf(ivec2(gl_FragCoord.xy));
+        ivec3 ex = ivec3(1, 0, 0), ey = ivec3(0, 1, 0), ez = ivec3(0, 0, 1);
+        float dv = (texelFetch(uHA, texOf(c + ex), 0).x - texelFetch(uHA, texOf(c - ex), 0).x
+                  + texelFetch(uHA, texOf(c + ey), 0).y - texelFetch(uHA, texOf(c - ey), 0).y
+                  + texelFetch(uHA, texOf(c + ez), 0).z - texelFetch(uHA, texOf(c - ez), 0).z) * float(NG) * 0.5;
+        float th = 3.0 * uH + dv / uA, dx = uA / float(NG);
+        float rho = texelFetch(uGA, texOf(c), 0).r * uMfac;
+        o = vec4(th, th < 0.0 ? rho * uCq * (dx * th) * (dx * th) : 0.0, 0.0, 0.0);
+      }`,
+    // pressure force -∇(P + q)/ρ, with the divergence carried along in w
+    gasForce: `uniform sampler2D uHA, uDQ, uGA; uniform float uMfac, uFloor; out vec4 o;
+      float PQ(ivec3 c){ ivec2 t = texOf(c); return texelFetch(uHA, t, 0).a + texelFetch(uDQ, t, 0).y; }
+      void main(){
+        ivec3 c = cellOf(ivec2(gl_FragCoord.xy));
+        ivec3 ex = ivec3(1, 0, 0), ey = ivec3(0, 1, 0), ez = ivec3(0, 0, 1);
+        float rho = max(texelFetch(uGA, texOf(c), 0).r * uMfac, uFloor);
+        vec3 h = -vec3(PQ(c + ex) - PQ(c - ex), PQ(c + ey) - PQ(c - ey), PQ(c + ez) - PQ(c - ez)) * float(NG) * 0.5 / rho;
+        o = vec4(h, texelFetch(uDQ, texOf(c), 0).x);
+      }`,
+    // coarse grid (NC³): total mass, stars, gas above 10⁵ K, gas above 10⁷ K
+    reduce: `uniform sampler2D uRho, uGB; out vec4 o;
+      #define NC 64
+      #define TXC 8
+      #define B (NG / NC)
+      void main(){
+        ivec2 t = ivec2(gl_FragCoord.xy);
+        ivec3 cc = ivec3(t.x % NC, t.y % NC, t.x / NC + TXC * (t.y / NC));
+        vec4 s = vec4(0.0);
+        for (int k = 0; k < B; k++) for (int j = 0; j < B; j++) for (int i = 0; i < B; i++){
+          ivec2 q = texOf(cc * B + ivec3(i, j, k));
+          s += vec4(texelFetch(uRho, q, 0).r, texelFetch(uGB, q, 0).gba);
+        }
+        o = s;
+      }`,
+  };
+
+  // thermal physics shared by the update shader
+  const GAS_GLSL = `
+  const float LT[12] = float[12](4.0, 4.2, 4.4, 5.0, 5.4, 5.8, 6.2, 6.6, 7.0, 7.5, 8.0, 8.5);
+  const float LL[12] = float[12](-23.6, -22.2, -21.8, -21.6, -21.7, -22.0, -22.35, -22.6, -22.75, -22.8, -22.65, -22.4);
+  // radiative cooling function Λ(T), erg cm³ s⁻¹ (hydrogen, helium and some metals)
+  float lambda(float T){
+    float l = log(max(T, 1.0)) / 2.302585;
+    if (l < LT[0]) return 1e-30;
+    if (l >= LT[11]) return pow(10.0, LL[11] + 0.5 * (l - LT[11]));
+    for (int i = 0; i < 11; i++) if (l < LT[i + 1]){ float w = (l - LT[i]) / (LT[i + 1] - LT[i]); return pow(10.0, mix(LL[i], LL[i + 1], w)); }
+    return 1e-30;
+  }
+  float erfc_(float x){ float z = abs(x), t = 1.0 / (1.0 + 0.3275911 * z);
+    float y = t * (0.254829592 + t * (-0.284496736 + t * (1.421413741 + t * (-1.453152027 + t * 1.061405429)))) * exp(-z * z);
+    return x >= 0.0 ? y : 2.0 - y; }
+  // Mo & White (1996): linear overdensity from nonlinear overdensity
+  float linDelta(float d){ float x = 1.0 + max(d, -0.99); return 1.68647 - 1.35 * pow(x, -2.0 / 3.0) - 1.12431 * pow(x, -0.5) + 0.78785 * pow(x, -0.58661); }
+  `;
+
+  const VS = {
+    deposit: `in vec3 aPos; in float aSpecies; uniform vec2 uMass; out float vW;
+      void main(){
+        vec3 u = aPos * float(NG); ivec3 i0 = ivec3(floor(u)); vec3 f = u - vec3(i0);
+        int k = gl_InstanceID; ivec3 d = ivec3(k & 1, (k >> 1) & 1, (k >> 2) & 1);
+        vec3 w = mix(1.0 - f, f, vec3(d));
+        vW = w.x * w.y * w.z * (aSpecies < 0.5 ? uMass.x : uMass.y);
+        gl_Position = vec4((vec2(texOf(i0 + d)) + 0.5) / vec2(NG * TX, NG * TY) * 2.0 - 1.0, 0.0, 1.0);
+        gl_PointSize = 1.0;
+      }`,
+    // gas only: mass-weighted velocity, temperature, stars and hot-gas tallies
+    gasDeposit: `in vec3 aPos; in vec3 aMom; in vec4 aAux; uniform float uMassG, uA; out vec4 vA; out vec4 vB;
+      void main(){
+        vec3 u = aPos * float(NG); ivec3 i0 = ivec3(floor(u)); vec3 f = u - vec3(i0);
+        int k = gl_InstanceID; ivec3 d = ivec3(k & 1, (k >> 1) & 1, (k >> 2) & 1);
+        vec3 w3 = mix(1.0 - f, f, vec3(d));
+        float w = w3.x * w3.y * w3.z * uMassG, fg = 1.0 - aAux.y, T = aAux.x;
+        vA = w * fg * vec4(1.0, aMom / uA);
+        vB = w * vec4(fg * T, aAux.y, fg * step(1e5, T), fg * step(1e7, T));
+        gl_Position = vec4((vec2(texOf(i0 + d)) + 0.5) / vec2(NG * TX, NG * TY) * 2.0 - 1.0, 0.0, 1.0);
+        gl_PointSize = 1.0;
+      }`,
+    ic: `uniform sampler2D uPsi; uniform float uA, uVfac, uT0; out vec3 oPos; out vec3 oMom; out vec4 oAux;
+      void main(){
+        int id = gl_VertexID, s = id >= NDM ? 1 : 0, l = id - s * NDM;
+        vec3 q = (vec3(ivec3(l % NP, (l / NP) % NP, l / (NP * NP))) + 0.5 * float(s)) / float(NP);
+        vec3 d = cic(uPsi, q).xyz;
+        oPos = fract(q + uA * d); oMom = uVfac * d; oAux = vec4(float(s) * uT0, 0.0, 0.0, 0.0);
+        gl_Position = vec4(0.0);
+      }`,
+    update: `in vec3 aPos; in vec3 aMom; in vec4 aAux;
+      uniform sampler2D uG, uHF, uHA, uGA, uRhoS;
+      uniform float uKick, uDrift, uKickH, uDt, uA, uTf, uDtGyr, uD, uSdiff, uEps, uK, uCq, uKT, uMfac, uFb, uCool, uTsf;
+      out vec3 oPos; out vec3 oMom; out vec4 oAux;
+      void main(){
+        vec3 p = aMom + uKick * cic(uG, aPos).xyz;
+        vec4 aux = aAux;
+        if (gl_VertexID >= NDM){
+          float T = aux.x, fs = aux.y, fg = 1.0 - fs;
+          vec4 hf = cic(uHF, aPos);
+          p += uKickH * fg * hf.xyz;
+          // energy equation: compression heats, expansion cools, shocks heat through the viscosity q
+          float th = hf.w;
+          T *= exp(-2.0 / 3.0 * th * uDt);
+          if (th < 0.0){ float dx = uA / float(NG); T += 2.0 / 3.0 * uCq * dx * dx * th * th / uKT * (-th) * uDt; }
+          // gas streams can't pass through each other: relax toward the local mean flow, the lost motion becomes heat
+          vec3 vb = cic(uHA, aPos).xyz, ur = p / uA - vb;
+          float u2 = dot(ur, ur);
+          float r = exp(-uDt * uK * (sqrt(u2) + sqrt(1.667 * T * uKT)) * float(NG) / uA);
+          p = uA * (vb + ur * r);
+          T += u2 * (1.0 - r * r) / 3.0 / uKT;
+          // radiative cooling toward the photoionization floor
+          float rphys = max(cic(uGA, aPos).r * uMfac / uFb, 0.02) / (uA * uA * uA);
+          if (T > uTf){ float tc = uCool * T / (rphys * lambda(T)); T = uTf + (T - uTf) * exp(-uDt / tc); }
+          T = max(T, uTf);
+          // star formation: gas newly gathered into unresolved galaxy halos (extended Press–Schechter), unless too hot to cool
+          float dTot = cic(uRhoS, aPos).r * uMfac - 1.0;
+          float fc = erfc_((1.686 - min(linDelta(dTot), 1.68)) / uD / sqrt(2.0 * uSdiff));
+          float quench = 1.0 / (1.0 + (T / uTsf) * (T / uTsf));
+          float df = min(fg, uEps * max(0.0, fc - aux.w) * quench * fg);
+          aux = vec4(T, fs + df, (aux.z + df) * exp(-uDtGyr / 0.5), max(aux.w, fc));
+        }
+        oPos = fract(aPos + uDrift * p); oMom = p; oAux = aux;
+        gl_Position = vec4(0.0);
+      }`,
+  };
+  const DEPOSIT_FS = `out vec4 o; in float vW; void main(){ o = vec4(vW, 0.0, 0.0, 0.0); }`;
+  const GAS_DEPOSIT_FS = `in vec4 vA; in vec4 vB; layout(location = 0) out vec4 o0; layout(location = 1) out vec4 o1;
+    void main(){ o0 = vA; o1 = vB; }`;
+  const NULL_FS = `#version 300 es
+  precision mediump float; out vec4 o; void main(){ o = vec4(0.0); }`;
+
+  function compile(vs, fs, varyings){
+    const mk = (t, s) => { const sh = gl.createShader(t); gl.shaderSource(sh, s); gl.compileShader(sh); if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(sh) + '\n' + s); return sh; };
+    const p = gl.createProgram(); gl.attachShader(p, mk(gl.VERTEX_SHADER, vs)); gl.attachShader(p, mk(gl.FRAGMENT_SHADER, fs));
+    if (varyings) gl.transformFeedbackVaryings(p, varyings, gl.SEPARATE_ATTRIBS);
+    gl.linkProgram(p); if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+    const u = {}; const n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS);
+    for (let i = 0; i < n; i++){ const info = gl.getActiveUniform(p, i); u[info.name.replace(/\[0\]$/, '')] = gl.getUniformLocation(p, info.name); }
+    return { p, u, a: name => gl.getAttribLocation(p, name) };
+  }
+
+  function tex2D(w, h, ifmt, fmt, type, data = null){
+    const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.texImage2D(gl.TEXTURE_2D, 0, ifmt, w, h, 0, fmt, type, data);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    const f = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, f);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, t, 0);
+    const ok = gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    return { t, f, w, h, ok };
+  }
+  const freeTex = x => { if (x){ gl.deleteTexture(x.t); gl.deleteFramebuffer(x.f); } };
+
+  const E = {
+    NG: 0, NP: 0, NDM: 0, N: 0, TX: 0, W: 0, H: 0,
+    rho: null, rhoS: null, rhoT: null, cplx: [null, null], grad: null, coarse: null, lut: null,
+    gA: null, gB: null, hA: null, gasFbo: null,
+    pos: [null, null], mom: [null, null], aux: [null, null], species: null, cur: 0,
+    prog: null, rhoHalf: false, busy: false,
+  };
+  const emptyVao = gl.createVertexArray();
+  const tf = gl.createTransformFeedback();
+  const NC = 64;
+
+  function setupGrid(NG){
+    if (E.NG === NG) return;
+    [E.rho, E.rhoS, E.rhoT, E.cplx[0], E.cplx[1], E.grad, E.coarse, E.gA, E.gB, E.hA].forEach(freeTex);
+    if (E.gasFbo) gl.deleteFramebuffer(E.gasFbo);
+    const TX = 1 << Math.ceil(Math.log2(Math.sqrt(NG)));
+    E.NG = NG; E.TX = TX; E.W = NG * TX; E.H = NG * (NG / TX);
+    // deposits need additive blending: 32-bit float if the GPU can blend it, else 16-bit
+    E.rhoHalf = !ext.fblend;
+    const blendFmt = E.rhoHalf ? [gl.RGBA16F, gl.HALF_FLOAT] : [gl.RGBA32F, gl.FLOAT];
+    E.rho = E.rhoHalf ? tex2D(E.W, E.H, gl.R16F, gl.RED, gl.HALF_FLOAT) : tex2D(E.W, E.H, gl.R32F, gl.RED, gl.FLOAT);
+    E.rhoS = tex2D(E.W, E.H, gl.R32F, gl.RED, gl.FLOAT); E.rhoT = tex2D(E.W, E.H, gl.R32F, gl.RED, gl.FLOAT);
+    E.cplx = [0, 1].map(() => tex2D(E.W, E.H, gl.RG32F, gl.RG, gl.FLOAT));
+    E.grad = tex2D(E.W, E.H, gl.RGBA32F, gl.RGBA, gl.FLOAT);
+    E.gA = tex2D(E.W, E.H, blendFmt[0], gl.RGBA, blendFmt[1]);
+    E.gB = tex2D(E.W, E.H, blendFmt[0], gl.RGBA, blendFmt[1]);
+    E.hA = tex2D(E.W, E.H, gl.RGBA32F, gl.RGBA, gl.FLOAT);
+    E.coarse = tex2D(NC * 8, NC * 8, gl.RGBA32F, gl.RGBA, gl.FLOAT);
+    // both gas deposits in one draw
+    E.gasFbo = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, E.gasFbo);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, E.gA.t, 0);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT1, gl.TEXTURE_2D, E.gB.t, 0);
+    gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1]);
+    const mrtOK = gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    if (!mrtOK || ![E.rho, E.rhoS, E.rhoT, ...E.cplx, E.grad, E.gA, E.gB, E.hA, E.coarse].every(x => x.ok)) throw new Error('grid framebuffers incomplete');
+    E.prog = null;
+  }
+
+  function setupParticles(NP){
+    if (E.NP === NP) return;
+    for (const b of [...E.pos, ...E.mom, ...E.aux, E.species]) if (b) gl.deleteBuffer(b);
+    E.NP = NP; E.NDM = NP * NP * NP; E.N = 2 * E.NDM;
+    for (let k = 0; k < 2; k++){
+      E.pos[k] = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, E.pos[k]); gl.bufferData(gl.ARRAY_BUFFER, E.N * 12, gl.DYNAMIC_COPY);
+      E.mom[k] = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, E.mom[k]); gl.bufferData(gl.ARRAY_BUFFER, E.N * 12, gl.DYNAMIC_COPY);
+      E.aux[k] = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, E.aux[k]); gl.bufferData(gl.ARRAY_BUFFER, E.N * 16, gl.DYNAMIC_COPY);
+    }
+    const sp = new Float32Array(E.N); sp.fill(1, E.NDM);
+    E.species = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, E.species); gl.bufferData(gl.ARRAY_BUFFER, sp, gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    E.prog = null;
+  }
+
+  function programs(){
+    if (E.prog) return E.prog;
+    const h = header(E.NG, E.TX, E.NP), pr = {};
+    for (const k of Object.keys(FS)) pr[k] = compile(QUAD_VS, h + FS[k]);
+    pr.deposit = compile(h + VS.deposit, h + DEPOSIT_FS);
+    pr.gasDeposit = compile(h + VS.gasDeposit, h + GAS_DEPOSIT_FS);
+    pr.ic = compile(h + VS.ic, NULL_FS, ['oPos', 'oMom', 'oAux']);
+    pr.update = compile(h + GAS_GLSL + VS.update, NULL_FS, ['oPos', 'oMom', 'oAux']);
+    const attr = (buf, loc, size) => { if (loc < 0) return; gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, size, gl.FLOAT, false, 0, 0); };
+    const vao = (prog, k) => { const v = gl.createVertexArray(); gl.bindVertexArray(v);
+      attr(E.pos[k], prog.a('aPos'), 3); attr(E.mom[k], prog.a('aMom'), 3); attr(E.aux[k], prog.a('aAux'), 4); attr(E.species, prog.a('aSpecies'), 1); return v; };
+    pr.depVao = [0, 1].map(k => vao(pr.deposit, k));
+    pr.gasVao = [0, 1].map(k => vao(pr.gasDeposit, k));
+    pr.updVao = [0, 1].map(k => vao(pr.update, k));
+    gl.bindVertexArray(null); gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    return (E.prog = pr);
+  }
+
+  // ---- passes ----
+  function pass(prog, target, setup){
+    gl.useProgram(prog.p);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, target.f); gl.viewport(0, 0, target.w, target.h);
+    let unit = 0;
+    const bind = (name, tex) => { gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, tex.t); gl.uniform1i(prog.u[name], unit); unit++; };
+    setup && setup(bind, prog.u);
+    gl.bindVertexArray(emptyVao);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+  }
+  // complex data lives in cplx[E.c]
+  E.c = 0;
+  function fftPasses(q, sign){
+    const pr = programs();
+    for (let axis = 0; axis < 3; axis++) for (let Ns = 1; Ns < E.NG; Ns *= 2) q.push(() => {
+      const src = E.cplx[E.c], dst = E.cplx[1 - E.c];
+      pass(pr.fft, dst, (bind, u) => { bind('uSrc', src); gl.uniform1i(u.uAxis, axis); gl.uniform1i(u.uNs, Ns); gl.uniform1f(u.uSign, sign); });
+      E.c = 1 - E.c;
+    });
+    return q;
+  }
+  const run = q => q.forEach(f => f());
+  function cplxPass(prog, setup){
+    const src = E.cplx[E.c], dst = E.cplx[1 - E.c];
+    pass(prog, dst, (bind, u) => { bind('uSrc', src); setup && setup(bind, u); });
+    E.c = 1 - E.c;
+  }
+
+  const fb = Cosmo.P.Ob / Cosmo.P.Om;
+  E.massDM = 2 * (1 - fb); E.massGas = 2 * fb;   // mean particle mass = 1
+  function deposit(){
+    const pr = programs();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, E.rho.f); gl.viewport(0, 0, E.W, E.H);
+    gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE); gl.blendEquation(gl.FUNC_ADD);
+    gl.useProgram(pr.deposit.p);
+    gl.uniform2f(pr.deposit.u.uMass, E.massDM, E.massGas);
+    gl.bindVertexArray(pr.depVao[E.cur]);
+    gl.drawArraysInstanced(gl.POINTS, 0, E.N, 8);
+    gl.disable(gl.BLEND);
+    gl.bindVertexArray(null);
+  }
+  function gasDeposit(a){
+    const pr = programs();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, E.gasFbo); gl.viewport(0, 0, E.W, E.H);
+    gl.clearBufferfv(gl.COLOR, 0, [0, 0, 0, 0]); gl.clearBufferfv(gl.COLOR, 1, [0, 0, 0, 0]);
+    gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE); gl.blendEquation(gl.FUNC_ADD);
+    gl.useProgram(pr.gasDeposit.p);
+    gl.uniform1f(pr.gasDeposit.u.uMassG, E.massGas); gl.uniform1f(pr.gasDeposit.u.uA, a);
+    gl.bindVertexArray(pr.gasVao[E.cur]);
+    gl.drawArraysInstanced(gl.POINTS, E.NDM, E.NDM, 8);
+    gl.disable(gl.BLEND);
+    gl.bindVertexArray(null);
+  }
+
+  // smoothed copy of the density (two rounds of [1,2,1] per axis), used for coloring and star formation
+  function smoothPasses(){
+    const pr = programs(), q = [];
+    for (let r = 0; r < 2; r++) for (let axis = 0; axis < 3; axis++){
+      const first = r === 0 && axis === 0, odd = (r * 3 + axis) % 2 === 0;
+      q.push(() => pass(pr.blur, odd ? E.rhoT : E.rhoS, (bind, u) => { bind('uSrc', first ? E.rho : odd ? E.rhoS : E.rhoT); gl.uniform1i(u.uAxis, axis); }));
+    }
+    return q; // six passes, ending in rhoS
+  }
+
+  function transform(prog, vao, dstIdx, setup){
+    // a buffer being written by transform feedback may not be bound anywhere else, and the
+    // textures read here must not be attached to the current framebuffer
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    gl.useProgram(prog.p);
+    let unit = 0;
+    const bind = (name, tex) => { gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, tex.t); gl.uniform1i(prog.u[name], unit); unit++; };
+    setup(bind, prog.u);
+    gl.bindVertexArray(vao);
+    gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, tf);
+    gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0, E.pos[dstIdx]);
+    gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 1, E.mom[dstIdx]);
+    gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 2, E.aux[dstIdx]);
+    gl.enable(gl.RASTERIZER_DISCARD);
+    gl.beginTransformFeedback(gl.POINTS);
+    gl.drawArrays(gl.POINTS, 0, E.N);
+    gl.endTransformFeedback();
+    gl.disable(gl.RASTERIZER_DISCARD);
+    for (let i = 0; i < 3; i++) gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, i, null);
+    gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, null);
+    gl.bindVertexArray(null);
+  }
+
+  // amplitude lookup: sqrt(P(k) N³ / V), zero above the particle Nyquist frequency
+  function ampLut(){
+    const n = 4096, nmax = Math.sqrt(3) * E.NG / 2 + 2, L = Cosmo.P.boxMpc, N3 = E.NG ** 3, kCut = Math.min(E.NG, E.NP) / 2;
+    const d = new Float32Array(n);
+    for (let i = 0; i < n; i++){
+      const nm = i / (n - 1) * nmax;
+      d[i] = nm === 0 || nm > kCut ? 0 : Math.sqrt(Cosmo.power(2 * Math.PI * nm / L) * N3 / (L * L * L));
+    }
+    if (E.lut) freeTex(E.lut);
+    E.lut = tex2D(n, 1, gl.R32F, gl.RED, gl.FLOAT, d);
+    return (n - 1) / nmax;
+  }
+
+  // ---- coarse readback (async through a pixel-pack buffer) ----
+  const coarseBuf = new Float32Array(NC * 8 * NC * 8 * 4), coarse = new Float32Array(NC ** 3);
+  E.NC = NC;
+  const pbo = gl.createBuffer(); let fence = null, fenceTag = null;
+  function reduceAndRead(tag){
+    const pr = programs();
+    pass(pr.reduce, E.coarse, (bind) => { bind('uRho', E.rho); bind('uGB', E.gB); });
+    gl.bindBuffer(gl.PIXEL_PACK_BUFFER, pbo);
+    gl.bufferData(gl.PIXEL_PACK_BUFFER, coarseBuf.byteLength, gl.STREAM_READ);
+    gl.readPixels(0, 0, NC * 8, NC * 8, gl.RGBA, gl.FLOAT, 0);
+    gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    fence = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0); fenceTag = tag;
+    gl.flush();
+  }
+  // outside a step: redo the deposits for the current positions, then read
+  E.requestCoarse = (a) => {
+    if (fence || E.busy) return false;
+    deposit(); run(smoothPasses()); gasDeposit(a);
+    reduceAndRead(a);
+    return true;
+  };
+  // returns { mass, stars, hot5, hot7, a } once ready, else null
+  E.pollCoarse = () => {
+    if (!fence) return null;
+    if (gl.clientWaitSync(fence, 0, 0) === gl.TIMEOUT_EXPIRED) return null;
+    gl.deleteSync(fence); fence = null;
+    gl.bindBuffer(gl.PIXEL_PACK_BUFFER, pbo); gl.getBufferSubData(gl.PIXEL_PACK_BUFFER, 0, coarseBuf); gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
+    let stars = 0, hot5 = 0, hot7 = 0;
+    for (let ty = 0; ty < 8; ty++) for (let tx = 0; tx < 8; tx++) for (let y = 0; y < NC; y++) for (let x = 0; x < NC; x++){
+      const z = tx + 8 * ty, j = 4 * (x + NC * tx + NC * 8 * (y + NC * ty));
+      coarse[x + NC * (y + NC * z)] = coarseBuf[j];
+      stars += coarseBuf[j + 1]; hot5 += coarseBuf[j + 2]; hot7 += coarseBuf[j + 3];
+    }
+    const gasTotal = E.NDM * E.massGas; // all ordinary matter, in deposit units
+    return { mass: coarse, stars: stars / gasTotal, hot5: hot5 / gasTotal, hot7: hot7 / gasTotal, a: fenceTag };
+  };
+  E.cancelCoarse = () => { if (fence){ gl.deleteSync(fence); fence = null; } };
+
+  // ---- public ----
+  // cfg: { NP, NG, seed, A (growth at start), vfac, T0 (starting gas temperature), gas: { eps, K, Cq, Tsf, Sdiff } }
+  E.init = (cfg) => {
+    setupGrid(cfg.NG); setupParticles(cfg.NP);
+    E.cancelCoarse(); E.busy = false;
+    const pr = programs();
+    const lutScale = ampLut();
+    for (let comp = 0; comp < 3; comp++){
+      E.c = 0;
+      pass(pr.noise, E.cplx[0], (bind, u) => gl.uniform1ui(u.uSeed, cfg.seed >>> 0));
+      run(fftPasses([], -1));
+      cplxPass(pr.disp, (bind, u) => { bind('uLut', E.lut); gl.uniform1i(u.uComp, comp); gl.uniform1f(u.uLutScale, lutScale); });
+      run(fftPasses([], 1));
+      gl.colorMask(comp === 0, comp === 1, comp === 2, false);
+      pass(pr.copyReal, E.grad, (bind, u) => { bind('uSrc', E.cplx[E.c]); gl.uniform1f(u.uScale, 1 / E.NG ** 3); });
+      gl.colorMask(true, true, true, true);
+    }
+    E.cur = 0;
+    transform(pr.ic, emptyVao, 0, (bind, u) => { bind('uPsi', E.grad); gl.uniform1f(u.uA, cfg.A); gl.uniform1f(u.uVfac, cfg.vfac); gl.uniform1f(u.uT0, cfg.T0); });
+    deposit(); run(smoothPasses());
+    E.gas = cfg.gas;
+  };
+
+  // One step as a list of GPU passes; the caller may spread them over frames. Positions change only in the last one.
+  // s: { kick, drift, kickH, dt, a, H, Tf, dtGyr, D }
+  E.stepPasses = (s) => {
+    const pr = programs(), q = [], G = E.gas, mfac = E.NG ** 3 / E.N;
+    q.push(deposit);
+    q.push(...smoothPasses());
+    q.push(() => { E.c = 0; pass(pr.pack, E.cplx[0], (bind, u) => { bind('uRho', E.rho); gl.uniform1f(u.uMfac, mfac); }); });
+    fftPasses(q, -1);
+    q.push(() => cplxPass(pr.green));
+    fftPasses(q, 1);
+    q.push(() => pass(pr.grad, E.grad, (bind, u) => { bind('uSrc', E.cplx[E.c]); gl.uniform1f(u.uScale, 1 / E.NG ** 3); }));
+    q.push(() => gasDeposit(s.a));
+    q.push(() => { if (!fence) reduceAndRead(s.a); });
+    q.push(() => pass(pr.gasCell, E.hA, (bind, u) => { bind('uGA', E.gA); bind('uGB', E.gB); gl.uniform1f(u.uMfac, mfac); gl.uniform1f(u.uKT, G.KT); }));
+    // the gravity FFT is finished, so a complex texture can hold (divergence, viscosity)
+    q.push(() => pass(pr.gasDiv, E.cplx[0], (bind, u) => { bind('uHA', E.hA); bind('uGA', E.gA); gl.uniform1f(u.uA, s.a); gl.uniform1f(u.uH, s.H); gl.uniform1f(u.uCq, G.Cq); gl.uniform1f(u.uMfac, mfac); }));
+    q.push(() => { pass(pr.gasForce, E.gB, (bind, u) => { bind('uHA', E.hA); bind('uDQ', E.cplx[0]); bind('uGA', E.gA); gl.uniform1f(u.uMfac, mfac); gl.uniform1f(u.uFloor, 0.1 * fb); }); E.busy = true; });
+    q.push(() => {
+      transform(pr.update, pr.updVao[E.cur], 1 - E.cur, (bind, u) => {
+        bind('uG', E.grad); bind('uHF', E.gB); bind('uHA', E.hA); bind('uGA', E.gA); bind('uRhoS', E.rhoS);
+        const f1 = (n, v) => gl.uniform1f(u[n], v);
+        f1('uKick', s.kick); f1('uDrift', s.drift); f1('uKickH', s.kickH); f1('uDt', s.dt); f1('uA', s.a); f1('uTf', s.Tf); f1('uDtGyr', s.dtGyr); f1('uD', s.D);
+        f1('uSdiff', G.Sdiff); f1('uEps', G.eps); f1('uK', G.K); f1('uCq', G.Cq); f1('uKT', G.KT); f1('uMfac', mfac); f1('uFb', fb); f1('uCool', G.cool); f1('uTsf', G.Tsf);
+      });
+      E.cur = 1 - E.cur; E.busy = false;
+    });
+    return q;
+  };
+  E.step = (s) => run(E.stepPasses(s));
+
+  E.header = () => header(E.NG, E.TX, E.NP);
+  E.mfac = () => E.NG ** 3 / E.N;
+  E.readParticles = () => {
+    const p = new Float32Array(3 * E.N), m = new Float32Array(3 * E.N), x = new Float32Array(4 * E.N);
+    gl.bindBuffer(gl.ARRAY_BUFFER, E.pos[E.cur]); gl.getBufferSubData(gl.ARRAY_BUFFER, 0, p);
+    gl.bindBuffer(gl.ARRAY_BUFFER, E.mom[E.cur]); gl.getBufferSubData(gl.ARRAY_BUFFER, 0, m);
+    gl.bindBuffer(gl.ARRAY_BUFFER, E.aux[E.cur]); gl.getBufferSubData(gl.ARRAY_BUFFER, 0, x);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    return { p, m, x };
+  };
+  E.ext = ext;
+  return E;
+};
+
+</script>
+<script>
+(() => {
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const small = Math.min(window.innerWidth, window.innerHeight) < 700 || (navigator.hardwareConcurrency || 8) <= 4;
+  const $ = id => document.getElementById(id);
+
+  /* ================================================================
+     Setup and units
+     ================================================================ */
+  // NP³ dark matter particles plus NP³ gas particles
+  const QUAL = { q0: { NP: 64, NG: 128 }, q1: { NP: 100, NG: 128 }, q2: { NP: 128, NG: 256 }, q3: { NP: 160, NG: 256 } };
+  const NSTEPS = 400, A_START = 1 / 51, S_START = Math.sqrt(A_START);
+  // steps are evenly spaced in √a: early times pass quickly, the last few billion years get the most frames
+  const aAt = n => { const s = S_START + (1 - S_START) * n / NSTEPS; return s * s; };
+  const stepAtZ = z => Math.max(0, Math.min(NSTEPS, Math.round((Math.sqrt(1 / (1 + z)) - S_START) / (1 - S_START) * NSTEPS)));
+  const P = Cosmo.P, L = P.boxMpc, MLY_PER_MPC = 3.26156;
+  const M_TOTAL = P.Om * 2.775e11 * P.h * P.h * L ** 3;  // solar masses in the box
+  const KMS = L * 100 * P.h;                              // box units × H0 → km/s
+  const GROWTH = { 1: Cosmo.growthTable(1), 0: Cosmo.growthTable(P.Ob / P.Om) };
+
+  const newSeed = () => ((Math.random() * 4294967295) >>> 0) || 1;
+  const State = {
+    q: small ? 'q0' : 'q2', seed: newSeed(), dm: true, playing: !reduceMotion, secs: 35,
+    mode: 3, slice: true, physical: false, boost: true, box: true, spin: !reduceMotion,
+    dmLayer: true, gasLayer: true, galLayer: true,
+    overlay: null, marker: null,
+  };
+
+  /* ================================================================
+     WebGL
+     ================================================================ */
+  const canvas = $('sky');
+  const gl = canvas.getContext('webgl2', { antialias: false, alpha: false, premultipliedAlpha: false, powerPreference: 'high-performance' });
+  let glOK = !!gl, eng = null;
+  function nogl(msg){ const d = document.createElement('div'); d.className = 'nogl'; d.textContent = msg; $('stage').appendChild(d); }
+  if (!gl) nogl('This simulation needs WebGL 2, which this browser or device has turned off.');
+  else {
+    try { eng = PMEngine(gl); }
+    catch (e){ console.error(e); glOK = false; nogl('This simulation needs floating-point render targets (WebGL 2 with EXT_color_buffer_float), which this graphics card or browser does not offer.'); }
+  }
+
+  const DRAW_VS = `
+  in vec3 aPos; in vec3 aMom; in vec4 aAux;
+  uniform mat4 uView, uProj; uniform sampler2D uRho;
+  uniform vec3 uCenter, uSliceN;
+  uniform float uDrift, uWorld, uSize, uBright, uMfac, uContrast, uVel, uSlice, uSliceHalf, uMaxPt, uJitter, uStarPx;
+  uniform int uMode, uLayer;   // layer 0 dark matter, 1 gas, 2 starlight
+  out vec3 vCol;
+  vec3 inferno(float t){
+    const vec3 c0 = vec3(0.0002189, 0.0016510, -0.0194809), c1 = vec3(0.1065134, 0.5639564, 3.9327123), c2 = vec3(11.6024931, -3.9728537, -15.9423942);
+    const vec3 c3 = vec3(-41.7039961, 17.4363995, 44.3541452), c4 = vec3(77.1629357, -33.4023589, -81.8073092), c5 = vec3(-71.3194282, 32.6260677, 73.2095198), c6 = vec3(25.1311262, -12.2426659, -23.0703250);
+    return clamp(c0 + t * (c1 + t * (c2 + t * (c3 + t * (c4 + t * (c5 + t * c6))))), 0.0, 1.0);
+  }
+  // gas temperature: 10⁴ K deep blue, 10⁵ violet, 10⁶ red, 10⁷ orange, 10⁸ white-hot
+  vec3 heat(float T){
+    float t = clamp((log(max(T, 1.0)) / 2.302585 - 4.0) / 4.0, -0.3, 1.0);
+    vec3 c0 = vec3(0.13, 0.20, 0.66), c1 = vec3(0.44, 0.24, 0.78), c2 = vec3(0.95, 0.32, 0.30), c3 = vec3(1.0, 0.68, 0.28), c4 = vec3(1.0, 0.96, 0.86);
+    vec3 c = t < 0.0 ? c0 * (1.0 + t * 0.8) : t < 0.25 ? mix(c0, c1, t / 0.25) : t < 0.5 ? mix(c1, c2, (t - 0.25) / 0.25) : t < 0.75 ? mix(c2, c3, (t - 0.5) / 0.25) : mix(c3, c4, (t - 0.75) / 0.25);
+    return c * mix(0.7, 2.6, clamp(t, 0.0, 1.0));
+  }
+  void offscreen(){ gl_Position = vec4(2.0, 2.0, 2.0, 1.0); gl_PointSize = 1.0; vCol = vec3(0.0); }
+  void main(){
+    float fs = aAux.y;
+    if (uLayer == 2 && fs < 0.002){ offscreen(); return; }
+    vec3 x = fract(aPos + uDrift * aMom);
+    // drawing only: nudge each dot by up to half a lattice spacing so the regular starting grid doesn't show as moiré
+    uint hh = uint(gl_VertexID) * 747796405u + 2891336453u; hh = ((hh >> ((hh >> 28u) + 4u)) ^ hh) * 277803737u;
+    vec3 jit = vec3(uvec3(hh, hh >> 10u, hh >> 20u) & 1023u) / 1023.0 - 0.5;
+    vec3 xd = x + jit * uJitter;
+    vec3 w = (fract(xd - uCenter + 0.5) - 0.5) * uWorld;   // the view is centered on uCenter; the box wraps around it
+    float fade = 1.0;
+    if (uSlice > 0.5){ float s = abs(dot(w, uSliceN)); fade = 1.0 - smoothstep(uSliceHalf * 0.6, uSliceHalf, s); }
+    if (fade <= 0.0){ offscreen(); return; }
+    float rho = max(cic(uRho, x).r * uMfac, 0.0);          // total density here, 1 = cosmic average
+    float lg = log(max(1.0 + (rho - 1.0) * uContrast, 0.05)) / 2.302585;
+    vec3 c;
+    float td = clamp((lg + 0.8) / 3.0, 0.0, 1.0), dens = mix(0.3, 1.9, pow(td, 1.3));
+    if (uLayer == 2){
+      // starlight: a crisp point per star-forming parcel, blue while young and gold once the stars have aged;
+      // it dims with distance like a real galaxy
+      float young = clamp(8.0 * aAux.z / max(fs, 1e-6), 0.0, 1.0);
+      vec4 p = uView * vec4(w, 1.0);
+      gl_Position = uProj * p;
+      gl_PointSize = uStarPx;
+      float d = max(-p.z, 1e-3);
+      vCol = mix(vec3(1.0, 0.58, 0.26), vec3(0.50, 0.68, 1.0), young) * sqrt(fs + 6.0 * aAux.z) * uBright * fade * min(1.0 / (d * d), 6.0);
+      return;
+    } else if (uMode == 3){
+      c = (uLayer == 1 ? heat(aAux.x) * (1.0 - fs) : vec3(0.16, 0.18, 0.26)) * dens;
+    } else if (uMode == 0){
+      // glow: faint violet in the voids, blue threads, gold-white knots
+      float t = clamp((lg + 0.8) / 3.0, 0.0, 1.0);
+      vec3 a = vec3(0.30, 0.26, 0.85), b = vec3(0.42, 0.62, 1.0), m = vec3(0.78, 0.86, 1.0), h = vec3(1.0, 0.80, 0.52);
+      c = t < 0.35 ? mix(a, b, t / 0.35) : t < 0.62 ? mix(b, m, (t - 0.35) / 0.27) : mix(m, h, (t - 0.62) / 0.38);
+      c *= mix(0.16, 2.4, pow(t, 1.3));
+    } else if (uMode == 1){
+      c = inferno(clamp((lg + 1.5) / 3.9, 0.0, 1.0)) * 1.7 + 0.02;
+    } else {
+      float v = clamp(length(aMom) * uVel / 1400.0, 0.0, 1.0); // peculiar speed, 0 to 1400 km/s
+      vec3 s0 = vec3(0.16, 0.26, 0.75), s1 = vec3(0.2, 0.75, 0.8), s2 = vec3(1.0, 0.85, 0.35), s3 = vec3(1.0, 0.35, 0.25);
+      c = v < 0.33 ? mix(s0, s1, v / 0.33) : v < 0.66 ? mix(s1, s2, (v - 0.33) / 0.33) : mix(s2, s3, (v - 0.66) / 0.34);
+      c *= 0.7 + 0.8 * v;
+    }
+    vec4 p = uView * vec4(w, 1.0);
+    gl_Position = uProj * p;
+    // each particle keeps its share of light at any zoom: tiny sprites get dimmer, big ones spread out
+    float sz = uSize / max(-p.z, 1e-4);
+    float ps = clamp(sz, 1.0, uMaxPt);
+    gl_PointSize = ps;
+    vCol = c * uBright * fade * min(sz * sz, ps * ps) / (ps * ps);
+  }`;
+  const DRAW_FS = `#version 300 es
+  precision mediump float;
+  in vec3 vCol; out vec4 o;
+  void main(){
+    vec2 q = gl_PointCoord * 2.0 - 1.0;
+    float r2 = dot(q, q);
+    if (r2 > 1.0) discard;
+    o = vec4(vCol * exp(-r2 * 3.0) * 1.6, 1.0);
+  }`;
+  const LN_VS = `#version 300 es
+  in vec3 aPos; uniform mat4 uView, uProj; uniform vec3 uOffset; uniform float uScale;
+  void main(){ gl_Position = uProj * uView * vec4(aPos * uScale + uOffset, 1.0); }`;
+  const LN_FS = `#version 300 es
+  precision mediump float; uniform vec3 uColor; out vec4 o;
+  void main(){ o = vec4(uColor, 1.0); }`;
+  const TM_VS = `#version 300 es
+  in vec2 p; out vec2 uv; void main(){ uv = p * 0.5 + 0.5; gl_Position = vec4(p, 0.0, 1.0); }`;
+  const TM_FS = `#version 300 es
+  precision highp float;
+  in vec2 uv; uniform sampler2D uTex; uniform vec2 uPx; uniform float uExp; out vec4 o;
+  void main(){
+    vec3 c = texture(uTex, uv).rgb;
+    vec3 g = vec3(0.0);
+    for (int i = 0; i < 8; i++){
+      float a = float(i) * 0.785398;
+      vec2 d = vec2(cos(a), sin(a));
+      g += texture(uTex, uv + d * uPx * 2.5).rgb * 0.55;
+      g += texture(uTex, uv + d * uPx * 7.0).rgb * 0.45;
+    }
+    c += g / 8.0 * 0.45;
+    c = 1.0 - exp(-c * uExp);
+    float v = smoothstep(1.3, 0.2, length(uv - 0.5) * 1.6);
+    c = c * (0.8 + 0.2 * v) + vec3(0.003, 0.004, 0.010) * v;
+    o = vec4(pow(c, vec3(1.0 / 2.2)), 1.0);
+  }`;
+
+  function program(vs, fs){
+    const mk = (t, s) => { const sh = gl.createShader(t); gl.shaderSource(sh, s); gl.compileShader(sh); if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(sh)); return sh; };
+    const p = gl.createProgram(); gl.attachShader(p, mk(gl.VERTEX_SHADER, vs)); gl.attachShader(p, mk(gl.FRAGMENT_SHADER, fs));
+    gl.linkProgram(p); if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+    const u = {}; const n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS);
+    for (let i = 0; i < n; i++){ const info = gl.getActiveUniform(p, i); u[info.name] = gl.getUniformLocation(p, info.name); }
+    return { p, u, a: name => gl.getAttribLocation(p, name) };
+  }
+
+  let LN, TM, vaoTm, vaoLn, bufLn, fbo, fboTex, floatOK = false;
+  let DR = null, drawVao = [null, null], drawKey = '';
+  if (glOK){
+    try {
+      LN = program(LN_VS, LN_FS); TM = program(TM_VS, TM_FS);
+      floatOK = !!gl.getExtension('EXT_color_buffer_float');
+      vaoTm = gl.createVertexArray(); gl.bindVertexArray(vaoTm);
+      const bt = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, bt);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+      gl.enableVertexAttribArray(TM.a('p')); gl.vertexAttribPointer(TM.a('p'), 2, gl.FLOAT, false, 0, 0);
+      vaoLn = gl.createVertexArray(); gl.bindVertexArray(vaoLn);
+      bufLn = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, bufLn);
+      gl.enableVertexAttribArray(LN.a('aPos')); gl.vertexAttribPointer(LN.a('aPos'), 3, gl.FLOAT, false, 0, 0);
+      gl.bindVertexArray(null); gl.bindBuffer(gl.ARRAY_BUFFER, null);
+      fbo = gl.createFramebuffer(); fboTex = gl.createTexture();
+    } catch (e){ console.error(e); glOK = false; nogl('The renderer could not start on this device.'); }
+  }
+
+  // the particle drawing program depends on the grid and particle counts, so it is rebuilt with them
+  function drawProgram(){
+    const key = eng.NG + ':' + eng.NP;
+    if (key !== drawKey){
+      drawVao.forEach(v => v && gl.deleteVertexArray(v));
+      DR = program(eng.header() + DRAW_VS, DRAW_FS);
+      drawVao = [0, 1].map(k => {
+        const v = gl.createVertexArray(); gl.bindVertexArray(v);
+        const attr = (buf, name, size) => { const loc = DR.a(name); if (loc < 0) return; gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, size, gl.FLOAT, false, 0, 0); };
+        attr(eng.pos[k], 'aPos', 3); attr(eng.mom[k], 'aMom', 3); attr(eng.aux[k], 'aAux', 4);
+        return v;
+      });
+      gl.bindVertexArray(null); gl.bindBuffer(gl.ARRAY_BUFFER, null);
+      drawKey = key;
+    }
+    return DR;
+  }
+
+  let W = 0, H = 0;
+  function resize(){
+    const dpr = Math.min(window.devicePixelRatio || 1, small ? 1.25 : 1.75);
+    W = Math.max(2, Math.round(canvas.clientWidth * dpr)); H = Math.max(2, Math.round(canvas.clientHeight * dpr));
+    canvas.width = W; canvas.height = H;
+    if (!glOK) return;
+    gl.bindTexture(gl.TEXTURE_2D, fboTex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, floatOK ? gl.RGBA16F : gl.RGBA8, W, H, 0, gl.RGBA, floatOK ? gl.HALF_FLOAT : gl.UNSIGNED_BYTE, null);
+    for (const [k, v] of [[gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_MAG_FILTER, gl.LINEAR], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]]) gl.texParameteri(gl.TEXTURE_2D, k, v);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, fboTex, 0);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  }
+  new ResizeObserver(resize).observe(canvas);
+
+  /* ================================================================
+     Simulation control
+     ================================================================ */
+  // ctl.done: steps completed (particles sit at a = aAt(done)); ctl.clock: displayed time in steps
+  const ctl = { done: 0, aph: A_START, clock: 0, queue: [], qTotal: 1, qTo: 0, qAh: A_START, jumpTo: null, onArrive: null };
+  let ready = false, buildToken = 0, sigmaCell = 1;
+  const fsrc = () => State.dm ? 1 : P.Ob / P.Om;
+
+  function startStep(to){
+    const s = Cosmo.stepParams(aAt(ctl.done), aAt(to), ctl.aph, fsrc());
+    // without dark matter's pull, small halos grow much more slowly too (same starting ripples)
+    const g = GROWTH[State.dm ? 1 : 0]; s.D = Cosmo.growth(A_START) * g.D(s.a) / g.D(A_START);
+    ctl.queue = eng.stepPasses(s);
+    ctl.qTotal = ctl.queue.length; ctl.qTo = to; ctl.qAh = s.ah;
+  }
+  function runPasses(n){
+    while (n-- > 0 && ctl.queue.length) ctl.queue.shift()();
+    if (!ctl.queue.length && ctl.qTo > ctl.done){ ctl.done = ctl.qTo; ctl.aph = ctl.qAh; }
+  }
+
+  // rms of the gridded linear density at a = 1, used to report how much faint ripples are boosted
+  function linearSigmaCell(NG, NP){
+    const kc = Math.min(NG, NP) / 2, sinc = t => t === 0 ? 1 : Math.sin(t) / t;
+    let s = 0;
+    for (let i = -kc; i <= kc; i++) for (let j = -kc; j <= kc; j++) for (let k = -kc; k <= kc; k++){
+      const n2 = i*i + j*j + k*k; if (n2 === 0 || n2 > kc*kc) continue;
+      const w = (sinc(Math.PI*i/NG) * sinc(Math.PI*j/NG) * sinc(Math.PI*k/NG)) ** 2;
+      s += Cosmo.power(2 * Math.PI * Math.sqrt(n2) / L) / L ** 3 * w * w;
+    }
+    return Math.sqrt(s);
+  }
+  const sigmaCache = {};
+
+  function start(then){
+    if (!glOK) return;
+    const q = QUAL[State.q];
+    ready = false;
+    const token = ++buildToken;
+    ctl.queue = []; ctl.jumpTo = null; ctl.onArrive = null;
+    eng.cancelCoarse(); coarseCb = null; lastClump = null; lastGas = null; history.length = 0; chartDirty = true;
+    const big = q.NP >= 128;
+    $('building').textContent = 'Seeding the universe…'; $('building').hidden = !big;
+    setTimeout(() => {
+      if (token !== buildToken) return;
+      try {
+        const g = GROWTH[State.dm ? 1 : 0], A = Cosmo.growth(A_START);
+        eng.init({ NP: q.NP, NG: q.NG, seed: State.seed, A, vfac: A_START * A_START * Cosmo.E(A_START) * g.f(A_START) * A, T0: Cosmo.T0, gas: Cosmo.gasParams(q.NG) });
+        drawProgram();
+      } catch (e){ console.error(e); $('building').textContent = 'The graphics card could not set this up. Try fewer particles.'; $('building').hidden = false; return; }
+      if (gl.getError() === gl.OUT_OF_MEMORY){ $('building').textContent = 'Not enough graphics memory for that many particles. Choose fewer.'; $('building').hidden = false; return; }
+      const key = q.NG + ':' + q.NP;
+      sigmaCell = sigmaCache[key] || (sigmaCache[key] = linearSigmaCell(q.NG, q.NP));
+      Object.assign(ctl, { done: 0, aph: A_START, clock: 0, queue: [], qTo: 0 });
+      $('building').hidden = true;
+      ready = true;
+      updateFacts();
+      then && then();
+    }, big ? 30 : 0);
+  }
+
+  function jumpToStep(n, then){
+    if (!ready){ return; }
+    if (n < ctl.done){ start(() => jumpToStep(n, then)); return; }
+    ctl.jumpTo = n; ctl.onArrive = then || null;
+  }
+  const jumpStride = () => eng.NG >= 256 ? 8 : 10, jumpStepsPerFrame = () => eng.NG >= 256 ? 1 : 4;
+  // GPU passes allowed per frame, adjusted to keep the frame rate up; if the card can't keep up, the clock slows instead
+  let passBudget = 30;
+  function tuneBudget(dt){ passBudget = Math.max(6, Math.min(400, passBudget * (dt < 0.0185 ? 1.08 : 0.85))); }
+
+  function advance(dt){
+    if (!ready) return;
+    if (ctl.jumpTo !== null){
+      let budget = jumpStepsPerFrame();
+      while (budget > 0){
+        if (!ctl.queue.length){
+          if (ctl.done >= ctl.jumpTo){
+            ctl.jumpTo = null; ctl.clock = ctl.done; coarseAt = -1e9; coarseClock = -1;
+            const f = ctl.onArrive; ctl.onArrive = null; f && f();
+            return;
+          }
+          startStep(Math.min(ctl.done + jumpStride(), ctl.jumpTo));
+          budget--;
+        }
+        runPasses(Infinity);
+      }
+      ctl.clock = ctl.done;
+      return;
+    }
+    if (!State.playing) return;
+    let budget = Math.round(passBudget);
+    ctl.clock = Math.min(NSTEPS, ctl.clock + NSTEPS / State.secs * dt);
+    while (ctl.done < Math.floor(ctl.clock) && budget > 0){
+      if (!ctl.queue.length) startStep(ctl.done + 1);
+      const n = Math.min(budget, ctl.queue.length); budget -= n;
+      runPasses(n);
+    }
+    if (ctl.done < Math.floor(ctl.clock)) ctl.clock = ctl.done + 0.999;
+    if (ctl.done < NSTEPS){
+      if (!ctl.queue.length) startStep(ctl.done + 1);
+      const want = Math.ceil((ctl.clock - ctl.done) * ctl.qTotal), did = ctl.qTotal - ctl.queue.length;
+      runPasses(Math.min(want - did, ctl.qTotal - did - 1, budget)); // the last pass moves the particles; it waits for its turn
+    }
+    if (ctl.clock >= NSTEPS){ State.playing = false; syncPlay(); }
+  }
+
+  /* ================================================================
+     Clusters and a home like ours, from the coarse mass grid
+     ================================================================ */
+  // coarse readbacks arrive every step or so; each gives the mass grid plus totals for stars and hot gas
+  let coarseCb = null, coarseNeedA = 0, lastClump = null, lastGas = null, clumpAt = -1e9;
+  const history = []; let chartDirty = true;
+  function withCoarse(cb){ coarseCb = cb; coarseNeedA = aAt(ctl.done); eng.cancelCoarse(); eng.requestCoarse(coarseNeedA); }
+  function pollCoarse(now){
+    if (!ready) return;
+    const c = eng.pollCoarse();
+    if (c){
+      lastGas = c;
+      if (!history.length || c.a > history[history.length - 1].a){ history.push({ a: c.a, stars: c.stars }); chartDirty = true; }
+      if (coarseCb && c.a >= coarseNeedA * 0.9999){ lastClump = heaviest(c.mass); clumpAt = now; const f = coarseCb; coarseCb = null; f(c.mass); }
+      else if (now - clumpAt > 1000){ lastClump = heaviest(c.mass); clumpAt = now; }
+    } else if (coarseCb) eng.requestCoarse(coarseNeedA);
+    else if (!State.playing && ctl.jumpTo === null && (!lastGas || lastGas.a < aAt(ctl.done) * 0.9999)) eng.requestCoarse(aAt(ctl.done));
+  }
+  const NCg = () => eng.NC;
+  function heaviest(c){
+    const n = NCg(), M = n - 1, id = (i, j, k) => (i & M) + n * ((j & M) + n * (k & M));
+    let best = -1, bi = 0, bj = 0, bk = 0;
+    for (let k = 0; k < n; k++) for (let j = 0; j < n; j++) for (let i = 0; i < n; i++){
+      const s = c[id(i,j,k)] + c[id(i+1,j,k)] + c[id(i,j+1,k)] + c[id(i+1,j+1,k)] + c[id(i,j,k+1)] + c[id(i+1,j,k+1)] + c[id(i,j+1,k+1)] + c[id(i+1,j+1,k+1)];
+      if (s > best){ best = s; bi = i; bj = j; bk = k; }
+    }
+    const w = [0, 0, 0];
+    for (let d = 0; d < 8; d++){
+      const di = d & 1, dj = (d >> 1) & 1, dk = (d >> 2) & 1, m = c[id(bi+di, bj+dj, bk+dk)];
+      w[0] += m * (bi + di + 0.5); w[1] += m * (bj + dj + 0.5); w[2] += m * (bk + dk + 0.5);
+    }
+    const pos = w.map(v => ((v / best / n) % 1 + 1) % 1);
+    return { mass: best / eng.N * M_TOTAL, pos };
+  }
+  // a modest group ~16 Mpc from the heaviest cluster, next to a void (the Local Group sits ~16.5 Mpc from Virgo)
+  function homeSpot(c, cl){
+    const n = NCg(), M = n - 1, id = (i, j, k) => (i & M) + n * ((j & M) + n * (k & M));
+    const mean = eng.N / n ** 3, cell = L / n;
+    const offs = [];
+    for (let k = -3; k <= 3; k++) for (let j = -3; j <= 3; j++) for (let i = -3; i <= 3; i++){ const r = Math.hypot(i, j, k); if (r >= 1.9 && r <= 3.2) offs.push([i, j, k]); }
+    let best = null;
+    for (const [dMin, dMax, needVoid] of [[11, 22, 0.3], [9, 26, 0.5], [6, 34, 2]]){
+      for (let k = 0; k < n; k++) for (let j = 0; j < n; j++) for (let i = 0; i < n; i++){
+        const p = [(i + 0.5) / n, (j + 0.5) / n, (k + 0.5) / n];
+        const d = Math.hypot(...p.map((v, a) => { let x = v - cl.pos[a]; x -= Math.round(x); return x; })) * L;
+        if (d < dMin || d > dMax) continue;
+        const r = c[id(i,j,k)] / mean;
+        if (r < 1.2 || r > 12) continue;
+        let vmin = Infinity; for (const [a, b, e] of offs) vmin = Math.min(vmin, c[id(i+a, j+b, k+e)] / mean);
+        if (vmin > needVoid) continue;
+        const score = -Math.abs(d - 16.5) / 3 - Math.abs(Math.log(r / 3)) - 2 * vmin;
+        if (!best || score > best.score) best = { score, pos: p, d };
+      }
+      if (best) break;
+    }
+    return best;
+  }
+
+  /* ================================================================
+     Camera
+     ================================================================ */
+  const HOME = { yaw: 0.75, pitch: 0.38, dist: 1.85 };
+  const cam = { ...HOME }, tgt = { ...HOME };
+  const center = [0.5, 0.5, 0.5];   // point of the (periodic) box shown at the middle of the view
+  let lastInteract = -1e9;
+  function setCam(c, immediate){ Object.assign(tgt, c); if (immediate || reduceMotion) Object.assign(cam, tgt); }
+  function setCenter(p){ center[0] = p[0]; center[1] = p[1]; center[2] = p[2]; }
+  function resetView(){ setCenter([0.5, 0.5, 0.5]); setCam({ pitch: HOME.pitch, dist: HOME.dist }); }
+
+  const pointers = new Map(); let pinch = null;
+  const hideHint = () => { $('hint').hidden = true; };
+  canvas.addEventListener('pointerdown', e => { canvas.setPointerCapture(e.pointerId); pointers.set(e.pointerId, { x: e.clientX, y: e.clientY }); lastInteract = performance.now(); hideHint();
+    if (pointers.size === 2){ const [a, b] = [...pointers.values()]; pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), dist: tgt.dist }; } });
+  canvas.addEventListener('pointermove', e => {
+    if (!pointers.has(e.pointerId)) return;
+    const prev = pointers.get(e.pointerId), cur = { x: e.clientX, y: e.clientY };
+    pointers.set(e.pointerId, cur); lastInteract = performance.now();
+    if (pointers.size === 1){
+      tgt.yaw -= (cur.x - prev.x) * 0.005; tgt.pitch = Math.max(-1.5, Math.min(1.5, tgt.pitch + (cur.y - prev.y) * 0.004));
+      cam.yaw = tgt.yaw; cam.pitch = tgt.pitch;
+    } else if (pointers.size === 2 && pinch){
+      const [a, b] = [...pointers.values()];
+      tgt.dist = cam.dist = Math.max(0.04, Math.min(6, pinch.dist * pinch.d / Math.max(1, Math.hypot(a.x - b.x, a.y - b.y))));
+    }
+  });
+  const up = e => { pointers.delete(e.pointerId); pinch = null; };
+  canvas.addEventListener('pointerup', up); canvas.addEventListener('pointercancel', up);
+  canvas.addEventListener('wheel', e => { e.preventDefault(); hideHint(); lastInteract = performance.now(); tgt.dist = cam.dist = Math.max(0.04, Math.min(6, tgt.dist * Math.exp(e.deltaY * 0.0012))); }, { passive: false });
+
+  const cross = (a, b) => [a[1]*b[2] - a[2]*b[1], a[2]*b[0] - a[0]*b[2], a[0]*b[1] - a[1]*b[0]];
+  const dot = (a, b) => a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
+  const norm = a => { const l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0]/l, a[1]/l, a[2]/l]; };
+  function lookAt(eye, at){
+    const f = norm([at[0]-eye[0], at[1]-eye[1], at[2]-eye[2]]);
+    const s = norm(cross(f, [0, 1, 0])), u = cross(s, f);
+    return new Float32Array([s[0],u[0],-f[0],0, s[1],u[1],-f[1],0, s[2],u[2],-f[2],0, -dot(s,eye),-dot(u,eye),dot(f,eye),1]);
+  }
+  function persp(fovy, asp, n, f){
+    const t = 1 / Math.tan(fovy / 2);
+    return new Float32Array([t/asp,0,0,0, 0,t,0,0, 0,0,(f+n)/(n-f),-1, 0,0,2*f*n/(n-f),0]);
+  }
+  const mulv = (m, v) => [0, 1, 2, 3].map(r => m[r]*v[0] + m[4+r]*v[1] + m[8+r]*v[2] + m[12+r]*v[3]);
+  // box coordinates → view-centered world coordinates
+  const toWorld = (p, scale) => p.map((v, a) => { let x = v - center[a]; x -= Math.round(x); return x * scale; });
+
+  /* ================================================================
+     Overlays: real structures at true size, and the home marker
+     ================================================================ */
+  const GLY = 1000 / (L * MLY_PER_MPC);  // one billion light-years in box units
+  const circle = (r, plane, seg = 128) => {
+    const out = [];
+    for (let i = 0; i <= seg; i++){
+      const t = i / seg * Math.PI * 2, c = Math.cos(t) * r, s = Math.sin(t) * r;
+      out.push(plane === 0 ? [c, s, 0] : plane === 1 ? [0, c, s] : [c, 0, s]);
+    }
+    return out;
+  };
+  const strip = pts => { const a = []; for (let i = 0; i < pts.length - 1; i++) a.push(...pts[i], ...pts[i + 1]); return a; };
+  const sphereLines = r => [...strip(circle(r, 0)), ...strip(circle(r, 1)), ...strip(circle(r, 2))];
+  const BOX_LINES = (() => {
+    const a = [], c = [-0.5, 0.5];
+    for (const x of c) for (const y of c){ a.push(x, y, -0.5, x, y, 0.5); a.push(x, -0.5, y, x, 0.5, y); a.push(-0.5, x, y, 0.5, x, y); }
+    return new Float32Array(a);
+  })();
+  const SIZES = {
+    sgw:  { label: 'Sloan Great Wall', note: '1.37 billion ly long', lines: () => { const h = 1.37 * GLY / 2; return [-h, 0, 0, h, 0, 0, -h, -0.012, 0, -h, 0.012, 0, h, -0.012, 0, h, 0.012, 0]; }, dist: 2.3 },
+    cfa:  { label: 'CfA2 Great Wall', note: '500 × 300 million ly', lines: () => { const w = 0.5 * GLY / 2, h = 0.3 * GLY / 2; return [-w,-h,0, w,-h,0, w,-h,0, w,h,0, w,h,0, -w,h,0, -w,h,0, -w,-h,0]; }, dist: 1.6 },
+    lan:  { label: 'Laniakea Supercluster', note: '520 million ly across', lines: () => sphereLines(0.52 * GLY / 2), dist: 1.8 },
+    boo:  { label: 'Boötes Void', note: '330 million ly across', lines: () => sphereLines(0.33 * GLY / 2), dist: 1.5 },
+    coma: { label: 'Coma Cluster', note: '20 million ly across', lines: () => sphereLines(0.02 * GLY / 2), dist: 0.1, atCluster: true },
+  };
+
+  /* ================================================================
+     Readouts
+     ================================================================ */
+  const SUP = { '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' };
+  const sci = m => { const e = Math.floor(Math.log10(m)); return `${(m / 10 ** e).toFixed(1)} × 10${String(e).split('').map(ch => SUP[ch]).join('')}`; };
+  const fmtGyr = t => t < 1 ? `${Math.round(t * 1000)} million years` : `${t.toFixed(2)} billion years`;
+  const fmtLy = mly => mly < 999.5 ? `${mly < 100 ? mly.toFixed(1) : Math.round(mly)} million ly` : `${(mly / 1000).toFixed(2)} billion ly`;
+  const PHASES = [
+    [30, 'The smooth universe', 'ripples of a few percent'],
+    [12, 'Ripples deepen', 'before the first stars'],
+    [5, 'First knots and threads', 'the first galaxies would form here'],
+    [2, 'The web takes shape', 'walls break into filaments'],
+    [0.6, 'Clusters assemble', 'matter drains out of the voids'],
+    [0.02, 'Dark energy takes over', 'the web slows its growth'],
+    [-1, 'Today', '13.7 billion years after the Big Bang'],
+  ];
+  function ripplesBoost(a){
+    // boosting is for seeing faint early ripples; it stays off in the no-dark-matter run so that comparison is fair
+    if (!State.boost || State.mode === 2 || !State.dm) return 1;
+    const g = GROWTH[State.dm ? 1 : 0], sig = sigmaCell * Cosmo.growth(A_START) * g.D(a) / g.D(A_START);
+    return Math.max(1, Math.min(40, 0.8 / sig));
+  }
+  let lastPhase = '';
+  function updateReadout(a){
+    const z = 1 / a - 1;
+    $('rAge').textContent = fmtGyr(Cosmo.age(a));
+    $('rZ').textContent = z >= 10 ? z.toFixed(1) : Math.max(0, z).toFixed(2);
+    $('rA').textContent = `${a.toFixed(a < 0.1 ? 4 : 3)} · 1/${(1 / a).toFixed(1)}`;
+    $('rBox').textContent = `${(a * L).toFixed(a * L < 100 ? 1 : 0)} Mpc · ${fmtLy(a * L * MLY_PER_MPC)}`;
+    $('rClump').textContent = lastClump ? `${sci(lastClump.mass)} suns` : '—';
+    $('rStars').textContent = lastGas ? `${(lastGas.stars * 100).toFixed(lastGas.stars < 0.01 ? 2 : 1)}%` : '—';
+    $('rHot').textContent = lastGas ? `${(lastGas.hot5 * 100).toFixed(1)}%` : '—';
+    const b = ripplesBoost(a);
+    $('rBoostL').hidden = $('rBoost').hidden = b < 1.05;
+    $('rBoost').textContent = `${b.toFixed(b < 10 ? 1 : 0)}× stronger`;
+    const ph = PHASES.find(p => z > p[0]);
+    const txt = ph[1], sm = State.dm ? ph[2] : 'gravity of ordinary matter only';
+    if (txt + sm !== lastPhase){ $('phaseText').textContent = txt; $('phaseSmall').textContent = sm; lastPhase = txt + sm; }
+  }
+  function updateFacts(){
+    const q = QUAL[State.q], fb = P.Ob / P.Om, n = q.NP ** 3;
+    const fmtM = m => `about ${m >= 1e12 ? (m / 1e12).toFixed(1) + ' trillion' : Math.round(m / 1e10) * 10 + ' billion'} suns`;
+    $('dotMass').textContent = fmtM(M_TOTAL * (1 - fb) / n);
+    $('gasMass').textContent = fmtM(M_TOTAL * fb / n);
+    $('gridFact').textContent = `${q.NG}³ = ${(q.NG ** 3 / 1e6).toFixed(1)} million cells`;
+  }
+
+  /* ================================================================
+     Star-formation history chart (SVG)
+     ================================================================ */
+  const T_NOW = Cosmo.age(1), MB = P.Ob * 2.775e11 * P.h * P.h * L ** 3, VOL = L ** 3;
+  // Madau & Dickinson (2014) fit to observations, converted to the Chabrier stellar mix (× 0.63)
+  const md14 = z => 0.015 * (1 + z) ** 2.7 / (1 + ((1 + z) / 2.9) ** 5.6) * 0.63;
+  const zOfAge = (() => {
+    const tab = []; for (let i = 0; i <= 600; i++){ const a = 0.01 + 0.99 * i / 600; tab.push([Cosmo.age(a), a]); }
+    return t => { let i = 1; while (i < tab.length - 1 && tab[i][0] < t) i++; const [t0, a0] = tab[i - 1], [t1, a1] = tab[i]; return 1 / (a0 + (a1 - a0) * (t - t0) / (t1 - t0)) - 1; };
+  })();
+  // star-formation rate from the growth of the star fraction, over windows of at least 0.3 billion years
+  function simSeries(){
+    const out = []; let prev = null;
+    for (const h of history){
+      const t = Cosmo.age(h.a);
+      if (!prev){ prev = { t, s: h.stars }; continue; }
+      if (t - prev.t >= 0.3){ out.push([(t + prev.t) / 2, (h.stars - prev.s) * MB / ((t - prev.t) * 1e9) / VOL]); prev = { t, s: h.stars }; }
+    }
+    return out;
+  }
+  const chartSvg = $('sfrChart'), chartTip = $('sfrTip');
+  let chartGeom = null, simCache = [];
+  function drawChart(aNow){
+    chartDirty = false;
+    const Wc = Math.max(300, chartSvg.clientWidth || 600), Hc = 300, m = { l: 48, r: 18, t: 30, b: 42 };
+    const X = t => m.l + (Wc - m.l - m.r) * t / 14, Y0 = 0.12, Y = v => m.t + (Hc - m.t - m.b) * (1 - Math.max(0, Math.min(v, Y0)) / Y0);
+    const sim = simSeries(); simCache = sim;
+    const obs = []; for (let t = 0.4; t <= T_NOW + 1e-9; t += 0.1) obs.push([t, md14(zOfAge(t))]);
+    const path = pts => pts.map((p, i) => `${i ? 'L' : 'M'}${X(p[0]).toFixed(1)},${Y(p[1]).toFixed(1)}`).join('');
+    let g = '';
+    for (let v = 0; v <= Y0 + 1e-9; v += 0.02) g += `<line x1="${m.l}" x2="${Wc - m.r}" y1="${Y(v)}" y2="${Y(v)}" class="grid"/><text x="${m.l - 8}" y="${Y(v) + 4}" class="tick" text-anchor="end">${v.toFixed(2)}</text>`;
+    for (let t = 0; t <= 14; t += 2) g += `<text x="${X(t)}" y="${Hc - m.b + 18}" class="tick" text-anchor="middle">${t}</text>`;
+    g += `<text x="${(m.l + Wc - m.r) / 2}" y="${Hc - 4}" class="axis" text-anchor="middle">age of the universe, billions of years</text>`;
+    for (const z of [6, 3, 2, 1, 0.5]){ const t = Cosmo.age(1 / (1 + z)); g += `<line x1="${X(t)}" x2="${X(t)}" y1="${m.t - 6}" y2="${m.t}" class="zt"/><text x="${X(t)}" y="${m.t - 10}" class="tick" text-anchor="middle">z ${z}</text>`; }
+    const tNow = Cosmo.age(aNow);
+    g += `<line x1="${X(tNow)}" x2="${X(tNow)}" y1="${m.t}" y2="${Hc - m.b}" class="now"/>`;
+    g += `<path d="${path(obs)}" class="obs"/>`;
+    if (sim.length > 1) g += `<path d="${path(sim)}" class="sim"/>`;
+    const oEnd = obs[obs.length - 1];
+    g += `<text x="${X(oEnd[0]) - 4}" y="${Y(oEnd[1]) - 12}" class="lbl" text-anchor="end">observed</text>`;
+    if (sim.length > 1){ const sEnd = sim[sim.length - 1]; g += `<text x="${Math.min(X(sEnd[0]) + 8, Wc - m.r - 96)}" y="${Y(sEnd[1]) - 12}" class="lbl">this universe</text>`; }
+    g += `<line id="sfrCross" x1="0" x2="0" y1="${m.t}" y2="${Hc - m.b}" class="cross" visibility="hidden"/>`;
+    chartSvg.setAttribute('viewBox', `0 0 ${Wc} ${Hc}`); chartSvg.setAttribute('height', Hc);
+    chartSvg.innerHTML = g;
+    chartGeom = { X, m, Wc, Hc };
+    if (sim.length > 2){
+      const pk = sim.reduce((b, p) => p[1] > b[1] ? p : b, sim[0]);
+      $('sfrPeak').textContent = `${pk[1].toFixed(3)} at ${pk[0].toFixed(1)} billion years (z ≈ ${zOfAge(pk[0]).toFixed(1)})`;
+    } else $('sfrPeak').textContent = 'not reached yet';
+    $('sfrStars').textContent = lastGas ? `${(lastGas.stars * 100).toFixed(1)}%` : '—';
+    $('sfrHot').textContent = lastGas ? `${(lastGas.hot5 * 100).toFixed(0)}%` : '—';
+    const rows = [];
+    for (let t = 1; t <= 13; t++){ const near = sim.find(p => Math.abs(p[0] - t) < 0.35); rows.push(`<tr><td class="num">${t}</td><td class="num">${zOfAge(t).toFixed(2)}</td><td class="num">${md14(zOfAge(t)).toFixed(3)}</td><td class="num">${near ? near[1].toFixed(3) : '—'}</td></tr>`); }
+    $('sfrRows').innerHTML = rows.join('');
+  }
+  chartSvg.addEventListener('pointermove', e => {
+    if (!chartGeom) return;
+    const r = chartSvg.getBoundingClientRect(), x = (e.clientX - r.left) * chartGeom.Wc / r.width;
+    const t = Math.max(0.4, Math.min(T_NOW, (x - chartGeom.m.l) / (chartGeom.Wc - chartGeom.m.l - chartGeom.m.r) * 14));
+    const z = zOfAge(t), near = simCache.reduce((b, p) => !b || Math.abs(p[0] - t) < Math.abs(b[0] - t) ? p : b, null);
+    const cross = document.getElementById('sfrCross');
+    cross.setAttribute('x1', chartGeom.X(t)); cross.setAttribute('x2', chartGeom.X(t)); cross.setAttribute('visibility', 'visible');
+    $('tipAge').textContent = `${t.toFixed(1)} billion years · z ${z.toFixed(2)}`;
+    $('tipObs').textContent = md14(z).toFixed(3);
+    $('tipSim').textContent = near && Math.abs(near[0] - t) < 0.4 ? near[1].toFixed(3) : '—';
+    chartTip.hidden = false;
+    chartTip.style.left = Math.min(r.width - 200, Math.max(0, e.clientX - r.left + 14)) + 'px';
+  });
+  chartSvg.addEventListener('pointerleave', () => { chartTip.hidden = true; const c = document.getElementById('sfrCross'); if (c) c.setAttribute('visibility', 'hidden'); });
+
+  /* ================================================================
+     Frame loop
+     ================================================================ */
+  let visible = true, tPrev = performance.now(), chartAt = -1e9;
+  new IntersectionObserver(es => { visible = es[0].isIntersecting; }, { threshold: 0.01 }).observe(canvas);
+
+  function drawLines(data, color, view, proj, offset, scale){
+    gl.useProgram(LN.p); gl.bindVertexArray(vaoLn);
+    gl.uniformMatrix4fv(LN.u.uView, false, view); gl.uniformMatrix4fv(LN.u.uProj, false, proj);
+    gl.uniform3fv(LN.u.uOffset, offset); gl.uniform1f(LN.u.uScale, scale); gl.uniform3fv(LN.u.uColor, color);
+    gl.bindBuffer(gl.ARRAY_BUFFER, bufLn); gl.bufferData(gl.ARRAY_BUFFER, data, gl.STREAM_DRAW);
+    gl.drawArrays(gl.LINES, 0, data.length / 3);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+  }
+
+  function frame(now){
+    requestAnimationFrame(frame);
+    const dt = Math.min((now - tPrev) / 1000, 0.1); tPrev = now;
+    if (!visible || document.hidden || !ready || !glOK) return;
+    tuneBudget(dt);
+    advance(dt);
+    pollCoarse(now);
+    const aDisp = aAt(ctl.jumpTo !== null ? ctl.done : ctl.clock), aDone = aAt(ctl.done);
+    updateReadout(aDisp);
+
+    // camera
+    if (State.spin && now - lastInteract > 4000) tgt.yaw += dt * 0.04;
+    const k = 1 - Math.exp(-dt * 2.4);
+    cam.pitch += (tgt.pitch - cam.pitch) * k; cam.dist *= Math.exp((Math.log(tgt.dist) - Math.log(cam.dist)) * k); cam.yaw += (tgt.yaw - cam.yaw) * Math.min(1, 3 * k);
+    const cp = Math.cos(cam.pitch), dist = cam.dist * Math.max(1, 1.25 * H / W); // step back on tall, narrow screens
+    const eye = [dist * cp * Math.cos(cam.yaw), dist * Math.sin(cam.pitch), dist * cp * Math.sin(cam.yaw)];
+    const view = lookAt(eye, [0, 0, 0]), proj = persp(0.8, W / H, Math.max(0.0005, dist * 0.01), dist + 8);
+    const world = State.physical ? aDisp : 1;
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+    gl.viewport(0, 0, W, H);
+    gl.clearColor(0, 0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);
+
+    const D = drawProgram();
+    gl.useProgram(D.p); gl.bindVertexArray(drawVao[eng.cur]);
+    gl.uniformMatrix4fv(D.u.uView, false, view); gl.uniformMatrix4fv(D.u.uProj, false, proj);
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, eng.rhoS.t); gl.uniform1i(D.u.uRho, 0);
+    gl.uniform3fv(D.u.uCenter, center);
+    gl.uniform3fv(D.u.uSliceN, norm(eye));
+    gl.uniform1f(D.u.uSlice, State.slice ? 1 : 0); gl.uniform1f(D.u.uSliceHalf, 0.045 * world);
+    gl.uniform1f(D.u.uDrift, aDisp > aDone ? Cosmo.driftFac(aDone, aDisp) : 0);
+    gl.uniform1f(D.u.uWorld, world);
+    gl.uniform1f(D.u.uSize, 0.7 * H / eng.NP * world);
+    gl.uniform1f(D.u.uMaxPt, 10);
+    gl.uniform1f(D.u.uJitter, (State.dm ? 0.45 + 0.55 * Math.max(0, 1 - (aDisp - A_START) / 0.3) : 0.8) / eng.NP);
+    const bright = 0.9 / eng.NP * (floatOK ? 1 : 2) * (State.slice ? 2.2 : 1);
+    gl.uniform1f(D.u.uMfac, eng.mfac());
+    gl.uniform1f(D.u.uContrast, ripplesBoost(aDisp));
+    gl.uniform1f(D.u.uVel, KMS / aDisp);
+    gl.uniform1i(D.u.uMode, State.mode);
+    // three layers from the same buffers: dark matter, gas, and the starlight of gas turned into stars
+    const both = State.dmLayer && State.gasLayer && State.mode !== 3;
+    const layer = (id, first, weight) => { gl.uniform1i(D.u.uLayer, id); gl.uniform1f(D.u.uBright, bright * weight); gl.drawArrays(gl.POINTS, first, eng.NDM); };
+    if (State.dmLayer) layer(0, 0, (both ? 0.6 : 1) * (State.galLayer && State.mode !== 3 ? 0.55 : 1));
+    if (State.gasLayer) layer(1, eng.NDM, both ? 0.6 : 1);
+    gl.uniform1f(D.u.uStarPx, Math.max(1.5, H / 520));
+    if (State.galLayer) layer(2, eng.NDM, 120 * eng.NP / 128 * (State.slice ? 1 : 0.35) / (State.slice ? 2.2 : 1));
+
+    if (State.box) drawLines(BOX_LINES, [0.05, 0.055, 0.09], view, proj, [0, 0, 0], world);
+    let tagAt = null, tagHtml = '';
+    if (State.overlay && !State.physical){
+      const o = State.overlay;
+      drawLines(o.data, [0.55, 0.42, 0.22], view, proj, toWorld(o.at, 1), 1);
+      tagAt = [o.at, o.top]; tagHtml = `<b>${o.label}</b><br>${o.note}`;
+    }
+    if (State.marker && !State.physical){
+      const m = State.marker;
+      drawLines(m.data, [0.6, 0.5, 0.25], view, proj, toWorld(m.at, 1), 1);
+      tagAt = [m.at, m.top]; tagHtml = m.html;
+    }
+    gl.disable(gl.BLEND);
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.viewport(0, 0, W, H);
+    gl.useProgram(TM.p); gl.bindVertexArray(vaoTm);
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, fboTex);
+    gl.uniform1i(TM.u.uTex, 0); gl.uniform2f(TM.u.uPx, 1 / W, 1 / H); gl.uniform1f(TM.u.uExp, 1.5);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.bindVertexArray(null);
+
+    if ((chartDirty && now - chartAt > 500) || now - chartAt > 1000){ drawChart(aDisp); chartAt = now; }
+
+    // label next to the overlay
+    const tag = $('tag');
+    if (tagAt){
+      const w = toWorld(tagAt[0], 1); w[1] += tagAt[1];
+      const c = mulv(proj, mulv(view, [...w, 1]));
+      if (c[3] > 0){
+        const x = (c[0] / c[3] * 0.5 + 0.5) * canvas.clientWidth, y = (0.5 - c[1] / c[3] * 0.5) * canvas.clientHeight;
+        tag.style.left = Math.min(x, canvas.clientWidth - 200) + 'px'; tag.style.top = Math.max(20, y) + 'px';
+        if (tag.innerHTML !== tagHtml) tag.innerHTML = tagHtml;
+        tag.hidden = false;
+      } else tag.hidden = true;
+    } else tag.hidden = true;
+  }
+
+  /* ================================================================
+     Controls
+     ================================================================ */
+  const speedEl = $('speed');
+  function syncSpeed(){
+    State.secs = 120 * Math.pow(6 / 120, +speedEl.value / 100);
+    $('speedOut').textContent = `13.7 billion years in ${State.secs < 10 ? State.secs.toFixed(1) : Math.round(State.secs)} s`;
+  }
+  speedEl.addEventListener('input', syncSpeed); syncSpeed();
+
+  const playBtn = $('playBtn');
+  function syncPlay(){ playBtn.textContent = State.playing ? 'Pause' : 'Play'; playBtn.setAttribute('aria-pressed', String(State.playing)); }
+  playBtn.addEventListener('click', () => {
+    if (!State.playing && ctl.clock >= NSTEPS){ start(); State.playing = true; }
+    else State.playing = !State.playing;
+    syncPlay();
+  });
+  const clearExtras = () => { State.overlay = null; State.marker = null; };
+  $('restartBtn').addEventListener('click', () => { clearExtras(); State.playing = true; syncPlay(); start(); });
+  $('newBtn').addEventListener('click', () => { clearExtras(); State.seed = newSeed(); State.playing = true; syncPlay(); start(); });
+
+  function syncChips(){
+    document.querySelectorAll('.chip[data-key]').forEach(b => b.setAttribute('aria-pressed', String(!!State[b.dataset.key])));
+    document.querySelectorAll('#modes .chip').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.mode === State.mode)));
+    document.querySelectorAll('#gravity .chip').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.dm === '1') === State.dm)));
+    document.querySelectorAll('#counts .chip').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.q === State.q)));
+  }
+  document.querySelectorAll('.chip[data-key]').forEach(b => b.addEventListener('click', () => { State[b.dataset.key] = !State[b.dataset.key]; syncChips(); }));
+  document.querySelectorAll('#modes .chip').forEach(b => b.addEventListener('click', () => { State.mode = +b.dataset.mode; syncChips(); }));
+  $('resetView').addEventListener('click', () => { resetView(); clearExtras(); });
+  function setDM(dm, then){
+    if (State.dm === dm){ then && then(); return false; }
+    State.dm = dm; syncChips(); clearExtras(); start(then); return true;
+  }
+  document.querySelectorAll('#gravity .chip').forEach(b => b.addEventListener('click', () => {
+    const dm = b.dataset.dm === '1';
+    if (dm === State.dm) return;
+    setCaption(dm ? CAPTIONS.dmBack : CAPTIONS.nodm);
+    const target = Math.max(ctl.done, 0);
+    setDM(dm, () => { if (target > 0) jumpToStep(target); });
+  }));
+  document.querySelectorAll('#counts .chip').forEach(b => b.addEventListener('click', () => {
+    if (b.dataset.q === State.q) return;
+    State.q = b.dataset.q; syncChips(); clearExtras();
+    const target = ctl.done;
+    start(() => { if (target > 0) jumpToStep(target); });
+  }));
+  document.querySelectorAll('#eras .chip').forEach(b => b.addEventListener('click', () => {
+    const n = stepAtZ(+b.dataset.z);
+    if (n === 0){ clearExtras(); start(); return; }
+    jumpToStep(n);
+  }));
+
+  function setCaption(html){ $('caption').innerHTML = html; }
+  const CAPTIONS = {
+    cmb: 'The start, 47 million years after the Big Bang. The densest patches are only a few percent above average, so the colors are <b>boosted</b> to make the ripples visible; the readout says by how much. Press Play to watch them grow.',
+    web: 'Today, seen as a slab about <b>90 million light-years</b> thick. Bright threads join at knots, and the dark gaps between them are voids. Most of the volume is void; most of the mass is in threads and knots.',
+    nodes: 'The heaviest clump in this universe. Filaments feed it from several directions. Switch to <b>Speed</b> to see matter falling in faster than 1,000 km/s, and zoom out to see where the threads lead.',
+    nodm: 'The same starting ripples, but only <b>ordinary matter</b> pulls. After 13.7 billion years the pattern is still faint, the heaviest clump is dozens of times lighter, and <b>no galaxies</b> have formed: the readout shows no stars and no hot gas. Switch gravity back above to compare.',
+    dmBack: 'Dark matter\'s pull is back on. The same starting ripples now grow into the full web.',
+    expand: 'Here the box is drawn at its <b>true size</b>. It starts 51 times smaller than today and swells as space expands. Clumps that gravity has pulled together stay the same size while the space between them grows.',
+    home: 'A spot with surroundings like ours: a small group in a thin wall, about <b>54 million light-years</b> from the heaviest cluster, beside a void. The Milky Way and Andromeda would be two or three of these dots.',
+    slice: 'Surveys map the sky in thin slices, measuring each galaxy\'s distance from its redshift. This is a slab of the simulation <b>90 million light-years</b> thick, much like one of those survey slices.',
+    heat: 'Only the <b>gas</b>, colored by temperature. Gas falling onto filaments and clusters slams to a halt and heats up: violet threads at 100,000 K or more, red to white knots at 10–100 million K. The dark blue gas in the voids sits at about 10,000 K, warmed by the first stars.',
+    galaxies: 'Dark matter with the <b>starlight</b> on top, from redshift 4. Blue-white points are gas turning into young stars; they fade to gold as the stars age. Watch the sparkle peak around z = 2, then die down.',
+    reddead: 'The heaviest cluster, with its gas colored by temperature. The gas here is too hot to cool, so star formation has stopped. Its galaxies glow <b>gold</b> with old stars, while the cooler threads around it still sparkle blue.',
+    size: '',
+  };
+  setCaption('Dark matter (dim) and gas, colored by temperature, with starlight where gas has turned into stars. Everything starts almost evenly spread. Denser patches pull in their neighbors and grow into <b>walls, threads and knots</b>; gas falling into them heats up, and galaxies light up.');
+
+  const scrollToStage = () => $('stage').scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+  const TODAY = NSTEPS;
+  function atToday(fn){ State.physical = false; if (ctl.done === TODAY && ctl.jumpTo === null) fn(); else jumpToStep(TODAY, fn); }
+  function flyTo(pos, dist){ setCenter(pos); setCam({ dist }); }
+
+  const layers = (dm, gas, gal) => { State.dmLayer = dm; State.gasLayer = gas; State.galLayer = gal; };
+  const SHOWS = {
+    cmb: () => { layers(true, false, false); setCaption(CAPTIONS.cmb); State.mode = 1; State.boost = true; State.slice = true; State.physical = false; resetView(); setCam({ yaw: Math.round(tgt.yaw / (Math.PI / 2)) * Math.PI / 2, pitch: 0 }); State.spin = false; setDM(true, null) || start(); State.playing = false; },
+    web: () => { layers(true, false, true); setCaption(CAPTIONS.web); State.mode = 0; State.slice = true; resetView(); setCam({ dist: 1.15 }); setDM(true, () => atToday(() => {})) || atToday(() => {}); },
+    nodes: () => {
+      setCaption(CAPTIONS.nodes); State.mode = 1; State.slice = true; layers(true, false, false);
+      const go = () => atToday(() => withCoarse(c => { const h = heaviest(c); lastClump = h; flyTo(h.pos, 0.2); }));
+      setDM(true, go) || go();
+    },
+    nodm: () => { setCaption(CAPTIONS.nodm); layers(true, true, true); State.mode = 3; State.slice = true; resetView(); setDM(false, () => atToday(() => {})) || atToday(() => {}); },
+    expand: () => { layers(true, false, false); setCaption(CAPTIONS.expand); State.physical = true; State.slice = false; State.mode = 0; setCenter([0.5, 0.5, 0.5]); setCam({ dist: 1.3, pitch: 0.3 }); State.playing = true; setDM(true, null) || start(); State.physical = true; },
+    home: () => {
+      setCaption(CAPTIONS.home); State.mode = 0; State.slice = true; layers(true, false, true);
+      const go = () => atToday(() => withCoarse(c => {
+        const cl = heaviest(c); lastClump = cl;
+        const spot = homeSpot(c, cl);
+        if (!spot) return;
+        const r = 0.006;
+        State.marker = { at: spot.pos, top: r * 1.6, data: new Float32Array(sphereLines(r)), html: `<b>A spot like ours</b><br>${Math.round(spot.d * MLY_PER_MPC)} million ly from the heaviest cluster` };
+        flyTo(spot.pos, 0.22);
+      }));
+      setDM(true, go) || go();
+    },
+    slice: () => { layers(false, false, true); setCaption(CAPTIONS.slice); State.mode = 0; State.slice = true; resetView(); setCam({ dist: 1.15 }); setDM(true, () => atToday(() => {})) || atToday(() => {}); },
+    heat: () => { setCaption(CAPTIONS.heat); layers(false, true, false); State.mode = 3; State.slice = true; resetView(); setCam({ dist: 1.15 }); setDM(true, () => atToday(() => {})) || atToday(() => {}); },
+    galaxies: () => {
+      setCaption(CAPTIONS.galaxies); layers(true, false, true); State.mode = 0; State.slice = true; resetView(); setCam({ dist: 1.1 });
+      const go = () => { jumpToStep(stepAtZ(4)); State.playing = true; syncPlay(); };
+      setDM(true, go) || go();
+    },
+    reddead: () => {
+      setCaption(CAPTIONS.reddead); layers(false, true, true); State.mode = 3; State.slice = true;
+      const go = () => atToday(() => withCoarse(c => { const h = heaviest(c); lastClump = h; flyTo(h.pos, 0.2); }));
+      setDM(true, go) || go();
+    },
+    chart: () => { $('history').scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' }); },
+    today: () => { layers(true, true, true); State.slice = false; resetView(); setDM(true, () => atToday(() => {})) || atToday(() => {}); },
+  };
+  function showSize(key){
+    const s = SIZES[key];
+    State.slice = false; State.physical = false; State.marker = null;
+    const lines = new Float32Array(s.lines());
+    let top = 0; for (let i = 1; i < lines.length; i += 3) top = Math.max(top, lines[i]);
+    setCaption(`<b>${s.label}</b>, ${s.note}, drawn at true size against the box, which is 1 billion light-years across today.`);
+    if (s.atCluster){
+      State.mode = 1;
+      const go = () => atToday(() => withCoarse(c => { const h = heaviest(c); lastClump = h; State.overlay = { at: h.pos, top: top * 1.3, data: lines, label: s.label, note: s.note }; flyTo(h.pos, s.dist); }));
+      setDM(true, go) || go();
+    } else {
+      State.overlay = { at: center.slice(), top: top + 0.02, data: lines, label: s.label, note: s.note };
+      setCam({ dist: s.dist });
+    }
+  }
+  document.querySelectorAll('[data-show]').forEach(b => b.addEventListener('click', () => {
+    if (!ready) return;
+    if (b.dataset.show === 'chart'){ SHOWS.chart(); return; }
+    State.overlay = null; State.marker = null;
+    SHOWS[b.dataset.show]();
+    syncChips(); syncPlay(); scrollToStage();
+  }));
+  document.querySelectorAll('[data-size]').forEach(b => b.addEventListener('click', () => {
+    if (!ready) return;
+    showSize(b.dataset.size); syncChips(); scrollToStage();
+  }));
+
+  if (location.hash === '#test') window.__cw = { State, ctl, jumpToStep, stepAtZ, SHOWS, showSize, start, eng: () => eng, history };
+  syncChips(); syncPlay();
+  resize();
+  if (glOK){
+    start(() => { if (reduceMotion) jumpToStep(NSTEPS); });
+    requestAnimationFrame(frame);
+  }
+})();
+
+</script>

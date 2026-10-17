@@ -1,0 +1,57 @@
+<header class="wrap top">
+  <div>
+    <div class="eyebrow">The atom, one wave at a time · live Schrödinger equation</div>
+    <h1>The <em>Quantum</em> Atom</h1>
+  </div>
+  <p class="lede">Below a nanometre, matter stops behaving like little balls. An electron travels as a <strong>wave</strong>, spreading through both slits of a screen, leaking through walls, and settling around a nucleus in shapes no planet could follow. This is the <strong>Schrödinger equation solved live</strong> on your graphics card, a million points at a time.</p>
+</header>
+
+<div class="stage" id="stage">
+  <canvas id="sky" aria-label="Live simulation of an electron wave passing a double slit"></canvas>
+  <canvas class="plate" id="plate" aria-hidden="true"></canvas>
+  <dl class="hud readout" id="hud"></dl>
+  <div class="platelab" id="platelab">detector screen<b id="dotsN">0</b>electrons landed</div>
+  <div class="status" id="status" hidden><i></i><span>preparing</span></div>
+  <div class="datebig" id="clock"><small id="clockLab">electron 1 · time since it left the gun</small><span>0 fs</span></div>
+  <div class="scalebar" id="scalebar"><i></i>1 nm</div>
+  <div class="nogl" id="nogl" hidden>This simulation needs WebGL2 with floating-point render targets, which this browser or device doesn't provide.</div>
+</div>
+
+<div class="wrap">
+  <div class="transport">
+    <button class="btn" id="play">❚❚ Pause</button>
+    <button class="btn ghost" id="clear">↺ Clear the screen</button>
+    <button class="btn ghost" id="fast" aria-pressed="false">Fire faster</button>
+    <label class="pace">Pace <input type="range" id="pace" min="0" max="100" value="100" aria-label="Simulation pace"><output id="paceOut">full speed</output></label>
+  </div>
+
+  <div class="controls">
+    <div class="group">
+      <div class="group-label">Experiment</div>
+      <div class="chips" id="scenes"></div>
+      <p class="caption" id="caption"></p>
+    </div>
+    <div class="group">
+      <div class="group-label">Electron gun</div>
+      <div class="row2">
+        <label class="sl">Energy <input type="range" id="energy" min="10" max="150" step="0.1" value="54.4" aria-label="Electron energy"><output id="energyOut"></output></label>
+        <label class="sl" id="sepRow">Slit spacing <input type="range" id="sep" min="12" max="40" step="0.5" value="20" aria-label="Slit spacing"><output id="sepOut"></output></label>
+      </div>
+      <div class="group-label" style="margin-top:8px">Show</div>
+      <div class="toggles">
+        <button class="chip" id="tPred" aria-pressed="false"><span class="dot" style="color:#ffc46b"></span>The wave's prediction</button>
+        <button class="chip" id="tWatch" aria-pressed="false"><span class="dot" style="color:#9fe3ff"></span>Watch which slit</button>
+      </div>
+      <p class="note"><span class="phasekey"><i></i></span> <b>Gold crests, blue troughs</b> of the electron's wave; brightness is its strength, on a logarithmic scale so the faint diffracted wave still shows.</p>
+    </div>
+  </div>
+</div>
+
+<!--SECTIONS-->
+
+<footer class="wrap">
+  <p>The Quantum Atom is part of a series of live simulations walking down the scales of nature: <i>The Cosmic Web</i>, <i>Bridges &amp; Tails</i>, <i>Event Horizon</i>, <i>The Chirp</i>, <i>The Clockwork</i>, <i>The Atmosphere</i>, <i>The Wind Tunnel</i>, <i>The Hydrogen Bond</i>, and now the atom itself.</p>
+</footer>
+<script>
+/*SRC*/
+</script>

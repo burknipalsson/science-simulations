@@ -1,0 +1,37 @@
+
+<section class="wrap" id="how">
+  <div class="eyebrow">How it works</div>
+  <h2>A fluid, some elastic bags, and a <em>handshake</em></h2>
+  <div class="guide">
+    <div class="entry">
+      <div class="where">lattice Boltzmann · 0.25–0.5 µm cells</div>
+      <h3>The plasma</h3>
+      <p>Space is divided into a grid of cubes a quarter or half a micrometre on a side, up to a few million of them. In each, 19 numbers track how much fluid is moving in each of 19 directions; every time step they stream to the neighbouring cube and relax toward equilibrium. That simple rule reproduces the Navier–Stokes equations of a viscous fluid. Walls bounce the fluid back at their exact curved position.</p>
+    </div>
+    <div class="entry">
+      <div class="where">642 or 2,562 points per cell</div>
+      <h3>The cells</h3>
+      <p>Each cell is a closed mesh of triangles with the measured elasticity of red-cell membrane: a <b>shear modulus</b> of 5.3 µN/m, a strong resistance to <b>changing area</b>, a <b>bending stiffness</b> of 2×10⁻¹⁹ J, and a fixed volume. The resting biconcave shape is the one it relaxes back to. Inside, the cytoplasm is <b>five times</b> more viscous than plasma.</p>
+    </div>
+    <div class="entry">
+      <div class="where">the immersed-boundary method</div>
+      <h3>The handshake</h3>
+      <p>The membrane and the fluid never share a grid. Each step, every membrane point spreads its elastic force onto the nearby fluid cubes; the fluid moves; then every point moves at the fluid's local speed. Membrane and plasma move together, so the cell carries its contents and the plasma flows around it.</p>
+    </div>
+    <div class="entry">
+      <div class="where">why time is slowed</div>
+      <h3>Keeping it watchable</h3>
+      <p>At this size, flow is so slow and viscous that only <b>ratios</b> matter: how hard the flow pulls compared with how stiff the cell is. The simulation keeps those ratios but lets the plasma carry about a thousand times more inertia than real blood, which lets each step cover more time. The flow is still dominated by viscosity, and quartering the inertia changed the results by under 1%.</p>
+    </div>
+    <div class="entry">
+      <div class="where">every step, on your graphics card</div>
+      <h3>Seven passes per step</h3>
+      <p>Measure each cell's area and volume; compute the force on every membrane point; find nearby points of other cells (so cells never pass through each other); spread the forces into the fluid; advance the fluid; and move the membranes. A fast graphics card does this thousands of times a second.</p>
+    </div>
+    <div class="entry">
+      <div class="where">what is left out</div>
+      <h3>Limits</h3>
+      <p>No membrane viscosity, no sticking to the vessel wall, no clumping into rouleaux, no living machinery: a white cell's crawling and a parasite's knobs are beyond it. The sickled cells keep the stiffness measured for oxygenated ones; fully deoxygenated cells are far stiffer than this model can step stably.</p>
+    </div>
+  </div>
+</section>

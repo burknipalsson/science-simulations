@@ -1,0 +1,37 @@
+<section class="wrap" id="mri-sec">
+  <div class="eyebrow">A medical aside · magnetic resonance imaging</div>
+  <h2>Listening to the body's <em>protons</em></h2>
+  <p class="section-lede">Every hydrogen nucleus is a single proton, and a proton has a quantum property called <strong>spin</strong> that makes it a tiny magnet. An MRI scanner images these protons, nearly all of them in the body's water (the molecules of <i>The Hydrogen Bond</i>) and fat. It never sees the electrons at all. Three numbers do the work: how fast the protons precess in the field, and two relaxation times, <strong>T1</strong> and <strong>T2</strong>, that differ from tissue to tissue.</p>
+  <div class="split mrisplit">
+    <div>
+      <div class="panel mriwrap"><canvas id="spinCv" aria-label="Proton spins in one voxel, tipped by radio pulses"></canvas><div class="mrilab" id="spinLab"></div></div>
+      <div class="panel chart-pad" style="margin-top:12px">
+        <p class="chart-title">What the scanner's coil picks up</p>
+        <p class="chart-unit">signal (gold: spins in step across the field, which induce the signal) and recovery along the field (green), against time in milliseconds</p>
+        <canvas class="chart" id="sigCv" data-h="150"></canvas>
+      </div>
+      <div class="labbar">
+        <button class="btn ghost" id="p90">Tip 90°</button>
+        <button class="btn ghost" id="p180">Flip 180°</button>
+        <button class="btn ghost" id="pAuto" aria-pressed="true">Repeat a spin echo</button>
+        <label class="pace" style="margin-left:0">Slowed <input type="range" id="mriRate" min="0" max="100" value="45" aria-label="Playback speed"><output id="mriRateO"></output></label>
+      </div>
+      <div class="chips" id="tissueChips" style="margin-top:10px"></div>
+    </div>
+    <div class="mriside">
+      <div class="panel mriimg"><canvas id="scanCv" aria-label="Simulated MRI image of a head"></canvas><div class="mrilab" id="scanLab"></div></div>
+      <div class="chips" id="weightChips"></div>
+      <label class="sl">Repeat time TR <input type="range" id="mriTR" min="200" max="6000" step="10" value="500" aria-label="Repetition time"><output id="mriTRo"></output></label>
+      <label class="sl">Echo time TE <input type="range" id="mriTE" min="8" max="160" step="1" value="15" aria-label="Echo time"><output id="mriTEo"></output></label>
+      <p class="caption" id="mriCap"></p>
+    </div>
+  </div>
+  <div class="numbers" style="margin-top:28px">
+    <div>
+      <p class="bigq">At 3 tesla, out of every million protons only about ten more line up with the field than against it.</p>
+      <p>That tiny excess, about <b>10 per million</b> at body temperature, is all the scanner has to work with. It is enough because a single cubic millimetre of water holds about <b>67 billion billion</b> hydrogen nuclei. Each spin precesses around the field at the <b>Larmor frequency</b>, 42.58 MHz per tesla: <b>127.7 MHz</b> in a 3 T scanner, just above the FM radio band. A radio pulse at exactly that frequency tips the spins over; as they precess together they broadcast back, and the coil hears them.</p>
+      <p class="med">The art is in the timing. <b>T2</b> is how long the spins keep in step after the pulse; <b>T1</b> is how long they take to realign with the field. Fluid has long T1 and T2, fat short T1. A short repeat time and echo time (T1-weighting) makes fat bright and fluid dark, good for anatomy. A long repeat and echo (T2-weighting) makes water bright, and most disease, from oedema around a tumour to inflammation or a stroke some hours old, carries extra water. <b>Gadolinium</b> contrast agents shorten T1 wherever they leak out of damaged blood vessels, so those spots light up on a T1-weighted scan.</p>
+    </div>
+    <div class="table-wrap"><table class="cmp" id="mriTable"></table></div>
+  </div>
+</section>

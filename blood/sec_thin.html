@@ -1,0 +1,30 @@
+
+<section class="wrap" id="thin">
+  <div class="eyebrow">The Fåhræus–Lindqvist effect</div>
+  <h2>Why blood gets <em>thinner</em> in narrow vessels</h2>
+  <p class="section-lede">In 1931 Robin Fåhræus and Torsten Lindqvist pushed blood through glass tubes and found that below about 0.3 mm it flows <strong>more easily</strong> the narrower the tube; later work traced the trend down to about 7 µm. The reason is the cell-free layer: the narrower the tube, the larger the fraction of it taken up by the slippery plasma sleeve. The same sleeve lets the cells move faster than the plasma on average, so a narrow tube holds <strong>fewer cells</strong> than the blood flowing through it (the Fåhræus effect).</p>
+  <div class="split">
+    <div class="panel chart-pad">
+      <p class="chart-title">Apparent viscosity of blood, relative to plasma</p>
+      <p class="chart-unit">against tube diameter · curves: fit to glass-tube experiments (Pries et al. 1992) · dots: this simulation</p>
+      <canvas class="chart" id="chartThin" data-h="340" aria-label="Chart of relative apparent viscosity against tube diameter"></canvas>
+      <div class="legend">
+        <span><i style="background:#e0603e"></i>experiments, 45% of cells leaving the tube (normal blood)</span>
+        <span><i style="background:#3a8fd4"></i>experiments, 22%</span>
+        <span><i class="sq" style="background:#e6eaf0;border-radius:50%"></i>simulation, 0.25 µm grid</span>
+        <span><i class="sq" style="border:1.5px solid #e6eaf0;border-radius:50%;background:transparent"></i>live 0.5 µm grid</span>
+      </div>
+    </div>
+    <div>
+      <p class="bigq">Narrow tubes are easier to push blood through, until the cells no longer fit.</p>
+      <p class="note" style="margin-bottom:14px">Each simulated dot has its own share of cells leaving the tube, between 21% and 26%, so it belongs next to the blue curve. On the fine grid the simulated thickness is within <b>0–9%</b> of the experiments. The live arteriole above runs on a grid twice as coarse so that it moves at a watchable pace, and reads <b>15–20% thick</b>: the force-spreading kernel makes each cell act a little bigger than it is. To see the fine grid itself, <b>record a fine-grid replay</b>: the page computes a short stretch of the 20 µm arteriole on the 0.25 µm grid, as fast as your graphics card can, then plays it back with the camera free. It reads about <b>1.32×</b> against the glass-tube 1.25×.</p>
+      <button class="show" data-fine="1" style="margin-bottom:14px">Record the fine grid ▸</button>
+      <p class="note">What the simulation gets less well is the <b>Fåhræus effect</b>: in glass tubes the cells crowd towards the fast centre more than they do here, so the ratio of cells in the tube to cells leaving it is 0.71 here and 0.62 in experiments.</p>
+      <div class="kpis">
+        <div class="kpi"><div class="v">1.19×</div><div class="k">simulated, 20 µm tube</div></div>
+        <div class="kpi"><div class="v">1.19×</div><div class="k">glass-tube fit, same cells</div></div>
+        <div class="kpi"><div class="v">2.4 µm</div><div class="k">simulated cell-free layer</div></div>
+      </div>
+    </div>
+  </div>
+</section>

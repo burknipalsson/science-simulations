@@ -1,0 +1,25 @@
+<section class="wrap" id="atom-sec">
+  <div class="eyebrow">A tenth of a nanometre · the hydrogen atom</div>
+  <h2>Where the electron <em>lives</em></h2>
+  <p class="section-lede">Put the electron wave in a box of its own making, the pull of a single proton, and it can only settle into certain shapes, each with an exact energy. These are the <strong>orbitals</strong> chemistry is built from. They are not paths; they are standing waves, and the brightness shows where the electron is likely to be found. Everything here comes straight from the solution of Schrödinger's equation for hydrogen, drawn in three dimensions on your graphics card.</p>
+  <div class="split atomsplit">
+    <div class="panel atomwrap">
+      <canvas id="atomCv" aria-label="Three-dimensional electron cloud of a hydrogen atom"></canvas>
+      <canvas id="atomOv" class="atomov" aria-hidden="true"></canvas>
+      <div class="atomname" id="atomName"></div>
+      <div class="atomhint">drag to turn · the vertical axis is z</div>
+      <div class="scalebar atomscale" id="atomScale"><i></i>1 Å</div>
+    </div>
+    <div class="atomside">
+      <div class="chips" id="atomModes"></div>
+      <div id="atomCtl"></div>
+      <p class="caption" id="atomCap"></p>
+      <dl class="facts" id="atomFacts"></dl>
+    </div>
+  </div>
+  <div class="panel chart-pad" style="margin-top:20px">
+    <p class="chart-title">Light given off by hydrogen</p>
+    <p class="chart-unit" id="specUnit">photons counted at each wavelength · logarithmic wavelength scale, nanometres</p>
+    <canvas class="chart" id="specCv" data-h="210"></canvas>
+  </div>
+</section>

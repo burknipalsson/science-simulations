@@ -1,0 +1,42 @@
+<header class="wrap top">
+  <div>
+    <div class="eyebrow">A real-scale zoom · every layer measured or simulated</div>
+    <h1>Powers of <em>Ten</em></h1>
+  </div>
+  <p class="lede">One continuous zoom through 41 powers of ten, from <strong>a billion light-years</strong> of simulated universe to <strong>a street in Reykjavík</strong>, then into a fingertip, a red blood cell and a water molecule, down to <strong>a single proton</strong>. Every layer is at its true size and position. Scroll or pinch to move through the scales, drag to turn, or play the film.</p>
+</header>
+
+<div class="stage">
+  <canvas id="sky" aria-label="A zoom through the universe, from the cosmic web to Reykjavík and down to a proton"></canvas>
+  <div class="tags" id="tags"></div>
+  <dl class="hud readout">
+    <div class="pow" id="pow">10<sup>25</sup> m</div>
+    <div class="name" id="rungName">The cosmic web</div>
+    <div class="sep"></div>
+    <dt>view width</dt><dd class="big" id="width">—</dd>
+    <div class="fam" id="fam"></div>
+    <dt>light crosses it in</dt><dd id="light">—</dd>
+    <div class="sep"></div>
+    <dt>clock</dt><dd class="rate" id="rate">—</dd>
+    <dt>time</dt><dd id="when">—</dd>
+  </dl>
+  <div class="ladder" id="ladder"><div class="marker" id="marker"></div></div>
+  <div class="capbox"><span class="rn">Field note</span><span id="caption"></span></div>
+  <div class="loading" id="loading">building the universe…</div>
+  <div class="nogl" id="nogl" hidden>This page needs WebGL2, which this browser doesn’t provide.</div>
+</div>
+
+<div class="wrap">
+  <div class="transport">
+    <button class="btn" id="playBtn" aria-pressed="false"><span aria-hidden="true">▶</span> Play the film</button>
+    <button class="btn ghost" id="topBtn">Back to the top</button>
+    <button class="btn ghost" id="resetView">Straighten the view</button>
+    <button class="btn ghost trip" id="tripBtn">Side trip</button>
+    <button class="btn ghost trip" id="trip2Btn">Time trip</button>
+    <p class="note">Scroll, pinch or press <b>+</b> / <b>−</b> to zoom · drag to turn · double-click to dive one power of ten · click a rung on the ladder to fly there.</p>
+  </div>
+</div>
+<!--SECTIONS-->
+<script>
+/*SRC*/
+</script>

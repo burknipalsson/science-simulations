@@ -1,0 +1,1076 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Bridges and Tails</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root {
+    color-scheme: dark;
+    --void: #06070c;
+    --deep: #0b0c14;
+    --panel: #11121c;
+    --ink: #e9e6f0;
+    --muted: #a19eb5;
+    --faint: #6c6a84;
+    --line: rgba(233, 230, 240, 0.12);
+    --line-strong: rgba(233, 230, 240, 0.24);
+    --halpha: #ff7aa8;
+    --young: #8fb3ff;
+    --old: #ffcf9a;
+    --display: "Newsreader", "Iowan Old Style", Georgia, serif;
+    --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { background: var(--void); color: var(--ink); }
+  body { font-family: var(--body); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding-inline: 16px; }
+  @media (min-width: 720px) { .wrap { padding-inline: 32px; } }
+
+  header.top { padding-block: 40px 22px; display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px 40px; }
+  .eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--halpha); }
+  h1 { font-family: var(--display); font-weight: 300; font-size: clamp(46px, 8.4vw, 104px); line-height: 0.92; letter-spacing: -0.025em; margin: 10px 0 0; text-wrap: balance; }
+  h1 em { font-style: italic; color: var(--young); }
+  h1 .amp { font-style: italic; color: var(--halpha); }
+  .lede { max-width: 46ch; color: var(--muted); margin: 0; font-size: 17px; }
+  .lede strong { color: var(--ink); font-weight: 500; }
+
+  .stage { position: relative; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: #000; scroll-margin-top: env(safe-area-inset-top, 0px); }
+  #sky { display: block; width: 100%; height: clamp(440px, 72vh, 840px); cursor: grab; touch-action: none; }
+  #sky:active { cursor: grabbing; }
+  .readout { position: absolute; top: 14px; left: 14px; display: grid; grid-template-columns: auto auto; gap: 2px 14px; padding: 10px 14px; background: rgba(6, 7, 12, 0.62); backdrop-filter: blur(6px); border: 1px solid var(--line); border-radius: 4px; font-family: var(--mono); font-size: 12px; line-height: 1.55; font-variant-numeric: tabular-nums; pointer-events: none; max-width: calc(100% - 28px); }
+  .readout dt { color: var(--faint); }
+  .readout dd { margin: 0; text-align: right; }
+  .phase { position: absolute; left: 14px; bottom: 14px; font-family: var(--display); font-style: italic; font-weight: 300; font-size: clamp(22px, 3vw, 34px); color: var(--ink); pointer-events: none; text-shadow: 0 1px 12px #000; }
+  .phase small { display: block; font-family: var(--mono); font-style: normal; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+  .hint { position: absolute; right: 14px; bottom: 12px; font-family: var(--mono); font-size: 11px; color: rgba(233, 230, 240, 0.5); pointer-events: none; }
+  .building { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--display); font-style: italic; font-size: 26px; color: var(--muted); background: rgba(0, 0, 0, 0.45); pointer-events: none; }
+  .count-note { margin: 0; font-size: 13px; color: var(--faint); max-width: 52ch; }
+  .nogl { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: var(--muted); }
+
+  .transport { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; padding-block: 16px 4px; }
+  .btn { appearance: none; font: 500 14px/1 var(--body); color: var(--void); background: var(--ink); border: 1px solid var(--ink); border-radius: 999px; padding: 10px 18px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+  .btn.ghost { background: transparent; color: var(--ink); border-color: var(--line-strong); }
+  .btn:hover { filter: brightness(1.1); }
+  .btn.ghost:hover { border-color: rgba(233, 230, 240, 0.5); }
+  .speed { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); flex: 1 1 260px; max-width: 420px; }
+  .speed output { font-family: var(--mono); font-size: 12px; color: var(--ink); min-width: 9em; text-align: right; font-variant-numeric: tabular-nums; }
+
+  .controls { display: grid; gap: 22px 36px; grid-template-columns: 1fr; padding-block: 18px 8px; }
+  @media (min-width: 900px) { .controls { grid-template-columns: 1.2fr 1fr; } }
+  .group { display: grid; gap: 10px; align-content: start; }
+  .group-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--faint); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { appearance: none; font: 500 13px/1 var(--body); color: var(--muted); background: transparent; border: 1px solid var(--line-strong); border-radius: 999px; padding: 9px 14px; cursor: pointer; transition: color .15s, border-color .15s, background .15s; display: inline-flex; align-items: center; gap: 8px; }
+  .chip:hover { color: var(--ink); border-color: rgba(233, 230, 240, 0.45); }
+  .chip:focus-visible, .btn:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--young); outline-offset: 2px; }
+  .chip[aria-pressed="true"] { color: var(--void); background: var(--ink); border-color: var(--ink); }
+  .chip .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; opacity: .55; }
+  .chip[aria-pressed="true"] .dot { opacity: 1; }
+  .scenario { color: var(--ink); }
+  .scenario[aria-pressed="true"] { background: var(--halpha); border-color: var(--halpha); color: var(--void); }
+  .caption { margin: 4px 0 0; padding-left: 14px; border-left: 2px solid var(--halpha); color: var(--muted); font-size: 15px; max-width: 62ch; min-height: 3.2em; }
+  .caption b { color: var(--ink); font-weight: 500; }
+
+  .sliders { display: grid; gap: 10px; }
+  .slider { display: grid; grid-template-columns: 9em 1fr 7.5em; align-items: center; gap: 12px; font-size: 14px; }
+  .slider label { color: var(--muted); }
+  .slider output { font-family: var(--mono); font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; }
+  @media (max-width: 520px) { .slider { grid-template-columns: 1fr auto; } .slider input { grid-column: 1 / -1; grid-row: 2; } }
+  input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 22px; background: transparent; }
+  input[type=range]::-webkit-slider-runnable-track { height: 2px; background: var(--line-strong); }
+  input[type=range]::-moz-range-track { height: 2px; background: var(--line-strong); }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--young); margin-top: -6px; border: 0; }
+  input[type=range]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: var(--young); border: 0; }
+
+  section { padding-block: 72px 8px; }
+  h2 { font-family: var(--display); font-weight: 300; font-size: clamp(34px, 5vw, 58px); line-height: 1.02; letter-spacing: -0.015em; margin: 8px 0 14px; text-wrap: balance; }
+  h2 em { font-style: italic; color: var(--young); }
+  .section-lede { color: var(--muted); max-width: 62ch; margin: 0 0 28px; }
+  .section-lede strong { color: var(--ink); font-weight: 500; }
+
+  .guide { display: grid; gap: 1px; grid-template-columns: 1fr; background: var(--line); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+  @media (min-width: 700px) { .guide { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 1040px) { .guide { grid-template-columns: 1fr 1fr 1fr; } }
+  .entry { background: var(--void); padding: 26px 24px 24px; display: grid; grid-template-rows: auto auto 1fr auto; gap: 10px; }
+  .entry .where { font-family: var(--mono); font-size: 12px; color: var(--halpha); letter-spacing: 0.04em; }
+  .entry h3 { font-family: var(--display); font-weight: 400; font-size: 27px; line-height: 1.12; margin: 0; text-wrap: balance; }
+  .entry p { margin: 0; color: var(--muted); font-size: 15px; }
+  .entry p b { color: var(--ink); font-weight: 500; }
+  .show { justify-self: start; margin-top: 8px; appearance: none; background: none; border: 0; border-bottom: 1px solid var(--young); color: var(--young); font: 500 14px/1.4 var(--body); padding: 2px 0; cursor: pointer; }
+  .show:hover { color: var(--ink); border-color: var(--ink); }
+
+  .future { display: grid; gap: 28px; grid-template-columns: 1fr; align-items: start; }
+  @media (min-width: 900px) { .future { grid-template-columns: 1.1fr 1fr; } }
+  .future p { margin: 0 0 14px; color: var(--muted); max-width: 60ch; }
+  .future p b { color: var(--ink); font-weight: 500; }
+  .facts { display: grid; grid-template-columns: 1fr auto; gap: 0; margin: 0; border-top: 1px solid var(--line); }
+  .facts dt, .facts dd { padding: 12px 0; border-bottom: 1px solid var(--line); margin: 0; }
+  .facts dt { color: var(--muted); font-size: 14px; }
+  .facts dd { font-family: var(--mono); font-size: 13px; text-align: right; font-variant-numeric: tabular-nums; }
+
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 4px; }
+  table { width: 100%; border-collapse: collapse; min-width: 680px; font-size: 14px; }
+  th, td { text-align: left; padding: 14px 18px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  th { font-family: var(--mono); font-weight: 400; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); }
+  td.num { font-family: var(--mono); font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td .name { font-family: var(--display); font-size: 21px; display: block; }
+  td .sub { color: var(--faint); font-size: 13px; }
+  td button { margin-top: 6px; }
+
+  footer { padding-block: 64px 48px; color: var(--faint); font-size: 13px; }
+  footer p { max-width: 72ch; margin: 0 0 8px; }
+  footer i { color: var(--muted); }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">Galaxy collisions · live simulation</div>
+      <h1>Bridges <span class="amp">&amp;</span> <em>Tails</em></h1>
+    </div>
+    <p class="lede">Two spiral galaxies, tens of thousands of stars, and nothing but gravity. What takes <strong>a billion years</strong> in the sky plays out here in about a minute. Drag to turn the view, and scroll or pinch to zoom.</p>
+  </header>
+</div>
+
+<div class="stage" id="stage">
+  <canvas id="sky" aria-label="Simulation of two galaxies colliding"></canvas>
+  <dl class="readout">
+    <dt>time</dt><dd id="rTime">0</dd>
+    <dt>separation</dt><dd id="rSep">—</dd>
+    <dt>relative speed</dt><dd id="rVel">—</dd>
+    <dt>stars in tails</dt><dd id="rTail">—</dd>
+  </dl>
+  <div class="phase" id="phase"><small id="phaseScenario">The Antennae</small><span id="phaseText">Approaching</span></div>
+  <div class="hint" id="hint">drag · scroll · pinch</div>
+  <div class="building" id="building" hidden>Building galaxies…</div>
+</div>
+
+<div class="wrap">
+  <div class="transport">
+    <button class="btn" id="playBtn" aria-pressed="true">Pause</button>
+    <button class="btn ghost" id="restartBtn">Restart</button>
+    <label class="speed" for="speed">Speed <input id="speed" type="range" min="0" max="100" value="40"><output id="speedOut" for="speed">24 Myr / second</output></label>
+  </div>
+
+  <div class="controls">
+    <div class="group">
+      <div class="group-label">Real encounters</div>
+      <div class="chips" id="scenarios">
+        <button class="chip scenario" data-sc="antennae" aria-pressed="true">The Antennae</button>
+        <button class="chip scenario" data-sc="mice" aria-pressed="false">The Mice</button>
+        <button class="chip scenario" data-sc="whirlpool" aria-pressed="false">The Whirlpool</button>
+        <button class="chip scenario" data-sc="cartwheel" aria-pressed="false">The Cartwheel</button>
+        <button class="chip scenario" data-sc="milkomeda" aria-pressed="false">Milky Way + Andromeda</button>
+        <button class="chip scenario" data-sc="retro" aria-pressed="false">Retrograde flyby</button>
+      </div>
+      <p class="caption" id="caption"></p>
+      <div class="group-label" style="margin-top:8px">Show</div>
+      <div class="chips" id="toggles">
+        <button class="chip" data-key="bursts" aria-pressed="true"><span class="dot"></span>Starbursts</button>
+        <button class="chip" data-key="byGalaxy" aria-pressed="false"><span class="dot"></span>Color by galaxy</button>
+        <button class="chip" data-key="orbits" aria-pressed="false"><span class="dot"></span>Paths of the centers</button>
+        <button class="chip" data-key="follow" aria-pressed="true"><span class="dot"></span>Follow the action</button>
+        <button class="chip" data-key="spin" aria-pressed="true"><span class="dot"></span>Slow rotate</button>
+      </div>
+    </div>
+    <div class="group">
+      <div class="group-label">Build your own collision</div>
+      <div class="sliders">
+        <div class="slider"><label for="cRatio">Mass ratio</label><input id="cRatio" type="range" min="0.08" max="1" step="0.01" value="1"><output id="cRatioOut" for="cRatio">1 : 1</output></div>
+        <div class="slider"><label for="cPeri">Closest approach</label><input id="cPeri" type="range" min="0.4" max="3" step="0.05" value="1"><output id="cPeriOut" for="cPeri">8 kpc</output></div>
+        <div class="slider"><label for="cTilt1">Tilt of galaxy A</label><input id="cTilt1" type="range" min="0" max="180" step="5" value="15"><output id="cTilt1Out" for="cTilt1">15° prograde</output></div>
+        <div class="slider"><label for="cTilt2">Tilt of galaxy B</label><input id="cTilt2" type="range" min="0" max="180" step="5" value="40"><output id="cTilt2Out" for="cTilt2">40° prograde</output></div>
+      </div>
+      <div class="group-label" style="margin-top:6px">Stars per collision</div>
+      <div class="chips" id="counts">
+        <button class="chip" data-n="30000" aria-pressed="false">30k</button>
+        <button class="chip" data-n="80000" aria-pressed="false">80k</button>
+        <button class="chip" data-n="300000" aria-pressed="false">300k</button>
+        <button class="chip" data-n="1000000" aria-pressed="false">1 million</button>
+        <button class="chip" data-n="3000000" aria-pressed="false">3 million</button>
+        <button class="chip" data-n="8000000" aria-pressed="false">8 million</button>
+      </div>
+      <p class="count-note">The graphics card moves every star. A million or more needs a strong one; if the motion stutters, step down.</p>
+      <div><button class="btn" id="collideBtn">Collide these two</button></div>
+    </div>
+  </div>
+
+  <section id="guide">
+    <div class="eyebrow">Field guide</div>
+    <h2>What you are <em>watching</em></h2>
+    <p class="section-lede">Each note below can set up the simulation to show you. One time unit here is about <strong>24 million years</strong>. Distances are in kiloparsecs: 1 kpc is 3,262 light-years, and the Sun sits about 8 kpc from the center of the Milky Way.</p>
+    <div class="guide">
+      <article class="entry">
+        <div class="where">Sun : nearest star ≈ 1 : 29,000,000</div>
+        <h3>The stars almost never touch</h3>
+        <p>Shrink the Sun to a grain of sand and the nearest star is another grain <b>29 km away</b>. Two galaxies can pass straight through each other and almost no stars collide. Everything you see comes from gravity reshaping their orbits.</p>
+        <button class="show" data-show="interpenetrate">Watch them pass through →</button>
+      </article>
+      <article class="entry">
+        <div class="where">Toomre &amp; Toomre, 1972</div>
+        <h3>Tides throw out the tails</h3>
+        <p>The long streams are stars flung out by tides. They form best when a disk spins the <b>same way</b> the other galaxy swings past, because those stars then stay in step with the tidal pull. Run a retrograde flyby and compare the tail count in the readout.</p>
+        <button class="show" data-show="retro">Try it spinning backwards →</button>
+      </article>
+      <article class="entry">
+        <div class="where">Hα, 656.3 nm</div>
+        <h3>The gas does collide</h3>
+        <p>Gas clouds are huge and fill the disk, so they cannot pass through each other. They crash, compress and collapse into new stars. The pink knots mark where that happens. Hot gas around young stars glows in hydrogen-alpha red, the color that lights up real merger photos.</p>
+        <button class="show" data-show="bursts">Show the starbursts →</button>
+      </article>
+      <article class="entry">
+        <div class="where">dynamical friction</div>
+        <h3>Dark matter pulls them together</h3>
+        <p>Each galaxy sits inside a halo of dark matter about ten times heavier than its stars. As the halos overlap they drag on each other and lose orbital energy. The galaxies swing apart, fall back and <b>merge</b> after a few passes. Turn on the center paths to see the orbit shrink.</p>
+        <button class="show" data-show="orbits">Show the paths →</button>
+      </article>
+      <article class="entry">
+        <div class="where">a bullseye hit</div>
+        <h3>A head-on hit makes a ring</h3>
+        <p>When a small galaxy drops straight through the middle of a disk, the sudden pull inward and the rebound outward send a wave of stars moving out like a ripple in a pond. The Cartwheel galaxy's ring is about <b>150,000 light-years</b> across.</p>
+        <button class="show" data-show="ring">Drop one through the middle →</button>
+      </article>
+      <article class="entry">
+        <div class="where">~1–2 billion years later</div>
+        <h3>Two spirals make an elliptical</h3>
+        <p>After the merger the stars' neat circular orbits are scrambled into random ones. The result is a round, featureless blob, which is what astronomers see in many <b>elliptical galaxies</b>. Most giant ellipticals are thought to be built this way.</p>
+        <button class="show" data-show="remnant">Fast-forward to the end →</button>
+      </article>
+    </div>
+  </section>
+
+  <section id="future">
+    <div class="eyebrow">Our own collision</div>
+    <h2>The Milky Way and <em>Andromeda</em></h2>
+    <div class="future">
+      <div>
+        <p>Andromeda is the nearest large galaxy, and it is moving toward us at about <b>110 km/s</b>. For decades the forecast was a head-on merger in about 4.5 billion years. A 2025 study using newer measurements, including the pull of the Large Magellanic Cloud and the Triangulum galaxy, found the odds are closer to a <b>coin flip</b> within the next 10 billion years.</p>
+        <p>If it does happen, the Sun will almost certainly survive, because stars don't collide. It may be flung into a long tidal tail or end up far out in the halo of the merged galaxy. Astronomers have already nicknamed that galaxy <b>Milkomeda</b>.</p>
+        <button class="btn" data-show="milkomeda">Run Milky Way + Andromeda</button>
+      </div>
+      <dl class="facts">
+        <dt>Distance to Andromeda</dt><dd>2.5 million ly</dd>
+        <dt>Andromeda's disk</dt><dd>~220,000 ly across</dd>
+        <dt>Milky Way's disk</dt><dd>~100,000 ly across</dd>
+        <dt>Stars in Andromeda</dt><dd>~1 trillion</dd>
+        <dt>Stars in the Milky Way</dt><dd>100–400 billion</dd>
+        <dt>Chance of merging in 10 billion years</dt><dd>about 50%</dd>
+      </dl>
+    </div>
+  </section>
+
+  <section id="real">
+    <div class="eyebrow">In the telescope</div>
+    <h2>Collisions caught <em>mid-crash</em></h2>
+    <p class="section-lede">Each real system is a single frame of a slow-motion event, and the simulation fills in the rest of the movie. Matching tail shapes like these is how the Toomres showed in 1972 that gravity alone could explain them.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>System</th><th>Distance</th><th>Stage</th><th>What to look for</th></tr></thead>
+        <tbody>
+          <tr><td><span class="name">The Antennae</span><span class="sub">NGC 4038 / 4039, in Corvus</span><button class="show" data-show="antennae">Run it →</button></td><td class="num">45–70 million ly</td><td>Second approach, cores about to merge</td><td>Two long curved tails like an insect's antennae, and bright pink and blue knots of new star clusters</td></tr>
+          <tr><td><span class="name">The Mice</span><span class="sub">NGC 4676, in Coma Berenices</span><button class="show" data-show="mice">Run it →</button></td><td class="num">~300 million ly</td><td>Just after first passage</td><td>Two long, straight tails that look like the tails of two mice</td></tr>
+          <tr><td><span class="name">The Whirlpool</span><span class="sub">M51 and NGC 5195, in Canes Venatici</span><button class="show" data-show="whirlpool">Run it →</button></td><td class="num">~31 million ly</td><td>A smaller companion swinging past</td><td>Crisp spiral arms, stirred up by the companion's pull, and a bridge of stars reaching toward it</td></tr>
+          <tr><td><span class="name">The Cartwheel</span><span class="sub">ESO 350-40, in Sculptor</span><button class="show" data-show="cartwheel">Run it →</button></td><td class="num">~500 million ly</td><td>A few hundred million years after a bullseye hit</td><td>A ring of young blue stars around an older core</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    <p>How it works: each galaxy is a heavy dark-matter halo (a softened Plummer sphere) with a disk and bulge of massless stars and gas clouds that feel both halos. This is the <i>restricted N-body</i> method Alar and Juri Toomre used in "Galactic Bridges and Tails" (1972). The two halos pull on each other and feel a simple drag while they overlap, which stands in for dynamical friction. Units: 1 length unit = 8 kpc, 1 mass unit = 2 × 10¹¹ solar masses, so 1 time unit ≈ 24 million years.</p>
+    <p>Simplifications: stars don't pull on each other, halos stay rigid, and the gas has no pressure. The pink starburst glow is a rule of thumb: it lights up gas from the two galaxies meeting in the same small region at over 100 km/s. Real mergers need full hydrodynamic simulations on supercomputers.</p>
+  </footer>
+</div>
+
+<script>
+/*SIM-START*/
+// Restricted N-body (Toomre & Toomre 1972 style) with dynamical friction between halos.
+// Units: length 8 kpc, mass 2e11 Msun, G = 1  ->  time unit ~23.9 Myr, velocity unit ~328 km/s.
+const Sim = (() => {
+  const UNIT_KPC = 8, UNIT_MYR = 23.85, UNIT_KMS = 328;
+  const FRICTION = 0.05;
+  let F = null;
+  const S = { N: 0, fullN: 0, full: null, pos: null, vel: null, base: null, burst: null, gal: null, type: null, cores: [], t: 0, hist: [[], []], gasIdx: null };
+
+  // deterministic RNG so every run of a preset looks the same
+  let seed = 1;
+  const rnd = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+  const gauss = () => { let u = 0, v = 0; while (u === 0) u = rnd(); v = rnd(); return Math.sqrt(-2*Math.log(u)) * Math.cos(2*Math.PI*v); };
+
+  const add = (a, b) => [a[0]+b[0], a[1]+b[1], a[2]+b[2]];
+  const scl = (a, k) => [a[0]*k, a[1]*k, a[2]*k];
+  const crs = (a, b) => [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]];
+  const nrm = a => { const l = Math.hypot(a[0], a[1], a[2]); return [a[0]/l, a[1]/l, a[2]/l]; };
+
+  function vcirc(m, a, r){ return Math.sqrt(m * r*r / Math.pow(r*r + a*a, 1.5)); }
+
+  // spin: unit normal of the disk
+  function makeGalaxy(g, m, size, center, cvel, n, count, offset){
+    const a = 0.55 * size;
+    const u = nrm(Math.abs(n[1]) < 0.9 ? crs(n, [0,1,0]) : crs(n, [1,0,0]));
+    const w = crs(n, u);
+    const arms = 2, pitch = 0.32, phase = rnd() * Math.PI * 2;
+    for (let k = 0; k < count; k++){
+      const i = offset + k;
+      const q = k / count;
+      let type = q < 0.14 ? 0 : (q < 0.72 ? 1 : 2); // 0 bulge, 1 disk stars, 2 gas + young stars
+      let p, v;
+      if (type === 0){
+        // small spheroid
+        const r = 0.16 * size * Math.pow(rnd(), 0.8) + 0.01;
+        const d = nrm([gauss(), gauss(), gauss()]);
+        p = scl(d, r);
+        const vc = vcirc(m, a, r) * 0.9;
+        const t = nrm(crs(d, nrm([gauss(), gauss(), gauss()])));
+        v = scl(t, vc);
+      } else {
+        const scale = type === 1 ? 0.3 : 0.42;
+        let R;
+        do { R = -scale * size * Math.log(rnd() * rnd()); } while (R > 1.5 * size || R < 0.05 * size);
+        let th = rnd() * Math.PI * 2;
+        // pull a share of particles toward two logarithmic spiral arms
+        const armStrength = type === 2 ? 0.75 : 0.35;
+        if (rnd() < armStrength){
+          const arm = Math.floor(rnd() * arms);
+          th = phase + arm * Math.PI + Math.log(R / size + 0.05) / Math.tan(pitch) + gauss() * (type === 2 ? 0.16 : 0.3);
+        }
+        const z = gauss() * (type === 1 ? 0.025 : 0.01) * size;
+        const rh = add(scl(u, Math.cos(th)), scl(w, Math.sin(th)));
+        p = add(scl(rh, R), scl(n, z));
+        const vc = vcirc(m, a, R);
+        const disp = type === 1 ? 0.06 : 0.02;
+        v = add(scl(crs(n, rh), vc), [gauss()*disp*vc, gauss()*disp*vc, gauss()*disp*vc]);
+      }
+      p = add(p, center); v = add(v, cvel);
+      F.pos[3*i] = p[0]; F.pos[3*i+1] = p[1]; F.pos[3*i+2] = p[2];
+      F.vel[3*i] = v[0]; F.vel[3*i+1] = v[1]; F.vel[3*i+2] = v[2];
+      F.gal[i] = g; F.type[i] = type;
+      const col = type === 0 ? [1.0, 0.66, 0.38] : type === 1 ? [1.0, 0.86, 0.7] : [0.5, 0.66, 1.0];
+      const jit = 0.85 + 0.3 * rnd();
+      F.base[3*i] = col[0]*jit; F.base[3*i+1] = col[1]*jit; F.base[3*i+2] = col[2]*jit;
+    }
+    return { m, a, x: center.slice(), v: cvel.slice() };
+  }
+
+  function diskNormal(L, e1, tiltDeg, azDeg){
+    const t = tiltDeg * Math.PI/180, z = azDeg * Math.PI/180;
+    const e2 = crs(L, e1);
+    return nrm(add(scl(L, Math.cos(t)), scl(add(scl(e1, Math.cos(z)), scl(e2, Math.sin(z))), Math.sin(t))));
+  }
+
+  function init(cfg){
+    seed = cfg.seed || 7;
+    const N = cfg.N;
+    S.t = 0; S.hist = [[], []];
+    // the full galaxy is built once (for the GPU); S keeps an evenly spread sample for the CPU
+    F = { pos: new Float32Array(3*N), vel: new Float32Array(3*N), base: new Float32Array(3*N), gal: new Uint8Array(N), type: new Uint8Array(N) };
+    const m1 = cfg.m1, m2 = cfg.m2, Mt = m1 + m2;
+    const size1 = Math.cbrt(m1), size2 = Math.cbrt(m2);
+    const n1count = Math.round(N * m1 / Mt * (cfg.radial ? 1.15 : 1));
+    const c1 = Math.min(N - 1000, n1count), c2 = N - c1;
+    let rel, vrel, L, e1;
+    if (cfg.radial){
+      // intruder drops along the target's spin axis, slightly off-center
+      const d0 = cfg.d0 || 6;
+      rel = [cfg.offset || 0.12, d0, 0.05];
+      const vv = Math.sqrt(2 * Mt / d0) * 1.5;
+      vrel = [0, -vv, 0];
+      L = [0, 1, 0]; e1 = [1, 0, 0];
+    } else {
+      const d0 = cfg.d0 || 6, rp = cfg.rp;
+      const f = -Math.acos(Math.max(-1, Math.min(1, 2*rp/d0 - 1)));
+      const h = Math.sqrt(Mt * 2 * rp);
+      const vr = Mt/h * Math.sin(f), vt = Mt/h * (1 + Math.cos(f));
+      const rh = [Math.cos(f), 0, Math.sin(f)], th = [-Math.sin(f), 0, Math.cos(f)];
+      rel = scl(rh, d0);
+      vrel = add(scl(rh, vr), scl(th, vt));
+      L = nrm(crs(rel, vrel)); e1 = [1, 0, 0];
+    }
+    // relative vector points from galaxy 1 to galaxy 2
+    const x1 = scl(rel, -m2/Mt), x2 = scl(rel, m1/Mt);
+    const v1 = scl(vrel, -m2/Mt), v2 = scl(vrel, m1/Mt);
+    const n1 = cfg.radial ? [0, 1, 0] : diskNormal(L, e1, cfg.tilt1, cfg.az1 || 0);
+    const n2 = cfg.radial ? nrm([0.3, 0.2, 1]) : diskNormal(L, e1, cfg.tilt2, cfg.az2 || 0);
+    S.cores = [
+      makeGalaxy(0, m1, size1, x1, v1, n1, c1, 0),
+      makeGalaxy(1, m2, size2, x2, v2, n2, c2, c1),
+    ];
+    const n = Math.min(N, cfg.sample || 60000);
+    S.N = n; S.fullN = N; S.full = F;
+    S.pos = new Float32Array(3*n); S.vel = new Float32Array(3*n); S.base = new Float32Array(3*n);
+    S.burst = new Float32Array(n); S.gal = new Uint8Array(n); S.type = new Uint8Array(n);
+    for (let k = 0; k < n; k++){
+      const i = Math.floor(k * N / n);
+      for (let c = 0; c < 3; c++){ S.pos[3*k+c] = F.pos[3*i+c]; S.vel[3*k+c] = F.vel[3*i+c]; S.base[3*k+c] = F.base[3*i+c]; }
+      S.gal[k] = F.gal[i]; S.type[k] = F.type[i];
+    }
+    const gas = [];
+    for (let i = 0; i < n; i++) if (S.type[i] === 2) gas.push(i);
+    S.gasIdx = Uint32Array.from(gas);
+    F = null;
+    return S;
+  }
+
+  function coreAcc(){
+    const [A, B] = S.cores;
+    const d = [B.x[0]-A.x[0], B.x[1]-A.x[1], B.x[2]-A.x[2]];
+    const r2 = d[0]*d[0] + d[1]*d[1] + d[2]*d[2];
+    const eps2 = A.a*A.a + B.a*B.a;
+    const inv3 = 1 / Math.pow(r2 + eps2, 1.5);
+    // dynamical friction: the halos drag on each other while they overlap
+    const vr = [A.v[0]-B.v[0], A.v[1]-B.v[1], A.v[2]-B.v[2]];
+    const fr = FRICTION / (r2 + eps2);
+    const aA = [], aB = [];
+    for (let k = 0; k < 3; k++){
+      aA[k] =  B.m * d[k] * inv3 - fr * B.m * vr[k];
+      aB[k] = -A.m * d[k] * inv3 + fr * A.m * vr[k];
+    }
+    return [aA, aB];
+  }
+
+  function step(dt){
+    const [A, B] = S.cores;
+    // kick-drift-kick for the two halos
+    let [aA, aB] = coreAcc();
+    for (let k = 0; k < 3; k++){ A.v[k] += 0.5*dt*aA[k]; B.v[k] += 0.5*dt*aB[k]; }
+    // particles: kick with old core positions, drift, then kick with new
+    const pos = S.pos, vel = S.vel, N = S.N;
+    const ax0 = A.x[0], ay0 = A.x[1], az0 = A.x[2], bx0 = B.x[0], by0 = B.x[1], bz0 = B.x[2];
+    for (let k = 0; k < 3; k++){ A.x[k] += dt*A.v[k]; B.x[k] += dt*B.v[k]; }
+    const ax1 = A.x[0], ay1 = A.x[1], az1 = A.x[2], bx1 = B.x[0], by1 = B.x[1], bz1 = B.x[2];
+    const mA = A.m, mB = B.m, a2A = A.a*A.a, a2B = B.a*B.a, h = 0.5*dt;
+    for (let i = 0, j = 0; i < N; i++, j += 3){
+      let x = pos[j], y = pos[j+1], z = pos[j+2];
+      let vx = vel[j], vy = vel[j+1], vz = vel[j+2];
+      let dx = x-ax0, dy = y-ay0, dz = z-az0, r2 = dx*dx+dy*dy+dz*dz + a2A;
+      let f = mA / (r2*Math.sqrt(r2));
+      vx -= h*f*dx; vy -= h*f*dy; vz -= h*f*dz;
+      dx = x-bx0; dy = y-by0; dz = z-bz0; r2 = dx*dx+dy*dy+dz*dz + a2B;
+      f = mB / (r2*Math.sqrt(r2));
+      vx -= h*f*dx; vy -= h*f*dy; vz -= h*f*dz;
+      x += dt*vx; y += dt*vy; z += dt*vz;
+      dx = x-ax1; dy = y-ay1; dz = z-az1; r2 = dx*dx+dy*dy+dz*dz + a2A;
+      f = mA / (r2*Math.sqrt(r2));
+      vx -= h*f*dx; vy -= h*f*dy; vz -= h*f*dz;
+      dx = x-bx1; dy = y-by1; dz = z-bz1; r2 = dx*dx+dy*dy+dz*dz + a2B;
+      f = mB / (r2*Math.sqrt(r2));
+      vx -= h*f*dx; vy -= h*f*dy; vz -= h*f*dz;
+      pos[j] = x; pos[j+1] = y; pos[j+2] = z;
+      vel[j] = vx; vel[j+1] = vy; vel[j+2] = vz;
+    }
+    [aA, aB] = coreAcc();
+    for (let k = 0; k < 3; k++){ A.v[k] += 0.5*dt*aA[k]; B.v[k] += 0.5*dt*aB[k]; }
+    S.t += dt;
+  }
+
+  // Starburst proxy: gas from the two galaxies meeting in the same small cell at high relative speed
+  const HBITS = 18, HSIZE = 1 << HBITS, HMASK = HSIZE - 1, CELL = 0.07;
+  const cnt = [new Uint16Array(HSIZE), new Uint16Array(HSIZE)];
+  const vs = [new Float32Array(HSIZE*3), new Float32Array(HSIZE*3)];
+  const tag = new Int32Array(HSIZE), stamp = new Uint32Array(HSIZE);
+  let frameId = 0;
+  // grid: { data: Uint8Array(G³), G, min: [x,y,z], size } — cells the GPU reads to light up gas
+  function starbursts(elapsed, grid){
+    const decay = Math.exp(-elapsed / 2.2);
+    const b = S.burst;
+    for (let i = 0; i < S.N; i++) b[i] *= decay;
+    const [A, B] = S.cores;
+    const sep = Math.hypot(A.x[0]-B.x[0], A.x[1]-B.x[1], A.x[2]-B.x[2]);
+    if (sep > 1.6 * (Math.cbrt(A.m) + Math.cbrt(B.m))){ // disks can't touch: skip the work
+      if (grid && grid.live){ grid.data.fill(0); grid.live = false; return true; }
+      return false;
+    }
+    let G = 0, gdata = null, gx0 = 0, gy0 = 0, gz0 = 0, ginv = 0;
+    if (grid){
+      const c = com();
+      G = grid.G; gdata = grid.data; gdata.fill(0);
+      grid.min = [c[0] - grid.size/2, c[1] - grid.size/2, c[2] - grid.size/2];
+      gx0 = grid.min[0]; gy0 = grid.min[1]; gz0 = grid.min[2]; ginv = G / grid.size;
+      grid.live = true;
+    }
+    const kScale = 3 * S.N / 80000;
+    frameId++;
+    const gi = S.gasIdx, pos = S.pos, vel = S.vel, gal = S.gal;
+    const keys = new Int32Array(gi.length);
+    for (let k = 0; k < gi.length; k++){
+      const i = gi[k], j = 3*i, g = gal[i];
+      const ix = Math.floor(pos[j]/CELL), iy = Math.floor(pos[j+1]/CELL), iz = Math.floor(pos[j+2]/CELL);
+      const full = ((ix & 1023) << 20) | ((iy & 1023) << 10) | (iz & 1023);
+      const c = ((ix*73856093) ^ (iy*19349663) ^ (iz*83492791)) & HMASK;
+      if (stamp[c] !== frameId){
+        stamp[c] = frameId; tag[c] = full;
+        cnt[0][c] = 0; cnt[1][c] = 0;
+        vs[0][3*c] = vs[0][3*c+1] = vs[0][3*c+2] = 0; vs[1][3*c] = vs[1][3*c+1] = vs[1][3*c+2] = 0;
+      } else if (tag[c] !== full){ keys[k] = -1; continue; } // hash collision: ignore
+      keys[k] = c;
+      if (cnt[g][c] < 65535) cnt[g][c]++;
+      vs[g][3*c] += vel[j]; vs[g][3*c+1] += vel[j+1]; vs[g][3*c+2] += vel[j+2];
+    }
+    for (let k = 0; k < gi.length; k++){
+      const c = keys[k];
+      if (c < 0) continue;
+      const n0 = cnt[0][c], n1 = cnt[1][c];
+      if (n0 === 0 || n1 === 0) continue;
+      const dvx = vs[0][3*c]/n0 - vs[1][3*c]/n1, dvy = vs[0][3*c+1]/n0 - vs[1][3*c+1]/n1, dvz = vs[0][3*c+2]/n0 - vs[1][3*c+2]/n1;
+      const dv = Math.hypot(dvx, dvy, dvz);
+      if (dv < 0.35) continue;
+      const s = Math.min(1, Math.min(n0, n1) / kScale * Math.min(1, dv));
+      const i = gi[k];
+      if (s > b[i]) b[i] = s;
+      if (gdata){
+        const j = 3*i;
+        const ix = Math.floor((pos[j]-gx0)*ginv), iy = Math.floor((pos[j+1]-gy0)*ginv), iz = Math.floor((pos[j+2]-gz0)*ginv);
+        if (ix >= 0 && iy >= 0 && iz >= 0 && ix < G && iy < G && iz < G){
+          const gi2 = ix + G*(iy + G*iz), v = (s*255) | 0;
+          if (v > gdata[gi2]) gdata[gi2] = v;
+        }
+      }
+    }
+    return !!grid;
+  }
+
+  function record(){
+    for (let g = 0; g < 2; g++){
+      const x = S.cores[g].x;
+      S.hist[g].push(x[0], x[1], x[2]);
+      if (S.hist[g].length > 3*1500) S.hist[g].splice(0, 3);
+    }
+  }
+
+  function separation(){
+    const [A, B] = S.cores;
+    return Math.hypot(A.x[0]-B.x[0], A.x[1]-B.x[1], A.x[2]-B.x[2]);
+  }
+  function com(){
+    const [A, B] = S.cores, M = A.m + B.m;
+    return [0,1,2].map(k => (A.x[k]*A.m + B.x[k]*B.m)/M);
+  }
+
+  return { S, init, step, starbursts, record, separation, com, UNIT_KPC, UNIT_MYR, UNIT_KMS };
+})();
+
+</script>
+
+<script>
+(() => {
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const small = Math.min(window.innerWidth, window.innerHeight) < 700 || (navigator.hardwareConcurrency || 8) <= 4;
+  const $ = id => document.getElementById(id);
+
+  /* ================================================================
+     Scenarios
+     ================================================================ */
+  const SC = {
+    antennae:  { name: 'The Antennae', cfg: { m1: 1, m2: 1, rp: 1.0, tilt1: 15, az1: 0, tilt2: 40, az2: 90, seed: 11 }, cam: { pitch: 0.55, dist: 10 },
+      text: 'Two similar spirals, both spinning <b>the same way</b> they orbit. Watch two tidal tails peel off after the first pass, then the cores fall back together. That is where the real Antennae are now.' },
+    mice:      { name: 'The Mice', cfg: { m1: 1, m2: 1, rp: 1.4, tilt1: 25, az1: 0, tilt2: 70, az2: 180, seed: 5 }, cam: { pitch: 0.35, dist: 11 },
+      text: 'An equal pair on a wider pass, with one disk steeply tilted. Shortly after the first pass each galaxy trails <b>one long, straight tail</b>, as seen in the real NGC 4676.' },
+    whirlpool: { name: 'The Whirlpool', cfg: { m1: 1, m2: 0.3, rp: 1.5, tilt1: 0, az1: 0, tilt2: 60, az2: 0, seed: 3 }, cam: { pitch: 1.2, dist: 9 },
+      text: 'A companion a third of the mass swings past a face-on spiral. Its pull sharpens <b>two grand spiral arms</b> and draws out a bridge of stars toward it, like M51 and NGC 5195.' },
+    cartwheel: { name: 'The Cartwheel', cfg: { m1: 1, m2: 0.35, radial: true, seed: 9 }, cam: { pitch: 0.9, dist: 9 },
+      text: 'A small galaxy plunges <b>straight through the center</b> of a disk. A ring of stars ripples outward, and gas piling up in the ring lights up with new stars.' },
+    milkomeda: { name: 'Milky Way + Andromeda', cfg: { m1: 1, m2: 1.4, rp: 1.2, tilt1: 60, az1: 30, tilt2: 125, az2: 200, seed: 21 }, cam: { pitch: 0.45, dist: 12 },
+      text: 'A sketch of one possible future: Andromeda, a little heavier, meets the Milky Way at a steep angle. The two merge over a couple of billion years into one elliptical galaxy, <b>Milkomeda</b>.' },
+    retro:     { name: 'Retrograde flyby', cfg: { m1: 1, m2: 1, rp: 1.0, tilt1: 180, az1: 0, tilt2: 165, az2: 90, seed: 11 }, cam: { pitch: 0.55, dist: 10 },
+      text: 'The same encounter as the Antennae, but both disks spin <b>against</b> their orbit. The tides can\'t keep hold of any stars for long, so almost no tails form. Compare the tail count.' },
+  };
+  const State = { scenario: 'antennae', N: small ? 30000 : 80000, playing: !reduceMotion, speed: 1, bursts: true, byGalaxy: false, orbits: false, follow: true, spin: !reduceMotion, custom: null };
+
+  /* ================================================================
+     WebGL
+     ================================================================ */
+  const canvas = $('sky');
+  const gl = canvas.getContext('webgl2', { antialias: false, alpha: false, premultipliedAlpha: false });
+  let glOK = !!gl;
+  function nogl(msg){ const d = document.createElement('div'); d.className = 'nogl'; d.textContent = msg; $('stage').appendChild(d); }
+  if (!gl) nogl('This simulation needs WebGL 2, which this browser or device has turned off.');
+
+  const PT_VS = `#version 300 es
+  in vec3 aPos; in vec3 aCol; in float aBurst; in float aGal;
+  uniform mat4 uView, uProj;
+  uniform float uSize, uBright, uBurstOn, uByGal;
+  out vec3 vCol;
+  void main(){
+    vec4 p = uView * vec4(aPos, 1.0);
+    gl_Position = uProj * p;
+    float b = aBurst * uBurstOn;
+    vec3 c = aCol;
+    if (uByGal > 0.5) c = aGal < 0.5 ? vec3(1.0, 0.58, 0.28) : vec3(0.32, 0.6, 1.0);
+    c += b * vec3(1.0, 0.3, 0.55) * 5.0;
+    gl_PointSize = clamp(uSize * (1.0 + b * 1.2) / max(-p.z, 0.05), 1.0, 28.0);
+    vCol = c * uBright;
+  }`;
+  const PT_FS = `#version 300 es
+  precision mediump float;
+  in vec3 vCol; out vec4 o;
+  void main(){
+    vec2 q = gl_PointCoord * 2.0 - 1.0;
+    float r2 = dot(q, q);
+    if (r2 > 1.0) discard;
+    o = vec4(vCol * exp(-r2 * 4.0), 1.0);
+  }`;
+  // one leapfrog step for every star, run on the GPU with transform feedback
+  const UP_VS = `#version 300 es
+  precision highp float;
+  precision highp sampler3D;
+  in vec3 aPos; in vec3 aVel; in float aBurst; in float aType;
+  uniform vec3 uA0, uB0, uA1, uB1;
+  uniform float uMA, uMB, uA2A, uA2B, uDt, uDecay, uGridSize;
+  uniform vec3 uGridMin;
+  uniform sampler3D uGrid;
+  out vec3 oPos; out vec3 oVel; out float oBurst;
+  vec3 pull(vec3 x, vec3 c, float m, float a2){ vec3 d = x - c; float r2 = dot(d, d) + a2; return -m * d / (r2 * sqrt(r2)); }
+  void main(){
+    float h = 0.5 * uDt;
+    vec3 v = aVel + h * (pull(aPos, uA0, uMA, uA2A) + pull(aPos, uB0, uMB, uA2B));
+    vec3 x = aPos + uDt * v;
+    v += h * (pull(x, uA1, uMA, uA2A) + pull(x, uB1, uMB, uA2B));
+    float b = aBurst * uDecay;
+    if (aType > 1.5){
+      vec3 g = (x - uGridMin) / uGridSize;
+      if (all(greaterThanEqual(g, vec3(0.0))) && all(lessThan(g, vec3(1.0)))) b = max(b, texture(uGrid, g).r);
+    }
+    oPos = x; oVel = v; oBurst = b;
+    gl_Position = vec4(0.0);
+  }`;
+  const UP_FS = `#version 300 es
+  precision mediump float; out vec4 o; void main(){ o = vec4(0.0); }`;
+  const LN_VS = `#version 300 es
+  in vec3 aPos; uniform mat4 uView, uProj;
+  void main(){ gl_Position = uProj * uView * vec4(aPos, 1.0); }`;
+  const LN_FS = `#version 300 es
+  precision mediump float; uniform vec3 uColor; out vec4 o;
+  void main(){ o = vec4(uColor, 1.0); }`;
+  const TM_VS = `#version 300 es
+  in vec2 p; out vec2 uv; void main(){ uv = p*0.5+0.5; gl_Position = vec4(p, 0.0, 1.0); }`;
+  const TM_FS = `#version 300 es
+  precision highp float;
+  in vec2 uv; uniform sampler2D uTex; uniform vec2 uPx; uniform float uExp; out vec4 o;
+  void main(){
+    vec3 c = texture(uTex, uv).rgb;
+    // soft glow: two rings of taps
+    vec3 g = vec3(0.0);
+    for (int i = 0; i < 8; i++){
+      float a = float(i) * 0.785398;
+      vec2 d = vec2(cos(a), sin(a));
+      g += texture(uTex, uv + d * uPx * 3.0).rgb * 0.6;
+      g += texture(uTex, uv + d * uPx * 9.0).rgb * 0.4;
+    }
+    c += g / 8.0 * 0.35;
+    c = 1.0 - exp(-c * uExp);
+    // faint vignette toward deep space blue
+    float v = smoothstep(1.25, 0.2, length(uv - 0.5) * 1.6);
+    c = c * (0.75 + 0.25 * v) + vec3(0.004, 0.005, 0.012) * v;
+    o = vec4(pow(c, vec3(1.0/2.2)), 1.0);
+  }`;
+
+  function program(vs, fs, varyings){
+    const mk = (t, s) => { const sh = gl.createShader(t); gl.shaderSource(sh, s); gl.compileShader(sh); if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(sh)); return sh; };
+    const p = gl.createProgram(); gl.attachShader(p, mk(gl.VERTEX_SHADER, vs)); gl.attachShader(p, mk(gl.FRAGMENT_SHADER, fs));
+    if (varyings) gl.transformFeedbackVaryings(p, varyings, gl.SEPARATE_ATTRIBS);
+    gl.linkProgram(p); if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+    const u = {}; const n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS);
+    for (let i = 0; i < n; i++){ const info = gl.getActiveUniform(p, i); u[info.name] = gl.getUniformLocation(p, info.name); }
+    return { p, u, a: name => gl.getAttribLocation(p, name) };
+  }
+
+  let P, LN, TM, UP, vaoLn, vaoTm, bufLn, fbo, fboTex, gridTex, tf, floatOK = false;
+  // two sets of star buffers; each step reads one set and writes the other
+  const sets = [0, 1].map(() => ({}));
+  let bufCol, bufGal, bufType, cur = 0, gpuN = 0;
+  const GRID = { G: 112, size: 8, data: new Uint8Array(112 * 112 * 112), min: [0, 0, 0], live: false };
+  if (glOK){
+    try {
+      P = program(PT_VS, PT_FS); LN = program(LN_VS, LN_FS); TM = program(TM_VS, TM_FS);
+      UP = program(UP_VS, UP_FS, ['oPos', 'oVel', 'oBurst']);
+      floatOK = !!gl.getExtension('EXT_color_buffer_float') || !!gl.getExtension('EXT_color_buffer_half_float');
+      bufCol = gl.createBuffer(); bufGal = gl.createBuffer(); bufType = gl.createBuffer();
+      for (const st of sets){ st.pos = gl.createBuffer(); st.vel = gl.createBuffer(); st.burst = gl.createBuffer(); }
+      const attr = (buf, loc, size) => { if (loc < 0) return; gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, size, gl.FLOAT, false, 0, 0); };
+      for (const st of sets){
+        st.upVao = gl.createVertexArray(); gl.bindVertexArray(st.upVao);
+        attr(st.pos, UP.a('aPos'), 3); attr(st.vel, UP.a('aVel'), 3); attr(st.burst, UP.a('aBurst'), 1); attr(bufType, UP.a('aType'), 1);
+        st.drawVao = gl.createVertexArray(); gl.bindVertexArray(st.drawVao);
+        attr(st.pos, P.a('aPos'), 3); attr(bufCol, P.a('aCol'), 3); attr(st.burst, P.a('aBurst'), 1); attr(bufGal, P.a('aGal'), 1);
+      }
+      vaoLn = gl.createVertexArray(); gl.bindVertexArray(vaoLn);
+      bufLn = gl.createBuffer(); attr(bufLn, LN.a('aPos'), 3);
+      vaoTm = gl.createVertexArray(); gl.bindVertexArray(vaoTm);
+      const bt = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, bt);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
+      gl.enableVertexAttribArray(TM.a('p')); gl.vertexAttribPointer(TM.a('p'), 2, gl.FLOAT, false, 0, 0);
+      gl.bindVertexArray(null);
+      tf = gl.createTransformFeedback();
+      gridTex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_3D, gridTex);
+      gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+      gl.texImage3D(gl.TEXTURE_3D, 0, gl.R8, GRID.G, GRID.G, GRID.G, 0, gl.RED, gl.UNSIGNED_BYTE, GRID.data);
+      for (const [k, v] of [[gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_MAG_FILTER, gl.LINEAR], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE]]) gl.texParameteri(gl.TEXTURE_3D, k, v);
+      fbo = gl.createFramebuffer(); fboTex = gl.createTexture();
+    } catch (e){ console.error(e); glOK = false; nogl('The renderer could not start on this device.'); }
+  }
+
+  let W = 0, H = 0;
+  function resize(){
+    const dpr = Math.min(window.devicePixelRatio || 1, small ? 1.25 : 1.75);
+    W = Math.max(2, Math.round(canvas.clientWidth * dpr)); H = Math.max(2, Math.round(canvas.clientHeight * dpr));
+    canvas.width = W; canvas.height = H;
+    if (!glOK) return;
+    gl.bindTexture(gl.TEXTURE_2D, fboTex);
+    if (floatOK) gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, W, H, 0, gl.RGBA, gl.HALF_FLOAT, null);
+    else gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, W, H, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, fboTex, 0);
+    if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE && floatOK){ floatOK = false; gl.bindFramebuffer(gl.FRAMEBUFFER, null); resize(); return; }
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  }
+  new ResizeObserver(resize).observe(canvas);
+
+  /* ================================================================
+     Simulation control
+     ================================================================ */
+  const DT = 0.02;
+  let stepAcc = 0, sinceBurst = 0, tailFrac = null, frameNo = 0;
+  let peris = 0, sepPrev = null, sepDir = -1, sepMin = Infinity;
+
+  let ready = false, buildToken = 0;
+  function start(){
+    const sc = SC[State.scenario];
+    const cfg = State.custom || sc.cfg;
+    ready = false;
+    const token = ++buildToken;
+    const big = State.N > 200000;
+    if (big){ $('building').textContent = `Building ${State.N.toLocaleString('en-US')} stars…`; $('building').hidden = false; }
+    // let the message paint before the heavy work
+    setTimeout(() => {
+      if (token !== buildToken) return;
+      Sim.init({ N: State.N, ...cfg });
+      peris = 0; sepPrev = null; sepDir = -1; tailFrac = null; stepAcc = 0; sinceBurst = 0;
+      GRID.data.fill(0); GRID.live = false;
+      const F = Sim.S.full;
+      if (glOK){
+        gpuN = State.N;
+        try {
+          for (let k = 0; k < 2; k++){
+            const st = sets[k];
+            gl.bindBuffer(gl.ARRAY_BUFFER, st.pos); gl.bufferData(gl.ARRAY_BUFFER, k === 0 ? F.pos : F.pos.byteLength, gl.DYNAMIC_COPY);
+            gl.bindBuffer(gl.ARRAY_BUFFER, st.vel); gl.bufferData(gl.ARRAY_BUFFER, k === 0 ? F.vel : F.vel.byteLength, gl.DYNAMIC_COPY);
+            gl.bindBuffer(gl.ARRAY_BUFFER, st.burst); gl.bufferData(gl.ARRAY_BUFFER, gpuN * 4, gl.DYNAMIC_COPY);
+          }
+          gl.bindBuffer(gl.ARRAY_BUFFER, bufCol); gl.bufferData(gl.ARRAY_BUFFER, F.base, gl.STATIC_DRAW);
+          gl.bindBuffer(gl.ARRAY_BUFFER, bufGal); gl.bufferData(gl.ARRAY_BUFFER, Float32Array.from(F.gal), gl.STATIC_DRAW);
+          gl.bindBuffer(gl.ARRAY_BUFFER, bufType); gl.bufferData(gl.ARRAY_BUFFER, Float32Array.from(F.type), gl.STATIC_DRAW);
+          gl.bindTexture(gl.TEXTURE_3D, gridTex);
+          gl.texSubImage3D(gl.TEXTURE_3D, 0, 0, 0, 0, GRID.G, GRID.G, GRID.G, gl.RED, gl.UNSIGNED_BYTE, GRID.data);
+          cur = 0;
+        } catch (e){ console.error(e); }
+        if (gl.getError() === gl.OUT_OF_MEMORY){
+          $('building').textContent = 'Not enough graphics memory for that many stars. Choose fewer.';
+          $('building').hidden = false;
+          Sim.S.full = null;
+          return;
+        }
+      }
+      Sim.S.full = null;
+      const c = Sim.com(); camTarget = c.slice(); camLook = c.slice();
+      $('building').hidden = true;
+      ready = true;
+      if (pendingAdvance){ advance(pendingAdvance); pendingAdvance = 0; }
+    }, big ? 40 : 0);
+  }
+  let pendingAdvance = 0;
+
+  function gpuStep(A0, B0){
+    const [A, B] = Sim.S.cores;
+    gl.useProgram(UP.p);
+    gl.uniform3fv(UP.u.uA0, A0); gl.uniform3fv(UP.u.uB0, B0);
+    gl.uniform3fv(UP.u.uA1, A.x); gl.uniform3fv(UP.u.uB1, B.x);
+    gl.uniform1f(UP.u.uMA, A.m); gl.uniform1f(UP.u.uMB, B.m);
+    gl.uniform1f(UP.u.uA2A, A.a*A.a); gl.uniform1f(UP.u.uA2B, B.a*B.a);
+    gl.uniform1f(UP.u.uDt, DT); gl.uniform1f(UP.u.uDecay, Math.exp(-DT / 2.2));
+    gl.uniform3fv(UP.u.uGridMin, GRID.min); gl.uniform1f(UP.u.uGridSize, GRID.size);
+    gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_3D, gridTex); gl.uniform1i(UP.u.uGrid, 1);
+    const src = sets[cur], dst = sets[1 - cur];
+    gl.bindVertexArray(src.upVao);
+    gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, tf);
+    gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0, dst.pos);
+    gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 1, dst.vel);
+    gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 2, dst.burst);
+    gl.enable(gl.RASTERIZER_DISCARD);
+    gl.beginTransformFeedback(gl.POINTS);
+    gl.drawArrays(gl.POINTS, 0, gpuN);
+    gl.endTransformFeedback();
+    gl.disable(gl.RASTERIZER_DISCARD);
+    gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0, null);
+    gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 1, null);
+    gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 2, null);
+    gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, null);
+    gl.bindVertexArray(null);
+    cur = 1 - cur;
+  }
+
+  function advance(nSteps){
+    if (!ready){ pendingAdvance += nSteps; return; }
+    for (let i = 0; i < nSteps; i++){
+      const A0 = Sim.S.cores[0].x.slice(), B0 = Sim.S.cores[1].x.slice();
+      Sim.step(DT);
+      if (glOK) gpuStep(A0, B0);
+      sinceBurst += DT;
+      if (sinceBurst >= 3*DT){
+        const changed = Sim.starbursts(sinceBurst, GRID); sinceBurst = 0;
+        if (changed && glOK){ gl.bindTexture(gl.TEXTURE_3D, gridTex); gl.texSubImage3D(gl.TEXTURE_3D, 0, 0, 0, 0, GRID.G, GRID.G, GRID.G, gl.RED, gl.UNSIGNED_BYTE, GRID.data); }
+      }
+      if (i % 2 === 0) Sim.record();
+      const s = Sim.separation();
+      if (sepPrev !== null){
+        const d = s - sepPrev;
+        if (sepDir < 0 && d > 0){ peris++; sepDir = 1; }
+        else if (sepDir > 0 && d < 0){ sepDir = -1; }
+      }
+      sepPrev = s;
+    }
+  }
+
+  function measureTails(){
+    const S = Sim.S, [A, B] = S.cores, R2 = 2.2*2.2;
+    let n = 0;
+    for (let i = 0, j = 0; i < S.N; i++, j += 3){
+      const ax = S.pos[j]-A.x[0], ay = S.pos[j+1]-A.x[1], az = S.pos[j+2]-A.x[2];
+      const bx = S.pos[j]-B.x[0], by = S.pos[j+1]-B.x[1], bz = S.pos[j+2]-B.x[2];
+      if (ax*ax+ay*ay+az*az > R2 && bx*bx+by*by+bz*bz > R2) n++;
+    }
+    tailFrac = n / S.N;
+  }
+
+  /* ================================================================
+     Camera
+     ================================================================ */
+  const cam = { yaw: 0.6, pitch: 0.55, dist: 10 }, tgt = { ...cam };
+  let camTarget = [0,0,0], camLook = [0,0,0], lastInteract = -1e9;
+  function setCam(c, immediate){ tgt.pitch = c.pitch; tgt.dist = c.dist; if (immediate || reduceMotion){ cam.pitch = c.pitch; cam.dist = c.dist; } }
+
+  const pointers = new Map(); let pinch = null;
+  canvas.addEventListener('pointerdown', e => { canvas.setPointerCapture(e.pointerId); pointers.set(e.pointerId, { x: e.clientX, y: e.clientY }); lastInteract = performance.now(); $('hint').hidden = true;
+    if (pointers.size === 2){ const [a, b] = [...pointers.values()]; pinch = { d: Math.hypot(a.x-b.x, a.y-b.y), dist: tgt.dist }; } });
+  canvas.addEventListener('pointermove', e => {
+    if (!pointers.has(e.pointerId)) return;
+    const prev = pointers.get(e.pointerId), cur = { x: e.clientX, y: e.clientY };
+    pointers.set(e.pointerId, cur); lastInteract = performance.now();
+    if (pointers.size === 1){
+      tgt.yaw -= (cur.x - prev.x) * 0.005; tgt.pitch = Math.max(-1.5, Math.min(1.5, tgt.pitch + (cur.y - prev.y) * 0.004));
+      cam.yaw = tgt.yaw; cam.pitch = tgt.pitch;
+    } else if (pointers.size === 2 && pinch){
+      const [a, b] = [...pointers.values()];
+      tgt.dist = cam.dist = Math.max(2.5, Math.min(40, pinch.dist * pinch.d / Math.max(1, Math.hypot(a.x-b.x, a.y-b.y))));
+    }
+  });
+  const up = e => { pointers.delete(e.pointerId); pinch = null; };
+  canvas.addEventListener('pointerup', up); canvas.addEventListener('pointercancel', up);
+  canvas.addEventListener('wheel', e => { e.preventDefault(); $('hint').hidden = true; tgt.dist = cam.dist = Math.max(2.5, Math.min(40, tgt.dist * Math.exp(e.deltaY * 0.0012))); }, { passive: false });
+
+  function lookAt(eye, at){
+    const f = norm([at[0]-eye[0], at[1]-eye[1], at[2]-eye[2]]);
+    const s = norm(cross(f, [0,1,0])), u = cross(s, f);
+    return new Float32Array([s[0],u[0],-f[0],0, s[1],u[1],-f[1],0, s[2],u[2],-f[2],0, -dot(s,eye),-dot(u,eye),dot(f,eye),1]);
+  }
+  function persp(fovy, asp, n, f){
+    const t = 1/Math.tan(fovy/2);
+    return new Float32Array([t/asp,0,0,0, 0,t,0,0, 0,0,(f+n)/(n-f),-1, 0,0,2*f*n/(n-f),0]);
+  }
+  const cross = (a, b) => [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]];
+  const dot = (a, b) => a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+  const norm = a => { const l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0]/l, a[1]/l, a[2]/l]; };
+
+  /* ================================================================
+     Readouts
+     ================================================================ */
+  function fmtTime(units){
+    const myr = units * Sim.UNIT_MYR;
+    if (myr < 1000) return Math.round(myr) + ' million years';
+    return (myr/1000).toFixed(2) + ' billion years';
+  }
+  function phaseText(sep){
+    const [A, B] = Sim.S.cores;
+    const size = Math.cbrt(A.m) + Math.cbrt(B.m);
+    if (peris >= 3 && sep < 0.12 * size) return 'Merged';
+    if (peris >= 2 && sep < 0.35 * size) return 'Merging';
+    if (peris === 0) return sep < 0.9 * size ? 'First passage' : 'Approaching';
+    if (sepDir > 0) return peris === 1 ? 'Swinging apart' : 'Swinging apart again';
+    return sep < 0.9 * size ? 'Passing again' : 'Falling back together';
+  }
+  let lastPhase = '';
+  function updateReadout(){
+    const S = Sim.S, [A, B] = S.cores;
+    const sep = Sim.separation();
+    const kpc = sep * Sim.UNIT_KPC;
+    const dv = [A.v[0]-B.v[0], A.v[1]-B.v[1], A.v[2]-B.v[2]];
+    $('rTime').textContent = fmtTime(S.t);
+    $('rSep').textContent = sep < 0.05 ? 'one galaxy' : `${kpc.toFixed(0)} kpc · ${(kpc*3.262).toFixed(0)}k ly`;
+    $('rVel').textContent = sep < 0.05 ? '—' : `${Math.round(Math.hypot(dv[0], dv[1], dv[2]) * Sim.UNIT_KMS)} km/s`;
+    $('rTail').textContent = tailFrac === null ? '—' : (tailFrac*100).toFixed(1) + '%';
+    const ph = phaseText(sep);
+    if (ph !== lastPhase){ $('phaseText').textContent = ph; lastPhase = ph; }
+  }
+
+  /* ================================================================
+     Frame loop
+     ================================================================ */
+  let visible = true, tPrev = performance.now();
+  new IntersectionObserver(es => { visible = es[0].isIntersecting; }, { threshold: 0.01 }).observe(canvas);
+  const ORBIT_COLORS = [[0.9, 0.55, 0.28], [0.35, 0.6, 1.0]];
+
+  function frame(now){
+    requestAnimationFrame(frame);
+    const dt = Math.min((now - tPrev)/1000, 0.1); tPrev = now;
+    if (!visible || document.hidden || !ready) return;
+    frameNo++;
+    if (State.playing){
+      stepAcc += State.speed;
+      const n = Math.floor(stepAcc); stepAcc -= n;
+      if (n > 0) advance(n);
+    }
+    if (frameNo % 20 === 0) measureTails();
+    updateReadout();
+    if (!glOK) return;
+
+    // camera
+    if (State.spin && now - lastInteract > 3000) tgt.yaw += dt * 0.05;
+    const k = 1 - Math.exp(-dt * 2.2);
+    cam.pitch += (tgt.pitch - cam.pitch) * k; cam.dist += (tgt.dist - cam.dist) * k; cam.yaw += (tgt.yaw - cam.yaw) * Math.min(1, 3*k);
+    if (State.follow) camTarget = Sim.com();
+    for (let i = 0; i < 3; i++) camLook[i] += (camTarget[i] - camLook[i]) * (1 - Math.exp(-dt * 1.5));
+    const cp = Math.cos(cam.pitch);
+    const eye = [camLook[0] + cam.dist*cp*Math.cos(cam.yaw), camLook[1] + cam.dist*Math.sin(cam.pitch), camLook[2] + cam.dist*cp*Math.sin(cam.yaw)];
+    const view = lookAt(eye, camLook), proj = persp(0.8, W/H, 0.05, 200);
+
+    const S = Sim.S;
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+    gl.viewport(0, 0, W, H);
+    gl.clearColor(0, 0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);
+
+    if (State.orbits){
+      gl.useProgram(LN.p); gl.bindVertexArray(vaoLn);
+      gl.uniformMatrix4fv(LN.u.uView, false, view); gl.uniformMatrix4fv(LN.u.uProj, false, proj);
+      for (let g = 0; g < 2; g++){
+        const h = S.hist[g]; if (h.length < 6) continue;
+        gl.bindBuffer(gl.ARRAY_BUFFER, bufLn); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(h), gl.STREAM_DRAW);
+        gl.uniform3fv(LN.u.uColor, ORBIT_COLORS[g].map(x => x * 0.5));
+        gl.drawArrays(gl.LINE_STRIP, 0, h.length/3);
+      }
+    }
+
+    gl.useProgram(P.p); gl.bindVertexArray(sets[cur].drawVao);
+    gl.uniformMatrix4fv(P.u.uView, false, view); gl.uniformMatrix4fv(P.u.uProj, false, proj);
+    // more stars: each one smaller and dimmer, so the galaxy keeps its overall brightness
+    const dens = 80000 / gpuN;
+    gl.uniform1f(P.u.uSize, H * 0.018 * Math.pow(dens, 0.2));
+    gl.uniform1f(P.u.uBright, 0.11 * (dens > 1 ? Math.sqrt(dens) : Math.pow(dens, 0.62)) * (floatOK ? 1 : 1.6));
+    gl.uniform1f(P.u.uBurstOn, State.bursts ? 1 : 0);
+    gl.uniform1f(P.u.uByGal, State.byGalaxy ? 1 : 0);
+    gl.drawArrays(gl.POINTS, 0, gpuN);
+    gl.disable(gl.BLEND);
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.viewport(0, 0, W, H);
+    gl.useProgram(TM.p); gl.bindVertexArray(vaoTm);
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, fboTex);
+    gl.uniform1i(TM.u.uTex, 0); gl.uniform2f(TM.u.uPx, 1/W, 1/H); gl.uniform1f(TM.u.uExp, 1.6);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+  }
+
+  /* ================================================================
+     Controls
+     ================================================================ */
+  function speedFromSlider(v){ return v === 0 ? 0 : 0.25 * Math.pow(16, v / 100); } // 0.25 .. 4 steps per frame
+  const speedEl = $('speed');
+  function syncSpeed(){
+    State.speed = speedFromSlider(+speedEl.value);
+    const myrPerSec = State.speed * DT * Sim.UNIT_MYR * 60;
+    $('speedOut').textContent = State.speed === 0 ? 'stopped' : `${myrPerSec < 10 ? myrPerSec.toFixed(1) : Math.round(myrPerSec)} Myr / second`;
+  }
+  speedEl.addEventListener('input', syncSpeed);
+  syncSpeed();
+
+  const playBtn = $('playBtn');
+  function syncPlay(){ playBtn.textContent = State.playing ? 'Pause' : 'Play'; playBtn.setAttribute('aria-pressed', String(State.playing)); }
+  playBtn.addEventListener('click', () => { State.playing = !State.playing; syncPlay(); });
+  $('restartBtn').addEventListener('click', () => { start(); });
+  syncPlay();
+
+  function syncToggles(){ document.querySelectorAll('#toggles .chip').forEach(b => b.setAttribute('aria-pressed', String(!!State[b.dataset.key]))); }
+  document.querySelectorAll('#toggles .chip').forEach(b => b.addEventListener('click', () => { State[b.dataset.key] = !State[b.dataset.key]; syncToggles(); }));
+  syncToggles();
+
+  function syncCounts(){ document.querySelectorAll('#counts .chip').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.n === State.N))); }
+  document.querySelectorAll('#counts .chip').forEach(b => b.addEventListener('click', () => { State.N = +b.dataset.n; syncCounts(); start(); }));
+  syncCounts();
+
+  function chooseScenario(key, opts = {}){
+    State.scenario = key; State.custom = null;
+    const sc = SC[key];
+    document.querySelectorAll('#scenarios .chip').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.sc === key)));
+    $('caption').innerHTML = sc.text;
+    $('phaseScenario').textContent = sc.name;
+    setCam(sc.cam, opts.immediate);
+    if (!sc.cfg.radial){
+      $('cRatio').value = Math.min(sc.cfg.m1, sc.cfg.m2) / Math.max(sc.cfg.m1, sc.cfg.m2);
+      $('cPeri').value = sc.cfg.rp; $('cTilt1').value = sc.cfg.tilt1; $('cTilt2').value = sc.cfg.tilt2;
+      syncCustomOut();
+    }
+    start();
+  }
+  document.querySelectorAll('#scenarios .chip').forEach(b => b.addEventListener('click', () => chooseScenario(b.dataset.sc)));
+
+  function tiltLabel(v){ return v < 90 ? `${v}° prograde` : v > 90 ? `${v}° retrograde` : '90° edge-on'; }
+  function syncCustomOut(){
+    const q = +$('cRatio').value;
+    $('cRatioOut').textContent = q >= 0.995 ? '1 : 1' : `1 : ${(1/q).toFixed(1)}`;
+    $('cPeriOut').textContent = `${(+$('cPeri').value * Sim.UNIT_KPC).toFixed(0)} kpc`;
+    $('cTilt1Out').textContent = tiltLabel(+$('cTilt1').value);
+    $('cTilt2Out').textContent = tiltLabel(+$('cTilt2').value);
+  }
+  ['cRatio', 'cPeri', 'cTilt1', 'cTilt2'].forEach(id => $(id).addEventListener('input', syncCustomOut));
+  $('collideBtn').addEventListener('click', () => {
+    State.custom = { m1: 1, m2: +$('cRatio').value, rp: +$('cPeri').value, tilt1: +$('cTilt1').value, az1: 0, tilt2: +$('cTilt2').value, az2: 90, seed: 17 };
+    document.querySelectorAll('#scenarios .chip').forEach(b => b.setAttribute('aria-pressed', 'false'));
+    $('caption').innerHTML = 'Your own encounter. Tilts under 90° spin <b>with</b> the orbit (prograde) and make tails. Over 90° spin against it (retrograde) and mostly don\'t.';
+    $('phaseScenario').textContent = 'Your collision';
+    setCam({ pitch: 0.55, dist: 10 + 2 * +$('cPeri').value });
+    State.playing = true; syncPlay();
+    start();
+    $('stage').scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+  });
+
+  const SHOWS = {
+    interpenetrate: () => { chooseScenario('antennae'); State.byGalaxy = true; State.bursts = false; },
+    retro:          () => { chooseScenario('retro'); State.byGalaxy = false; State.bursts = true; },
+    bursts:         () => { chooseScenario('antennae'); State.byGalaxy = false; State.bursts = true; },
+    orbits:         () => { chooseScenario('antennae'); State.orbits = true; State.follow = true; setCam({ pitch: 1.35, dist: 13 }); },
+    ring:           () => { chooseScenario('cartwheel'); State.byGalaxy = false; State.bursts = true; },
+    remnant:        () => { chooseScenario('milkomeda'); speedEl.value = 100; syncSpeed(); },
+    milkomeda:      () => { chooseScenario('milkomeda'); },
+    antennae:       () => { chooseScenario('antennae'); },
+    mice:           () => { chooseScenario('mice'); },
+    whirlpool:      () => { chooseScenario('whirlpool'); },
+    cartwheel:      () => { chooseScenario('cartwheel'); },
+  };
+  document.querySelectorAll('[data-show]').forEach(b => b.addEventListener('click', () => {
+    SHOWS[b.dataset.show](); syncToggles(); State.playing = true; syncPlay();
+    $('stage').scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+  }));
+
+  resize();
+  chooseScenario('antennae', { immediate: true });
+  if (reduceMotion) advance(260); // show a meaningful still frame: just after first passage
+  requestAnimationFrame(frame);
+})();
+</script>
+
+</body></html>

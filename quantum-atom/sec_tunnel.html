@@ -1,0 +1,29 @@
+<section class="wrap" id="tunnel-sec">
+  <div class="eyebrow">Quantum tunnelling</div>
+  <h2>Walking through <em>walls</em></h2>
+  <p class="section-lede">Here the electron runs along a line at a wall it does not have the energy to climb. A thrown ball would bounce off every time. The electron's wave does not stop dead at the wall: it dies away inside, exponentially. If the wall is thin enough, a little of it is still alive on the far side, and that is <strong>the chance the electron turns up there</strong>. Thicken the wall by a fraction of a nanometre and that chance collapses.</p>
+  <div class="panel tunwrap">
+    <canvas id="tunCv" aria-label="An electron wave hitting a thin energy barrier"></canvas>
+    <div class="tunlab" id="tunLab"></div>
+  </div>
+  <div class="tunctl">
+    <div class="row2">
+      <label class="sl">Wall height <input type="range" id="tunV" min="5.5" max="12" step="0.1" value="8" aria-label="Barrier height"><output id="tunVo"></output></label>
+      <label class="sl">Wall thickness <input type="range" id="tunA" min="0.05" max="0.8" step="0.01" value="0.3" aria-label="Barrier thickness"><output id="tunAo"></output></label>
+      <label class="sl">Electron energy <input type="range" id="tunE" min="1" max="7" step="0.1" value="5" aria-label="Electron energy"><output id="tunEo"></output></label>
+    </div>
+    <dl class="kpis tunk" id="tunK"></dl>
+  </div>
+  <div class="numbers" style="margin-top:28px">
+    <div class="panel chart-pad">
+      <p class="chart-title">Chance of getting through</p>
+      <p class="chart-unit">against wall thickness, logarithmic scale · line: exact calculation · dots: each run of the simulation above</p>
+      <canvas class="chart" id="tunChart" data-h="300"></canvas>
+    </div>
+    <div>
+      <p class="bigq">The curve is a straight line on a log scale: every extra slice of wall divides the chance by the same factor.</p>
+      <p>With the settings above, an electron 3 eV short of the top of the wall, each <b>0.1 nm</b> of extra thickness cuts the odds about <b>six-fold</b>; for an electron leaving a metal, about 4.5 eV short, it is <b>ten-fold</b>. That steep, exact dependence is not a curiosity. A great deal of nature and technology runs on it.</p>
+    </div>
+  </div>
+  <div class="table-wrap" style="margin-top:24px"><table id="tunTable"></table></div>
+</section>

@@ -1,0 +1,206 @@
+<style>
+  :root { --rain: #5fd08a; --cold: #7fb6ff; --warm: #ff9d5c; }
+  #sky { height: clamp(520px, 82vh, 940px); }
+  .stationhud { right: 14px; bottom: 14px; width: min(400px, calc(100% - 28px)); padding: 8px 10px 8px; }
+  .stationhud .lab { display: flex; justify-content: space-between; gap: 10px; color: var(--faint); font-size: 11px; align-items: baseline; }
+  .stationhud .lab b { font-weight: 500; color: var(--ink); font-size: 12px; }
+  .stationhud canvas { display: block; width: 100%; height: 150px; margin-top: 4px; }
+  .stationhud .now { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 6px; color: var(--muted); font-size: 11px; }
+  .stationhud .now span b { display: block; color: var(--ink); font-size: 13px; font-weight: 500; }
+  .stationhud .x { position: absolute; right: 6px; top: 4px; appearance: none; background: none; border: 0; color: var(--faint); cursor: pointer; font: 14px var(--mono); pointer-events: auto; }
+  .hl { position: absolute; left: 0; top: 0; font-family: var(--display); font-size: 22px; line-height: 1; transform: translate(-50%, -50%); text-shadow: 0 0 8px #000, 0 0 3px #000; pointer-events: none; }
+  .hl small { display: block; font-family: var(--mono); font-size: 11px; font-weight: 500; text-align: center; margin-top: 1px; }
+  .hl.L { color: #ff8a7a; } .hl.H { color: #8fc3ec; }
+  .colorkey { position: absolute; left: 14px; bottom: 96px; font-family: var(--mono); font-size: 11px; color: var(--muted); pointer-events: none; background: rgba(4,6,10,.64); border: 1px solid var(--line); border-radius: 4px; padding: 8px 10px; }
+  .colorkey .bar { width: 220px; height: 8px; border-radius: 2px; margin: 6px 0 3px; }
+  .colorkey .ticks { display: flex; justify-content: space-between; }
+  .slider2 { display: grid; grid-template-columns: 9.5em 1fr 7.5em; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); }
+  .slider2 output { font-family: var(--mono); font-size: 12px; color: var(--ink); text-align: right; font-variant-numeric: tabular-nums; }
+  @media (max-width: 480px) { .slider2 { grid-template-columns: 1fr auto; } .slider2 input { grid-column: 1 / -1; grid-row: 2; } }
+  .xsec-wrap { position: relative; width: 100%; aspect-ratio: 16 / 9; min-height: 280px; }
+  .xsec-wrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  @media (max-width: 760px) {
+    .stationhud { left: 10px; right: 10px; width: auto; bottom: 10px; padding: 6px 8px; }
+    .stationhud canvas { height: 84px; }
+    .stationhud .now { font-size: 10px; } .stationhud .now span b { font-size: 12px; }
+    .datebig { bottom: auto; top: 14px; left: auto; right: 14px; text-align: right; font-size: 24px; }
+    .status { top: auto; bottom: 170px; }
+    .colorkey { bottom: 170px; left: 10px; } .colorkey .bar { width: 160px; }
+  }
+  .busy { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font-family: var(--mono); font-size: 13px; pointer-events: none; }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">A living planet · a real weather model running in your browser</div>
+      <h1>The <em>Atmosphere</em></h1>
+    </div>
+    <p class="lede">Sunlight heats a spinning Earth unevenly, and the air does the rest. Every cloud, storm, jet stream and trade wind here grows out of the laws of motion, heat and moisture, computed live on <strong>8,192 columns of air, 15 layers deep</strong>. <strong>Drag to turn, scroll to zoom, click anywhere to put up a weather station.</strong></p>
+  </header>
+</div>
+
+<div class="stage" id="stage">
+  <canvas id="sky" aria-label="The Earth seen from space with simulated clouds, winds and weather"></canvas>
+  <div class="tags" id="tags"></div>
+  <dl class="hud readout" id="readout">
+    <dt>world average air</dt><dd class="big" id="rTemp">—</dd>
+    <dt>raining on</dt><dd id="rRain">—</dd>
+    <dt>water in the air</dt><dd id="rPW">—</dd>
+    <dt>deepest low</dt><dd id="rLow">—</dd>
+    <dt class="opt">strongest wind</dt><dd class="opt" id="rWind">—</dd>
+    <dt class="opt">sea ice</dt><dd class="opt" id="rIce">—</dd>
+    <div class="sep"></div>
+    <dt>simulating</dt><dd class="rate" id="rRate">—</dd>
+  </dl>
+  <div class="hud stationhud" id="stationHud" hidden>
+    <button class="x" id="stationX" aria-label="Remove weather station">×</button>
+    <div class="lab"><b id="stName">—</b><span id="stWhere">—</span></div>
+    <canvas id="stChart" aria-label="Weather station record: pressure, temperature, wind and rain over the last ten simulated days"></canvas>
+    <div class="now" id="stNow"></div>
+  </div>
+  <div class="colorkey" id="colorKey" hidden></div>
+  <div class="status" id="status"><i></i><span id="statusText">starting the model</span></div>
+  <div class="datebig" id="dateBig"><small id="dateSmall">—</small><span id="dateText">—</span></div>
+  <div class="hint">drag to turn · scroll or pinch to zoom · click to place a weather station</div>
+</div>
+
+<div class="wrap">
+  <div class="transport">
+    <button class="btn" id="playBtn">Pause</button>
+    <button class="btn ghost" id="mapBtn" aria-pressed="false">Flat map</button>
+    <button class="btn ghost" id="icelandBtn">Iceland</button>
+    <div class="chips" id="seasons" role="group" aria-label="Restart the Earth in a season"></div>
+    <label class="speed" for="speed">Speed <input id="speed" type="range" min="0" max="4" step="1" value="2"><output id="speedOut" for="speed">—</output></label>
+  </div>
+
+  <div class="controls">
+    <div class="group">
+      <div class="group-label">Show</div>
+      <div class="chips" id="layers">
+        <button class="chip" data-layer="0" aria-pressed="true"><span class="dot"></span>Satellite view</button>
+        <button class="chip" data-layer="5" aria-pressed="false"><span class="dot"></span>Infrared</button>
+        <button class="chip" data-layer="2" aria-pressed="false"><span class="dot"></span>Rain and snow</button>
+        <button class="chip" data-layer="1" aria-pressed="false"><span class="dot"></span>Temperature</button>
+        <button class="chip" data-layer="3" aria-pressed="false"><span class="dot"></span>Water vapour</button>
+        <button class="chip" data-layer="6" aria-pressed="false"><span class="dot"></span>Surface temperature</button>
+      </div>
+      <div class="group-label" style="margin-top:8px">Overlays</div>
+      <div class="chips" id="overlays">
+        <button class="chip" data-wind="1" aria-pressed="false"><span class="dot"></span>Surface wind</button>
+        <button class="chip" data-wind="2" aria-pressed="false"><span class="dot"></span>Jet stream (10 km)</button>
+        <button class="chip" data-key="isobars" aria-pressed="false"><span class="dot"></span>Pressure</button>
+        <button class="chip" data-key="clouds" aria-pressed="true"><span class="dot"></span>Clouds</button>
+        <button class="chip" data-key="grid" aria-pressed="false"><span class="dot"></span>Lat / long</button>
+        <button class="chip" id="dayNight" aria-pressed="true"><span class="dot"></span>Day and night</button>
+      </div>
+      <p class="caption" id="caption">This is the model's own weather, not a recording. It started from a state it reached by itself after simulating two years, and it keeps inventing new storms as it goes. At fast speeds the whole globe is shown in daylight so the day–night line doesn't flicker; switch <b>Day and night</b> on to see the real lighting.</p>
+    </div>
+    <div class="group">
+      <div class="group-label">Change the planet</div>
+      <label class="slider2">Day length <input id="sDay" type="range" min="0" max="100" value="50"><output id="oDay">24 h</output></label>
+      <label class="slider2">Sunshine <input id="sSun" type="range" min="80" max="120" value="100"><output id="oSun">100%</output></label>
+      <label class="slider2">Greenhouse <input id="sGH" type="range" min="50" max="200" value="100"><output id="oGH">100%</output></label>
+      <label class="slider2">Axis tilt <input id="sTilt" type="range" min="0" max="90" value="23.44" step="0.01"><output id="oTilt">23.4°</output></label>
+      <div class="chips" id="presets" style="margin-top:6px">
+        <button class="chip" data-preset="earth" aria-pressed="true"><span class="dot"></span>Earth</button>
+        <button class="chip" data-preset="aqua"><span class="dot"></span>Water world</button>
+        <button class="chip" data-preset="flat"><span class="dot"></span>No mountains</button>
+        <button class="chip" data-preset="fast"><span class="dot"></span>Fast spin</button>
+        <button class="chip" data-preset="slow"><span class="dot"></span>Slow spin</button>
+        <button class="chip" data-preset="locked"><span class="dot"></span>Tidally locked</button>
+        <button class="chip" data-preset="snowball"><span class="dot"></span>Snowball</button>
+        <button class="chip" data-preset="hothouse"><span class="dot"></span>Hothouse</button>
+        <button class="chip" data-preset="tilt"><span class="dot"></span>On its side</button>
+      </div>
+      <p class="note" id="planetNote">Changes take hold gradually, the way they would on a real planet: winds answer in days, the upper 50 metres of ocean in months.</p>
+    </div>
+  </div>
+
+  <section id="engine">
+    <div class="eyebrow">The engine of the winds</div>
+    <h2>Slice the atmosphere <em>from pole to pole</em></h2>
+    <p class="section-lede">Average the model's air all the way around each circle of latitude and you see the machinery that drives the weather. Warm air rises near the equator, flows toward the poles high up, sinks around 30° and returns along the ground as the <strong>trade winds</strong>. This loop is the <strong>Hadley cell</strong>, the white contours below. Earth's spin turns the poleward-moving air eastward, and that builds the <strong>jet streams</strong>, the orange cores. Everything here is averaged over the last couple of weeks of simulated weather and keeps updating.</p>
+    <div class="panel chart-pad">
+      <div class="chips" id="xsecModes" style="margin-bottom:10px">
+        <button class="chip" data-mode="wind" aria-pressed="true"><span class="dot"></span>East–west wind</button>
+        <button class="chip" data-mode="temp" aria-pressed="false"><span class="dot"></span>Temperature</button>
+        <button class="chip" data-mode="rh" aria-pressed="false"><span class="dot"></span>Humidity</button>
+      </div>
+      <div class="xsec-wrap"><canvas id="xsec" aria-label="Cross-section of the atmosphere from the South Pole to the North Pole: winds, temperature or humidity by height, with the overturning Hadley and Ferrel cells"></canvas></div>
+      <div class="legend" id="xsecLegend"></div>
+    </div>
+    <div class="kpis" id="engineKpis">
+      <div class="kpi"><div class="v" id="kJetN">—</div><div class="k">northern jet: peak speed and latitude</div></div>
+      <div class="kpi"><div class="v" id="kJetS">—</div><div class="k">southern jet</div></div>
+      <div class="kpi"><div class="v" id="kHadley">—</div><div class="k">Hadley cell, winter hemisphere (billion kg of air per second)</div></div>
+      <div class="kpi"><div class="v" id="kTrades">—</div><div class="k">trade winds at the surface, 15°N–15°S</div></div>
+    </div>
+  </section>
+
+  <section id="guide-sec">
+    <div class="eyebrow">Field guide</div>
+    <h2>What to <em>look for</em></h2>
+    <p class="section-lede">None of these features is drawn in by hand. Each grows out of the same few equations the model steps forward every 20 simulated minutes. <strong>Press "show me"</strong> to fly the globe to a live example.</p>
+    <div class="guide" id="guide"></div>
+  </section>
+
+  <section id="worlds">
+    <div class="eyebrow">Other worlds</div>
+    <h2>Change the planet and <em>watch the weather reorganise</em></h2>
+    <p class="section-lede">The same physics runs any planet you give it. Speed up the spin and the jet stream splits into bands like Jupiter's. Slow it down and the tropics spread to the poles. Lock one face to the sun and a permanent storm forms beneath it. <strong>Use the controls under the globe</strong>, then come back here to see the new climate in the slice above.</p>
+    <div class="guide" id="worldCards"></div>
+    <div class="panel chart-pad" style="margin-top:24px">
+      <p class="chart-title">Your experiment so far</p>
+      <p class="chart-unit">World average air temperature and total sea-ice area, one point per simulated day. Each change you make is marked.</p>
+      <canvas class="chart" id="expChart" style="height:260px" aria-label="Line chart of world average temperature and sea-ice area over the simulation, with markers where the planet was changed"></canvas>
+      <div class="legend"><span><i style="background:#ff9d5c"></i>world average air temperature (°C, left)</span><span><i style="background:#8fc3ec"></i>sea ice, both hemispheres (million km², right)</span></div>
+    </div>
+  </section>
+
+  <section id="numbers">
+    <div class="eyebrow">Checking the model</div>
+    <h2>How close is it to the <em>real Earth?</em></h2>
+    <div class="numbers">
+      <div>
+        <p>The model is simplified. Its air is 15 layers deep, and its columns are about 300 km apart, too coarse to resolve a single thunderstorm. It has no real clouds in its sunlight, only an average reflectivity. Its ocean is a 50-metre slab that stores heat, with the transport of the real currents added as a fixed pattern.</p>
+        <p>Even so, the big features come out close to the measured ones. The <b>values on the left update live</b> from the running model, averaged over recent simulated weeks. The real values are long-term averages from satellites and weather balloons for the same time of year where that matters.</p>
+        <p>Before any of the weather was added, the core that moves the air passed two standard tests used for professional models. In the <b>Held–Suarez test</b> it made jet streams of 30 m/s near 45° and surface westerlies of 8–10 m/s, as the reference models do. In the <b>Jablonowski–Williamson test</b> an initially smooth jet broke into a storm that deepened to 941 hPa after 9 days, close to the published reference solutions, while total energy was conserved to one part in 100 million.</p>
+      </div>
+      <div class="table-wrap"><table class="cmp" id="cmpTable"><thead><tr><th>Quantity</th><th>This model</th><th>Real Earth</th></tr></thead><tbody></tbody></table></div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="eyebrow">How it works</div>
+    <h2>A weather model in a <em>web page</em></h2>
+    <div class="numbers">
+      <div>
+        <p>This is a <b>spectral primitive-equation model</b>, the same basic design that national weather services ran from the 1980s until recently. The winds, temperature, surface pressure and moisture of the whole atmosphere are stored as sums of <b>946 spherical harmonics</b>, smooth wave patterns that fit a sphere perfectly and have no trouble at the poles. At every step each field is turned into values on a grid of 128 × 64 points and 15 levels, the physics is computed column by column, and the result is turned back into waves.</p>
+        <p>The equations are Newton's laws for moving air on a rotating planet, the first law of thermodynamics, and the conservation of mass and water. Heat comes from sunlight that follows the real Sun through the day and the seasons. The air loses heat as infrared radiation, and water carries enormous amounts of energy as it evaporates from the sea and condenses in clouds.</p>
+        <p>Your computer splits the planet into latitude bands and runs them on <b id="howCores">several</b> processor cores at once. The graphics card draws the result: real NASA imagery of the ground, snow and sea ice from the model, and cloud texture carried along by the model's own winds.</p>
+      </div>
+      <div class="table-wrap"><table class="cmp"><tbody>
+        <tr><td>Resolution</td><td>T42 · 128 × 64 × 15</td><td><span class="why">triangular truncation at wavenumber 42, about 300 km</span></td></tr>
+        <tr><td>Time step</td><td>20 minutes</td><td><span class="why">semi-implicit leapfrog; sound-like gravity waves treated implicitly</span></td></tr>
+        <tr><td>Radiation</td><td>grey two-stream</td><td><span class="why">Frierson-type infrared, sunlight absorbed by water vapour, diurnal cycle and seasons</span></td></tr>
+        <tr><td>Clouds and rain</td><td>Betts–Miller convection</td><td><span class="why">plus large-scale condensation; clouds diagnosed from humidity and rising air</span></td></tr>
+        <tr><td>Near the ground</td><td>boundary layer</td><td><span class="why">stability-dependent turbulence, bulk fluxes of heat, water and momentum</span></td></tr>
+        <tr><td>Surface</td><td>slab ocean, sea ice, snow</td><td><span class="why">50 m ocean with heat transport from observed temperatures; soil moisture bucket; real mountains</span></td></tr>
+        <tr><td>Data</td><td>NASA, NOAA</td><td><span class="why">ETOPO1 relief, HadISST sea temperature and ice, Blue and Black Marble imagery</span></td></tr>
+      </tbody></table></div>
+    </div>
+  </section>
+</div>
+
+<div class="wrap"><footer>
+  <p>Model, physics and graphics written for this page. Methods follow Hoskins &amp; Simmons (1975), Simmons &amp; Burridge (1981), Held &amp; Suarez (1994), Frierson, Held &amp; Zurita-Gotor (2006), Frierson (2007) and Jablonowski &amp; Williamson (2006). Imagery: NASA Blue Marble Next Generation and Black Marble. Relief: NOAA ETOPO1. Sea-surface temperature and ice: Met Office HadISST 2014–2023.</p>
+  <p><i>Weather here is the model's own. It is realistic but it is not a forecast.</i></p>
+</footer></div>
+
+<script type="text/plain" id="wsrc">/*WSRC*/</script>
+<script>/*DATA*/</script>
+<script>/*WSCOPE*/</script>
+<script>/*SPECTRAL*/</script>
+<script>/*ENGINE*/</script>
+<script>/*APP*/</script>

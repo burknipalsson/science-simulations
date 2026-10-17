@@ -1,0 +1,406 @@
+<title>The Cosmic Web</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root {
+    color-scheme: dark;
+    --void: #05060b;
+    --deep: #0a0b14;
+    --ink: #e8e7f1;
+    --muted: #a09fb7;
+    --faint: #6b6a86;
+    --line: rgba(232, 231, 241, 0.12);
+    --line-strong: rgba(232, 231, 241, 0.24);
+    --node: #ffc47e;
+    --thread: #8fb1ff;
+    --hollow: #b79cff;
+    --obs: #6a8ce6;
+    --sim: #c0823a;
+    --display: "Newsreader", "Iowan Old Style", Georgia, serif;
+    --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { background: var(--void); color: var(--ink); }
+  body { font-family: var(--body); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding-inline: 16px; }
+  @media (min-width: 720px) { .wrap { padding-inline: 32px; } }
+
+  header.top { padding-block: 40px 22px; display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px 40px; }
+  .eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--node); }
+  h1 { font-family: var(--display); font-weight: 300; font-size: clamp(46px, 8.4vw, 104px); line-height: 0.92; letter-spacing: -0.025em; margin: 10px 0 0; text-wrap: balance; }
+  h1 em { font-style: italic; color: var(--thread); }
+  .lede { max-width: 46ch; color: var(--muted); margin: 0; font-size: 17px; }
+  .lede strong { color: var(--ink); font-weight: 500; }
+
+  .stage { position: relative; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: #000; scroll-margin-top: env(safe-area-inset-top, 0px); overflow: hidden; }
+  #sky { display: block; width: 100%; height: clamp(440px, 74vh, 860px); cursor: grab; touch-action: none; }
+  #sky:active { cursor: grabbing; }
+  .readout { position: absolute; top: 14px; left: 14px; display: grid; grid-template-columns: auto auto; gap: 2px 14px; padding: 10px 14px; background: rgba(5, 6, 11, 0.62); backdrop-filter: blur(6px); border: 1px solid var(--line); border-radius: 4px; font-family: var(--mono); font-size: 12px; line-height: 1.55; font-variant-numeric: tabular-nums; pointer-events: none; max-width: calc(100% - 28px); }
+  .readout dt { color: var(--faint); }
+  .readout dd { margin: 0; text-align: right; }
+  .readout .boost { color: var(--hollow); }
+  .phase { position: absolute; left: 14px; bottom: 14px; font-family: var(--display); font-style: italic; font-weight: 300; font-size: clamp(22px, 3vw, 34px); color: var(--ink); pointer-events: none; text-shadow: 0 1px 12px #000; max-width: calc(100% - 28px); }
+  .phase small { display: block; font-family: var(--mono); font-style: normal; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+  .hint { position: absolute; right: 14px; bottom: 12px; font-family: var(--mono); font-size: 11px; color: rgba(232, 231, 241, 0.5); pointer-events: none; }
+  .building { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; font-family: var(--display); font-style: italic; font-size: 26px; color: var(--muted); background: rgba(0, 0, 0, 0.45); pointer-events: none; }
+  .tag { position: absolute; left: 0; top: 0; pointer-events: none; font-family: var(--mono); font-size: 11px; line-height: 1.35; color: var(--ink); background: rgba(5, 6, 11, 0.7); border: 1px solid var(--line-strong); border-radius: 3px; padding: 4px 7px; white-space: nowrap; transform: translate(12px, -50%); }
+  .tag b { color: var(--node); font-weight: 500; }
+  .nogl { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: var(--muted); }
+  .count-note { margin: 0; font-size: 13px; color: var(--faint); max-width: 56ch; }
+
+  .transport { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; padding-block: 16px 4px; }
+  .btn { appearance: none; font: 500 14px/1 var(--body); color: var(--void); background: var(--ink); border: 1px solid var(--ink); border-radius: 999px; padding: 10px 18px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+  .btn.ghost { background: transparent; color: var(--ink); border-color: var(--line-strong); }
+  .btn:hover { filter: brightness(1.1); }
+  .btn.ghost:hover { border-color: rgba(232, 231, 241, 0.5); }
+  .speed { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); flex: 1 1 280px; max-width: 460px; }
+  .speed output { font-family: var(--mono); font-size: 12px; color: var(--ink); min-width: 11em; text-align: right; font-variant-numeric: tabular-nums; }
+
+  .controls { display: grid; gap: 22px 36px; grid-template-columns: 1fr; padding-block: 18px 8px; }
+  @media (min-width: 900px) { .controls { grid-template-columns: 1.15fr 1fr; } }
+  .group { display: grid; gap: 10px; align-content: start; }
+  .group-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--faint); }
+  .group-label + .chips { margin-top: -2px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { appearance: none; font: 500 13px/1 var(--body); color: var(--muted); background: transparent; border: 1px solid var(--line-strong); border-radius: 999px; padding: 9px 14px; cursor: pointer; transition: color .15s, border-color .15s, background .15s; display: inline-flex; align-items: center; gap: 8px; }
+  .chip:hover { color: var(--ink); border-color: rgba(232, 231, 241, 0.45); }
+  .chip:focus-visible, .btn:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--thread); outline-offset: 2px; }
+  .chip[aria-pressed="true"] { color: var(--void); background: var(--ink); border-color: var(--ink); }
+  .chip .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; opacity: .55; }
+  .chip[aria-pressed="true"] .dot { opacity: 1; }
+  .chip.era[aria-pressed="true"] { background: var(--node); border-color: var(--node); }
+  .chip.grav[aria-pressed="true"] { background: var(--hollow); border-color: var(--hollow); }
+  .caption { margin: 4px 0 0; padding-left: 14px; border-left: 2px solid var(--node); color: var(--muted); font-size: 15px; max-width: 62ch; min-height: 3.2em; }
+  .caption b { color: var(--ink); font-weight: 500; }
+
+  input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 22px; background: transparent; }
+  input[type=range]::-webkit-slider-runnable-track { height: 2px; background: var(--line-strong); }
+  input[type=range]::-moz-range-track { height: 2px; background: var(--line-strong); }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--thread); margin-top: -6px; border: 0; }
+  input[type=range]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: var(--thread); border: 0; }
+
+  section { padding-block: 72px 8px; }
+  h2 { font-family: var(--display); font-weight: 300; font-size: clamp(34px, 5vw, 58px); line-height: 1.02; letter-spacing: -0.015em; margin: 8px 0 14px; text-wrap: balance; }
+  h2 em { font-style: italic; color: var(--thread); }
+  .section-lede { color: var(--muted); max-width: 62ch; margin: 0 0 28px; }
+  .section-lede strong { color: var(--ink); font-weight: 500; }
+
+  .guide { display: grid; gap: 1px; grid-template-columns: 1fr; background: var(--line); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+  @media (min-width: 700px) { .guide { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 1040px) { .guide { grid-template-columns: 1fr 1fr 1fr; } }
+  .entry { background: var(--void); padding: 26px 24px 24px; display: grid; grid-template-rows: auto auto 1fr auto; gap: 10px; }
+  .entry .where { font-family: var(--mono); font-size: 12px; color: var(--node); letter-spacing: 0.04em; }
+  .entry h3 { font-family: var(--display); font-weight: 400; font-size: 27px; line-height: 1.12; margin: 0; text-wrap: balance; }
+  .entry p { margin: 0; color: var(--muted); font-size: 15px; }
+  .entry p b { color: var(--ink); font-weight: 500; }
+  .show { justify-self: start; margin-top: 8px; appearance: none; background: none; border: 0; border-bottom: 1px solid var(--thread); color: var(--thread); font: 500 14px/1.4 var(--body); padding: 2px 0; cursor: pointer; text-align: left; }
+  .show:hover { color: var(--ink); border-color: var(--ink); }
+
+  .numbers { display: grid; gap: 28px; grid-template-columns: 1fr; align-items: start; }
+  @media (min-width: 900px) { .numbers { grid-template-columns: 1.1fr 1fr; } }
+  .numbers p { margin: 0 0 14px; color: var(--muted); max-width: 60ch; }
+  .numbers p b { color: var(--ink); font-weight: 500; }
+  .facts { display: grid; grid-template-columns: 1fr auto; gap: 0; margin: 0; border-top: 1px solid var(--line); }
+  .facts dt, .facts dd { padding: 12px 0; border-bottom: 1px solid var(--line); margin: 0; }
+  .facts dt { color: var(--muted); font-size: 14px; padding-right: 16px; }
+  .facts dd { font-family: var(--mono); font-size: 13px; text-align: right; font-variant-numeric: tabular-nums; }
+
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 4px; }
+  table { width: 100%; border-collapse: collapse; min-width: 720px; font-size: 14px; }
+  th, td { text-align: left; padding: 14px 18px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  th { font-family: var(--mono); font-weight: 400; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); }
+  td.num { font-family: var(--mono); font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td .name { font-family: var(--display); font-size: 21px; display: block; }
+  td .sub { color: var(--faint); font-size: 13px; }
+  td button { margin-top: 6px; display: block; }
+  tr.kind td { padding-block: 10px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--node); background: var(--deep); }
+
+  .history { display: grid; gap: 28px; grid-template-columns: 1fr; align-items: start; }
+  @media (min-width: 960px) { .history { grid-template-columns: 1.7fr 1fr; } }
+  .chart-wrap { position: relative; border: 1px solid var(--line); border-radius: 4px; padding: 14px 14px 6px; background: var(--deep); }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--muted); margin: 0 0 6px 4px; }
+  .legend span { display: inline-flex; align-items: center; gap: 8px; }
+  .legend i { width: 18px; height: 2px; border-radius: 1px; display: inline-block; }
+  .chart-title { font-size: 14px; color: var(--ink); margin: 0 0 4px 4px; font-weight: 500; }
+  .chart-unit { font-size: 12px; color: var(--faint); margin: 0 0 8px 4px; }
+  #sfrChart { display: block; width: 100%; touch-action: pan-y; }
+  #sfrChart .grid { stroke: var(--line); stroke-width: 1; }
+  #sfrChart .tick { fill: var(--faint); font: 11px var(--mono); }
+  #sfrChart .axis { fill: var(--muted); font: 12px var(--body); }
+  #sfrChart .lbl { fill: var(--muted); font: 12px var(--body); }
+  #sfrChart .zt { stroke: var(--line-strong); }
+  #sfrChart .obs { fill: none; stroke: var(--obs); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+  #sfrChart .sim { fill: none; stroke: var(--sim); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+  #sfrChart .now { stroke: var(--line-strong); stroke-dasharray: 3 3; }
+  #sfrChart .cross { stroke: var(--muted); stroke-width: 1; }
+  .tip { position: absolute; top: 44px; left: 0; min-width: 180px; pointer-events: none; background: rgba(5, 6, 11, 0.92); border: 1px solid var(--line-strong); border-radius: 4px; padding: 8px 10px; font-size: 12px; display: grid; gap: 4px; }
+  .tip .when { color: var(--muted); font-family: var(--mono); font-size: 11px; }
+  .tip .row { display: flex; align-items: center; gap: 8px; }
+  .tip .row i { width: 12px; height: 2px; display: inline-block; }
+  .tip .row b { font-family: var(--mono); font-weight: 500; color: var(--ink); min-width: 3.5em; }
+  .tip .row span { color: var(--muted); }
+  details.data { margin-top: 10px; font-size: 13px; color: var(--muted); }
+  details.data summary { cursor: pointer; padding: 6px 4px; }
+  details.data table { min-width: 0; font-size: 13px; }
+  details.data th, details.data td { padding: 6px 10px; }
+  .history p { margin: 0 0 14px; color: var(--muted); max-width: 60ch; }
+  .history p b { color: var(--ink); font-weight: 500; }
+
+  footer { padding-block: 64px 48px; color: var(--faint); font-size: 13px; }
+  footer p { max-width: 76ch; margin: 0 0 8px; }
+  footer i { color: var(--muted); }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">Large-scale structure · live simulation</div>
+      <h1>The Cosmic <em>Web</em></h1>
+    </div>
+    <p class="lede">A cube of space <strong>a billion light-years</strong> across, filled with millions of parcels of dark matter and gas. It starts almost perfectly smooth, 47 million years after the Big Bang. Gravity builds the web, the gas heats up, and <strong>galaxies light up</strong> at the knots. Drag to turn it, and scroll or pinch to zoom.</p>
+  </header>
+</div>
+
+<div class="stage" id="stage">
+  <canvas id="sky" aria-label="Simulation of dark matter clumping into the cosmic web"></canvas>
+  <dl class="readout">
+    <dt>age of universe</dt><dd id="rAge">—</dd>
+    <dt>redshift z</dt><dd id="rZ">—</dd>
+    <dt>scale factor a</dt><dd id="rA">—</dd>
+    <dt>box size then</dt><dd id="rBox">—</dd>
+    <dt>heaviest clump</dt><dd id="rClump">—</dd>
+    <dt>stars formed</dt><dd id="rStars">—</dd>
+    <dt>gas above 10⁵ K</dt><dd id="rHot">—</dd>
+    <dt class="boost" id="rBoostL" hidden>ripples shown</dt><dd class="boost" id="rBoost" hidden>—</dd>
+  </dl>
+  <div class="phase" id="phase"><small id="phaseSmall">ripples of a few percent</small><span id="phaseText">The smooth universe</span></div>
+  <div class="hint" id="hint">drag · scroll · pinch</div>
+  <div class="tag" id="tag" hidden></div>
+  <div class="building" id="building" hidden>Seeding the universe…</div>
+</div>
+
+<div class="wrap">
+  <div class="transport">
+    <button class="btn" id="playBtn" aria-pressed="true">Pause</button>
+    <button class="btn ghost" id="restartBtn">Restart</button>
+    <button class="btn ghost" id="newBtn">New random universe</button>
+    <label class="speed" for="speed">Speed <input id="speed" type="range" min="0" max="100" value="46"><output id="speedOut" for="speed">13.8 billion years in 40 s</output></label>
+  </div>
+
+  <div class="controls">
+    <div class="group">
+      <div class="group-label">Jump to</div>
+      <div class="chips" id="eras">
+        <button class="chip era" data-z="50">Start · z = 50</button>
+        <button class="chip era" data-z="10">z = 10</button>
+        <button class="chip era" data-z="3">z = 3</button>
+        <button class="chip era" data-z="1">z = 1</button>
+        <button class="chip era" data-z="0">Today</button>
+      </div>
+      <p class="caption" id="caption">Every dot is a clump of dark matter. At first they are spread almost evenly, with ripples of only a few percent. Denser patches pull in their neighbors, and the ripples grow into <b>walls, threads and knots</b>.</p>
+      <div class="group-label" style="margin-top:8px">Layers</div>
+      <div class="chips" id="layers">
+        <button class="chip" data-key="dmLayer" aria-pressed="true"><span class="dot"></span>Dark matter</button>
+        <button class="chip" data-key="gasLayer" aria-pressed="true"><span class="dot"></span>Gas</button>
+        <button class="chip" data-key="galLayer" aria-pressed="true"><span class="dot"></span>Starlight</button>
+      </div>
+      <div class="group-label" style="margin-top:8px">Color by</div>
+      <div class="chips" id="modes">
+        <button class="chip" data-mode="3" aria-pressed="true"><span class="dot"></span>Gas temperature</button>
+        <button class="chip" data-mode="0" aria-pressed="false"><span class="dot"></span>Glow</button>
+        <button class="chip" data-mode="1" aria-pressed="false"><span class="dot"></span>Density</button>
+        <button class="chip" data-mode="2" aria-pressed="false"><span class="dot"></span>Speed</button>
+      </div>
+      <div class="group-label" style="margin-top:8px">Show</div>
+      <div class="chips" id="toggles">
+        <button class="chip" data-key="slice" aria-pressed="true"><span class="dot"></span>Thin slice</button>
+        <button class="chip" data-key="physical" aria-pressed="false"><span class="dot"></span>True size (expansion)</button>
+        <button class="chip" data-key="boost" aria-pressed="true"><span class="dot"></span>Boost faint ripples</button>
+        <button class="chip" data-key="box" aria-pressed="true"><span class="dot"></span>Box edges</button>
+        <button class="chip" data-key="spin" aria-pressed="true"><span class="dot"></span>Slow rotate</button>
+        <button class="chip" id="resetView"><span class="dot"></span>Reset view</button>
+      </div>
+    </div>
+    <div class="group">
+      <div class="group-label">Gravity comes from</div>
+      <div class="chips" id="gravity">
+        <button class="chip grav" data-dm="1" aria-pressed="true">All matter, dark and ordinary</button>
+        <button class="chip grav" data-dm="0" aria-pressed="false">Ordinary matter only</button>
+      </div>
+      <p class="count-note">Dark matter is 84% of all matter. Switch its pull off and the same starting ripples have to grow on the gravity of the other 16% alone, and galaxies never get going.</p>
+      <div class="group-label" style="margin-top:6px">Particles, half dark matter and half gas</div>
+      <div class="chips" id="counts">
+        <button class="chip" data-q="q0" aria-pressed="false">0.5 million</button>
+        <button class="chip" data-q="q1" aria-pressed="false">2 million</button>
+        <button class="chip" data-q="q2" aria-pressed="false">4.2 million</button>
+        <button class="chip" data-q="q3" aria-pressed="false">8.2 million</button>
+      </div>
+      <p class="count-note" id="countNote">The graphics card moves every particle and solves for gravity, gas pressure and heating on a grid of millions of cells, over and over. The top two settings need a strong card. On a slower card the clock runs slower rather than the picture stuttering.</p>
+    </div>
+  </div>
+
+  <section id="guide">
+    <div class="eyebrow">Field guide</div>
+    <h2>What you are <em>watching</em></h2>
+    <p class="section-lede">Each note below can set up the simulation to show you. The box is <strong>1 billion light-years</strong> (307 megaparsecs) across today. It wraps around at the edges, so matter leaving one face comes back through the opposite one, as if the box were one tile of an endless universe.</p>
+    <div class="guide">
+      <article class="entry">
+        <div class="where">380,000 years · 1 part in 100,000</div>
+        <h3>It starts as ripples</h3>
+        <p>The cosmic microwave background shows the early universe was smooth to about <b>1 part in 100,000</b>. Dark matter had already begun to clump by then, and by the start here (redshift 50) its ripples are several percent. They are too faint to see directly, so the view boosts them and says by how much.</p>
+        <button class="show" data-show="cmb">Show the starting ripples →</button>
+      </article>
+      <article class="entry">
+        <div class="where">walls · filaments · voids</div>
+        <h3>Threads and empty space</h3>
+        <p>Gravity collapses matter along one direction first, into thin <b>walls</b>. Then walls meet and form <b>filaments</b>. In between, <b>voids</b> empty out and grow until they fill most of the volume. A thin slice shows it best, the way galaxy surveys map the sky in wedges.</p>
+        <button class="show" data-show="web">Cut a slice through today →</button>
+      </article>
+      <article class="entry">
+        <div class="where">10¹⁴–10¹⁵ suns</div>
+        <h3>Clusters sit at the knots</h3>
+        <p>Where several filaments cross, matter keeps flowing in and piles up into <b>galaxy clusters</b>, the heaviest objects held together by gravity. Matter keeps streaming in along the threads. Color by speed to see it falling in at over <b>1,000 km/s</b>.</p>
+        <button class="show" data-show="nodes">Fly to the heaviest cluster →</button>
+      </article>
+      <article class="entry">
+        <div class="where">84% of all matter</div>
+        <h3>Why dark matter is needed</h3>
+        <p>Ordinary matter was locked to light until 380,000 years and could not clump. After that, its tiny ripples had too little time and too little gravity to grow into galaxies. Dark matter ignores light, so its clumps got a head start. Rerun this universe with the gravity of <b>ordinary matter only</b>: the web barely forms and not a single galaxy lights up.</p>
+        <button class="show" data-show="nodm">Switch dark matter's pull off →</button>
+      </article>
+      <article class="entry">
+        <div class="where">box grows 51× in size</div>
+        <h3>Expansion against gravity</h3>
+        <p>The usual view divides out the expansion of space so the box keeps one size. In reality it was <b>51 times smaller</b> at the start. Clumps hold themselves together while space between them stretches. For the last 6 billion years or so, dark energy has sped the expansion up, and the web has nearly <b>stopped growing</b>.</p>
+        <button class="show" data-show="expand">Show the true size →</button>
+      </article>
+      <article class="entry">
+        <div class="where">≈ 54 million ly from Virgo</div>
+        <h3>A place like ours</h3>
+        <p>The Milky Way and Andromeda form a small group in a thin wall called the Local Sheet, at the edge of a void and about <b>54 million light-years</b> from the Virgo Cluster. The simulation can't show us exactly, but it can find a spot with the same surroundings. Our galaxy's dark matter would be a couple of these dots.</p>
+        <button class="show" data-show="home">Find a spot like home →</button>
+      </article>
+      <article class="entry">
+        <div class="where">10⁵ K in threads · 10⁸ K in clusters</div>
+        <h3>Gas falls in and heats up</h3>
+        <p>Dark matter passes through itself, but gas can't. When gas streams collide on a filament they <b>shock</b>, and their motion turns into heat. Cluster gas reaches <b>100 million degrees</b>, hot enough to shine in X-rays. Much of the ordinary matter in the universe is this thin, hot gas, hard to see in any telescope.</p>
+        <button class="show" data-show="heat">Show the gas by temperature →</button>
+      </article>
+      <article class="entry">
+        <div class="where">peak ≈ 10 billion years ago</div>
+        <h3>Galaxies light up at the knots</h3>
+        <p>Where gas collects in small dark-matter halos, it cools and forms stars. Blue points are young stars, fading to gold as they age. The universe made stars fastest about <b>3.5 billion years</b> after the Big Bang and has slowed by about ten times since. The chart below compares this run with the measured history.</p>
+        <button class="show" data-show="galaxies">Watch cosmic noon →</button>
+      </article>
+      <article class="entry">
+        <div class="where">quenched: too hot to cool</div>
+        <h3>Red and dead in the clusters</h3>
+        <p>Inside the heaviest clusters the gas is so hot that it can't cool enough to make new stars. The galaxies there age into <b>red, old-star systems</b>, while galaxies out in the filaments keep forming stars. Astronomers see exactly this split between crowded and quiet parts of the universe.</p>
+        <button class="show" data-show="reddead">Fly into a cluster →</button>
+      </article>
+    </div>
+  </section>
+
+  <section id="history">
+    <div class="eyebrow">Cosmic star formation</div>
+    <h2>When the <em>stars</em> were made</h2>
+    <div class="history">
+      <div class="chart-wrap">
+        <p class="chart-title">New stars made per year</p>
+        <p class="chart-unit">suns per year in each cubic megaparsec (a cube 3.3 million light-years on a side)</p>
+        <div class="legend"><span><i style="background:var(--obs)"></i>Observed (Madau &amp; Dickinson 2014)</span><span><i style="background:var(--sim)"></i>This simulated universe</span></div>
+        <svg id="sfrChart" role="img" aria-label="Star-formation rate over cosmic time: observed curve and this simulation"></svg>
+        <div class="tip" id="sfrTip" hidden>
+          <div class="when" id="tipAge">—</div>
+          <div class="row"><i style="background:var(--obs)"></i><b id="tipObs">—</b><span>observed</span></div>
+          <div class="row"><i style="background:var(--sim)"></i><b id="tipSim">—</b><span>this universe</span></div>
+        </div>
+        <details class="data"><summary>Show the numbers as a table</summary>
+          <div class="table-wrap"><table><thead><tr><th>Age (billion years)</th><th>Redshift</th><th>Observed</th><th>This universe</th></tr></thead><tbody id="sfrRows"></tbody></table></div>
+        </details>
+      </div>
+      <div>
+        <p>Deep surveys with Hubble and other telescopes count the stars being made at each cosmic age. The rate climbed for the first 3 billion years, peaked around <b>redshift 2</b>, and has been falling ever since. Galaxies today make stars about ten times more slowly than at that peak.</p>
+        <p>The gold line is measured live from this run, from how fast its gas turns into stars. It is drawn as the simulation plays, so start from the beginning to see it all. The simulation is tuned to form the right total of stars, but the shape of the curve comes from the physics: halos form, gas falls in, and heating, dark energy and a dwindling supply of fresh gas slow things down.</p>
+        <dl class="facts">
+          <dt>Peak in this run</dt><dd id="sfrPeak">not reached yet</dd>
+          <dt>Stars formed so far, share of ordinary matter</dt><dd id="sfrStars">—</dd>
+          <dt>Gas above 100,000 K now</dt><dd id="sfrHot">—</dd>
+          <dt>Real universe, stars today</dt><dd>~8%</dd>
+          <dt>Real universe, gas above 10⁵ K</dt><dd>~40–50%</dd>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <section id="numbers">
+    <div class="eyebrow">By the numbers</div>
+    <h2>A billion light-years in a <em>box</em></h2>
+    <div class="numbers">
+      <div>
+        <p>Each dot is not a star or a galaxy. A dark matter dot is a parcel weighing <b id="dotMass">about 460 billion suns</b>, roughly the mass of the Milky Way's own dark matter halo. A gas dot carries <b id="gasMass">about 90 billion suns</b> of hydrogen and helium, and as it turns into stars it holds roughly one galaxy's worth. The simulation follows how all of them pull on each other while the space around them expands.</p>
+        <p>Gravity is worked out the way cosmologists do it in <b>particle-mesh</b> codes. The mass of every dot is spread onto a 3D grid, a Fourier transform solves for the gravitational pull on the whole grid at once, and every dot is pushed along. Gas also feels its own pressure, heats in shocks, and cools by glowing. This page does all of that on your graphics card <b>400 times</b> between redshift 50 and today.</p>
+        <p>The starting ripples follow the measured spectrum of density ripples, so the sizes of voids and filaments come out close to those in real galaxy maps. The exact arrangement is random, and each new universe gets a different one.</p>
+      </div>
+      <dl class="facts">
+        <dt>Box size today</dt><dd>1.0 billion ly · 307 Mpc</dd>
+        <dt>Mass in the box</dt><dd>1.1 × 10¹⁸ suns</dd>
+        <dt>Gravity grid</dt><dd id="gridFact">256³ = 16.8 million cells</dd>
+        <dt>Starting time</dt><dd>z = 50 · 47 million years</dd>
+        <dt>Matter, dark energy</dt><dd>31% · 69%</dd>
+        <dt>Dark share of matter</dt><dd>84%</dd>
+        <dt>Ordinary share of matter</dt><dd>16%</dd>
+        <dt>Hubble constant</dt><dd>68 km/s per Mpc</dd>
+      </dl>
+    </div>
+  </section>
+
+  <section id="real">
+    <div class="eyebrow">In the telescope</div>
+    <h2>The real web, <em>mapped</em></h2>
+    <p class="section-lede">Galaxies trace the dark matter, so maps of where galaxies sit show the same pattern. Surveys measure each galaxy's redshift to find its distance, then plot millions of them in 3D. Use the buttons to lay a real structure over the box at its true size.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Name</th><th>Year</th><th>Size or reach</th><th>What it showed</th></tr></thead>
+        <tbody>
+          <tr class="kind"><td colspan="4">Surveys</td></tr>
+          <tr><td><span class="name">CfA Redshift Survey</span><span class="sub">Harvard-Smithsonian, Geller &amp; Huchra</span><button class="show" data-show="slice">View a slice →</button></td><td class="num">1977–1995</td><td class="num">~18,000 galaxies</td><td>The first slice maps. Galaxies sat on the walls of bubbles, and a "stick figure" appeared at the Coma Cluster.</td></tr>
+          <tr><td><span class="name">2dF Galaxy Redshift Survey</span><span class="sub">Anglo-Australian Telescope</span><button class="show" data-show="slice">View a slice →</button></td><td class="num">1997–2002</td><td class="num">~220,000 galaxies</td><td>Two fan-shaped slices reaching billions of light-years out, full of the same filaments and voids that simulations make.</td></tr>
+          <tr><td><span class="name">Sloan Digital Sky Survey</span><span class="sub">SDSS, Apache Point Observatory</span><button class="show" data-show="slice">View a slice →</button></td><td class="num">2000–</td><td class="num">millions of galaxies</td><td>Spectra for millions of galaxies over a third of the sky. It found the Sloan Great Wall and measured the web's pattern of spacings.</td></tr>
+          <tr><td><span class="name">DESI</span><span class="sub">Dark Energy Spectroscopic Instrument, Kitt Peak</span><button class="show" data-show="today">Go to today →</button></td><td class="num">2021–</td><td class="num">~40 million targets</td><td>The largest 3D map so far, reaching back 11 billion years. It is testing whether dark energy changes over time.</td></tr>
+          <tr class="kind"><td colspan="4">Hot gas and starlight</td></tr>
+          <tr><td><span class="name">Madau &amp; Dickinson</span><span class="sub">review of cosmic star formation</span><button class="show" data-show="chart">See the chart →</button></td><td class="num">2014</td><td class="num">peak at z ≈ 1.9</td><td>Combined decades of deep-field counts into one history: star formation peaked about 3.5 billion years after the Big Bang.</td></tr>
+          <tr><td><span class="name">eROSITA</span><span class="sub">X-ray telescope on Spektr-RG</span><button class="show" data-show="reddead">Fly into a cluster →</button></td><td class="num">2019–2022</td><td class="num">~12,000 clusters</td><td>An all-sky X-ray map. Galaxy clusters show up as glowing clouds of gas at tens of millions of degrees.</td></tr>
+          <tr><td><span class="name">Fast radio bursts</span><span class="sub">Macquart et al., ASKAP</span><button class="show" data-show="heat">Show the hot gas →</button></td><td class="num">2020</td><td class="num">5 bursts, billions of ly</td><td>Radio flashes slowed by the thin gas they cross. The delay weighed the "missing" ordinary matter hiding between galaxies.</td></tr>
+          <tr class="kind"><td colspan="4">Structures</td></tr>
+          <tr><td><span class="name">Sloan Great Wall</span><span class="sub">Gott et al.</span><button class="show" data-size="sgw">Size it up →</button></td><td class="num">2003</td><td class="num">~1.4 billion ly long</td><td>A wall of galaxies longer than this whole box. It is one of the largest known structures.</td></tr>
+          <tr><td><span class="name">CfA2 Great Wall</span><span class="sub">Geller &amp; Huchra</span><button class="show" data-size="cfa">Size it up →</button></td><td class="num">1989</td><td class="num">~500 × 300 × 15 million ly</td><td>The first "wall" found: a thin sheet of galaxies passing through the Coma Cluster.</td></tr>
+          <tr><td><span class="name">Laniakea Supercluster</span><span class="sub">Tully et al.; "immense heaven" in Hawaiian</span><button class="show" data-size="lan">Size it up →</button></td><td class="num">2014</td><td class="num">~520 million ly across</td><td>Our home supercluster: about 100,000 galaxies and 10¹⁷ suns, defined by where galaxies flow.</td></tr>
+          <tr><td><span class="name">Boötes Void</span><span class="sub">Kirshner et al.</span><button class="show" data-size="boo">Size it up →</button></td><td class="num">1981</td><td class="num">~330 million ly across</td><td>A huge, nearly empty region about 700 million light-years away, with only about 60 galaxies found inside.</td></tr>
+          <tr><td><span class="name">Coma Cluster</span><span class="sub">Abell 1656</span><button class="show" data-size="coma">Size it up →</button></td><td class="num">1933</td><td class="num">~20 million ly across</td><td>Fritz Zwicky found its galaxies moving far too fast for the visible mass to hold them. He named the missing mass <i>dunkle Materie</i>, dark matter.</td></tr>
+          <tr><td><span class="name">Virgo Cluster</span><span class="sub">our nearest big cluster</span><button class="show" data-show="home">Find a spot like home →</button></td><td class="num">—</td><td class="num">54 million ly away</td><td>1,300 to 2,000 galaxies and about 10¹⁵ suns. Its pull slows our own motion away from it.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    <p>Gas and galaxies: half the particles are gas (16% of the mass). Their pressure is computed on the same grid as gravity. Gas streams can't pass through each other: each gas particle is steered toward the local mean flow, and the lost motion becomes heat. Converging flows get a von Neumann–Richtmyer shock viscosity, compression heats and expansion cools, and a real cooling curve (hydrogen, helium and some metals) lets dense gas radiate. Reionization heats all gas to 10,000 K by redshift 7.5. Galaxies are far smaller than a grid cell, so star formation uses the extended Press–Schechter theory to estimate how much of each cell's gas sits in halos above 10¹¹ suns. New gas arriving in such halos turns into stars with a 15% efficiency, unless it is above about a million degrees. That efficiency is the one tuned number; it sets the total. The gas physics was checked against a CPU version of the same code.</p>
+    <p>How it works: a periodic particle-mesh (PM) N-body simulation of cold dark matter in a flat ΛCDM universe (Ωm = 0.31, ΩΛ = 0.69, h = 0.68, σ₈ = 0.81, nₛ = 0.965). Starting positions and velocities come from the Zel'dovich approximation applied to Gaussian ripples with the Eisenstein &amp; Hu (1998) power spectrum. Each step spreads mass onto the grid with cloud-in-cell weights, solves Poisson's equation with a 3D fast Fourier transform, takes 4-point gradients, and advances particles with a leapfrog in the scale factor. All of it runs in WebGL 2 shaders; the physics was checked against a CPU version of the same code.</p>
+    <p>Simplifications: there is no heating from supernovae or black holes, which is one reason this run has less hot gas than the real universe. Gravity is smoothed over one grid cell (1.2–2.4 million parsecs), so clusters look puffier than they are and single galaxies are too small to form. The "heaviest clump" readout adds up the mass in a 30-million-light-year cube. The ordinary-matter-only run keeps the real expansion history and removes only dark matter's pull.</p>
+  </footer>
+</div>
+
+<script>
+/*COSMO*/
+</script>
+<script>
+/*ENGINE*/
+</script>
+<script>
+/*APP*/
+</script>

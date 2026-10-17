@@ -1,0 +1,136 @@
+
+<header class="wrap top">
+  <div>
+    <div class="eyebrow">Water, molecule by molecule · live molecular dynamics</div>
+    <h1>The <em>Hydrogen</em> Bond</h1>
+  </div>
+  <p class="lede">A glass of water is a crowd of molecules tugging at each other trillions of times a second. This is a <strong>real simulation of thousands of them</strong>, computed live on your graphics card from the forces between their atoms. Melt ice, grow a crystal, and see why ice floats.</p>
+</header>
+
+<div class="stage" id="stage">
+  <canvas id="sky" aria-label="Live simulation of water molecules"></canvas>
+  <dl class="hud readout" id="hud"></dl>
+  <div class="status" id="status" hidden><i></i><span>preparing</span></div>
+  <div class="key stagekey" id="stagekey"></div>
+  <div class="datebig" id="clock"><small>simulated time</small><span>0 ps</span></div>
+  <div class="hint">drag to turn · scroll or pinch to zoom</div>
+  <div class="nogl" id="nogl" hidden>This simulation needs WebGL2 with floating-point render targets, which this browser or device doesn't provide.</div>
+</div>
+
+<div class="wrap">
+  <div class="transport">
+    <button class="btn" id="play">❚❚ Pause</button>
+    <button class="btn ghost" id="reset">↺ Restart scene</button>
+    <label class="pace">Pace <input type="range" id="pace" min="0" max="100" value="100" aria-label="Simulation pace"><output id="paceOut">full speed</output></label>
+  </div>
+
+  <div class="controls">
+    <div class="group">
+      <div class="group-label">Scene</div>
+      <div class="chips" id="scenes"></div>
+      <p class="caption" id="caption"></p>
+    </div>
+    <div class="group">
+      <div class="group-label">Temperature</div>
+      <div class="tempctl">
+        <div class="tv"><span id="tVal">298 K</span><small id="tC">25 °C</small></div>
+        <input type="range" id="temp" min="200" max="400" step="1" value="298" aria-label="Temperature">
+        <div class="tempbar"></div>
+        <div class="rel" id="tRel"></div>
+      </div>
+      <div class="group-label" style="margin-top:8px">Show</div>
+      <div class="toggles">
+        <button class="chip" id="tHB" aria-pressed="true"><span class="dot" style="color:#ffb547"></span>Hydrogen bonds</button>
+        <button class="chip" id="tSlice" aria-pressed="false"><span class="dot"></span>Thin slice</button>
+        <button class="chip" id="tIce" aria-pressed="true"><span class="dot" style="color:#9fe3ff"></span>Mark ice</button>
+        <button class="chip" id="tSpin" aria-pressed="false"><span class="dot"></span>Turn slowly</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="wrap" id="guide-sec">
+  <div class="eyebrow">Field guide</div>
+  <h2>What you are <em>looking at</em></h2>
+  <p class="section-lede">Each red ball is an oxygen atom, each white one a hydrogen; together they make one water molecule, about a third of a nanometre across. The <strong>dashed amber lines are hydrogen bonds</strong>: the weak pull of one molecule's hydrogen towards a neighbour's oxygen. Nothing on screen is scripted. Every motion comes from the forces between the atoms.</p>
+  <div class="guide" id="guide"></div>
+</section>
+
+<section class="wrap" id="float-sec">
+  <div class="eyebrow">The strangest thing about water</div>
+  <h2>Why ice <em>floats</em></h2>
+  <div class="numbers">
+    <div>
+      <p class="bigq">Almost every substance shrinks when it freezes. Water swells by about 9%.</p>
+      <p>On the left, <b>ice</b>; on the right, the <b>same number of molecules as liquid water</b>. Both are held at the same temperature and pressure, and each box is free to grow or shrink until its pressure is 1 atmosphere. Watch which one ends up bigger.</p>
+      <p>The reason is the hydrogen bond's geometry. In ice every molecule holds exactly four neighbours at the corners of a tetrahedron, and that rigid scaffold is full of open hexagonal channels. Melting breaks some bonds, the scaffold buckles, and molecules tumble into the gaps, so the liquid packs <b>tighter</b> than the solid.</p>
+      <p>That is why lakes freeze from the top down and fish survive the winter under a lid of ice. It is also why water is densest at about <b>4 °C</b>: below that, ice-like clusters already open up the liquid.</p>
+      <div class="kpis" id="floatKpis"></div>
+    </div>
+    <div>
+      <div class="duo-wrap"><canvas id="floatCv" aria-label="Ice and liquid water side by side"></canvas>
+        <div class="duo-lab l" id="floatL"></div><div class="duo-lab r" id="floatR"></div>
+        <div class="duo-foot">same molecules · same temperature · same pressure</div>
+      </div>
+      <div class="panel chart-pad" style="margin-top:16px">
+        <p class="chart-title">Density of water near freezing</p>
+        <p class="chart-unit">g/cm³ at 1 atmosphere · real water vs the simulation's water models</p>
+        <canvas class="chart" id="rhoChart" data-h="300"></canvas>
+        <div class="legend" id="rhoLegend"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" id="body-sec">
+  <div class="eyebrow">A medical aside</div>
+  <h2>Ice in the <em>body</em></h2>
+  <div class="numbers">
+    <div>
+      <p class="bigq">Anything dissolved in water gets in the way of the crystal.</p>
+      <p>On the left, pure water a few tens of degrees below its freezing point, with a small ice seed. On the right, identical, except that some molecules are replaced by a <b>dissolved particle</b> that cannot join the ice lattice. The seed grows on the left; on the right the growing face has to push the solute away, and freezing slows.</p>
+      <p class="med">This is why blood plasma freezes at about <b>−0.52 °C</b> rather than 0 °C. The depression is proportional to the number of dissolved particles, and that's exactly how a <b>freezing-point osmometer</b> measures serum osmolality: 290 mOsm/kg × 1.86 °C per osmol/kg ≈ 0.54 °C.</p>
+      <p class="med">In <b>frostbite</b>, ice forms first in the fluid between cells. As it grows it concentrates the salts left behind, drawing water out of the cells, while the crystals themselves tear membranes. <b>Cryoprotectants</b> such as glycerol (first used to freeze sperm in 1949) and DMSO (used for stem cells and bone marrow) work as the right-hand box does, at much higher concentrations: they crowd the water so it turns to glass instead of crystals. Arctic fish go one better, with antifreeze proteins that bind to the faces of tiny ice crystals and stop them growing.</p>
+      <div class="kpis" id="bodyKpis"></div>
+    </div>
+    <div>
+      <div class="duo-wrap"><canvas id="bodyCv" aria-label="Freezing of pure water and a solution side by side"></canvas>
+        <div class="duo-lab l" id="bodyL"></div><div class="duo-lab r" id="bodyR"></div>
+        <div class="duo-foot">same supercooling · same seed · ice shown bright, liquid dim, solute amber</div>
+      </div>
+      <div class="labbar">
+        <button class="btn ghost" id="bodyRestart">↺ Fresh seeds</button>
+        <label class="pace" style="margin-left:0">Solute in the right box <input type="range" id="solute" min="2" max="20" value="8" aria-label="Solute fraction"><output id="soluteOut" style="min-width:3em">8%</output></label>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" id="check-sec">
+  <div class="eyebrow">Honest numbers</div>
+  <h2>How close is this to <em>real water?</em></h2>
+  <div class="numbers">
+    <div>
+      <p>Water is notoriously hard to simulate. Its molecules are polarisable, its hydrogens are quantum particles, and its hydrogen bonds are part electrostatics, part chemistry. Every water model is a compromise. This page uses two of the best-tested:</p>
+      <p><b>TIP4P/2005</b> (Abascal &amp; Vega, 2005) treats each molecule as a rigid bent body with three charges and one repulsive–attractive centre on the oxygen. It gets densities, the 4 °C maximum and the liquid's structure very well. Its one big miss is that it melts at about −23 °C instead of 0 °C, so on this page ice scenes quote temperatures relative to the model's own melting point.</p>
+      <p><b>mW</b> (Molinero &amp; Moore, 2009) shrinks each molecule to a single ball with a built-in preference for tetrahedral bonding angles. It has no hydrogens, but it melts at the right temperature and freezes thousands of times faster than an all-atom model, which is what lets you watch a crystal grow live.</p>
+      <p>Before any graphics were drawn, the simulation engine itself was checked: forces against exact derivatives, energy conservation, the GPU against an independent CPU version, and then the numbers in this table. Each was run with exactly the code you see on this page.</p>
+    </div>
+    <div class="table-wrap"><table class="cmp" id="cmpTable"></table></div>
+  </div>
+</section>
+
+<section class="wrap" id="how-sec">
+  <div class="eyebrow">Under the hood</div>
+  <h2>How it <em>works</em></h2>
+  <div class="guide" id="how"></div>
+</section>
+
+<footer class="wrap">
+  <p>Models: J. L. F. Abascal &amp; C. Vega, <i>J. Chem. Phys.</i> 123, 234505 (2005), TIP4P/2005; V. Molinero &amp; E. B. Moore, <i>J. Phys. Chem. B</i> 113, 4008 (2009), mW. Electrostatics: damped shifted force, C. J. Fennell &amp; J. D. Gezelter, <i>J. Chem. Phys.</i> 124, 234104 (2006). Rigid-body integrator: NO_SQUISH, T. F. Miller et al., <i>J. Chem. Phys.</i> 116, 8649 (2002). Thermostat: G. Bussi, D. Donadio &amp; M. Parrinello (2007); barostat: M. Bernetti &amp; G. Bussi (2020). Ice detection: CHILL+, A. H. Nguyen &amp; V. Molinero, <i>J. Phys. Chem. B</i> 119, 9369 (2015).</p>
+  <p>Real-water data: density from the IAPWS-95 formulation and Hare &amp; Sorensen (supercooled); oxygen–oxygen structure from Skinner et al., <i>J. Chem. Phys.</i> 138, 074506 (2013); self-diffusion from Mills (1973).</p>
+</footer>
+
+<script>
+/*SRC*/
+</script>

@@ -1,0 +1,22 @@
+# run logs and scratch output
+*.log
+water/logs/
+__pycache__/
+node_modules/
+
+# raw third-party downloads (fetched by the data scripts; see README)
+powers-of-ten/data/dl/
+
+# bulky intermediate results: the packed versions the pages use are committed
+powers-of-ten/data/*.f32
+powers-of-ten/data/wind/wind_rec.json
+powers-of-ten/data/blood/cap_rec.json
+powers-of-ten/data/water/md310.json
+solar-system/data/sbdb.json
+solar-system/data/sbdb_full.json
+solar-system/data/sbdb_un.json
+the-atmosphere/data/sst.csv
+the-atmosphere/data/sic.csv
+the-atmosphere/data/*.npy
+the-atmosphere/data/state_*.json
+the-atmosphere/data/qflux_raw.json

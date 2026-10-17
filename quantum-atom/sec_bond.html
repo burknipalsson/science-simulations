@@ -1,0 +1,25 @@
+<section class="wrap" id="bond-sec">
+  <div class="eyebrow">The simplest chemical bond · H₂⁺</div>
+  <h2>One electron, <em>two protons</em></h2>
+  <p class="section-lede">Bring a second proton near a hydrogen atom and the electron's wave spreads over both. If it settles in the <strong>bonding</strong> shape, it piles up between the protons and its pull on each of them outweighs their repulsion: the two are held together. This is the hydrogen molecular ion, the one molecule whose Schrödinger equation can be solved exactly, and every chemical bond is a more crowded version of it.</p>
+  <div class="split">
+    <div class="panel atomwrap bondwrap">
+      <canvas id="bondCv" aria-label="Electron cloud shared by two protons"></canvas>
+      <div class="atomname" id="bondName"></div>
+      <div class="atomhint">drag to turn</div>
+      <div class="scalebar atomscale" id="bondScale"><i></i>1 Å</div>
+    </div>
+    <div class="atomside">
+      <div class="chips" id="bondModes"></div>
+      <label class="sl">Proton spacing <input type="range" id="bondR" min="0.4" max="4" step="0.01" value="1.06" aria-label="Distance between the protons"><output id="bondRo"></output></label>
+      <p class="caption" id="bondCap"></p>
+      <div class="panel chart-pad">
+        <p class="chart-title">Energy against proton spacing</p>
+        <p class="chart-unit">eV, relative to a hydrogen atom and a lone proton far apart · exact solution</p>
+        <canvas class="chart" id="bondChart" data-h="250"></canvas>
+        <div class="legend"><span><i style="background:#ffc46b"></i>bonding</span><span><i style="background:#8fc3ec"></i>antibonding</span><span><i style="background:#8fd3a8"></i>lowest vibration</span></div>
+      </div>
+      <dl class="facts" id="bondFacts"></dl>
+    </div>
+  </div>
+</section>

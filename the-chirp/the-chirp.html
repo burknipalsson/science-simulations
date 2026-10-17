@@ -1,0 +1,1727 @@
+<title>The Chirp</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root {
+    color-scheme: dark;
+    --void: #04060a;
+    --deep: #090c13;
+    --ink: #e6eaf0;
+    --muted: #9ba3b4;
+    --faint: #687084;
+    --line: rgba(230, 234, 240, 0.12);
+    --line-strong: rgba(230, 234, 240, 0.24);
+    --wave: #8fd3e8;
+    --hot: #ffb35c;
+    --h1: #dc6a45;
+    --l1: #4f93e0;
+    --display: "Newsreader", "Iowan Old Style", Georgia, serif;
+    --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { background: var(--void); color: var(--ink); }
+  body { font-family: var(--body); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding-inline: 16px; }
+  @media (min-width: 720px) { .wrap { padding-inline: 32px; } }
+
+  header.top { padding-block: 40px 22px; display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px 40px; }
+  .eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--hot); }
+  h1 { font-family: var(--display); font-weight: 300; font-size: clamp(46px, 8.4vw, 104px); line-height: 0.92; letter-spacing: -0.025em; margin: 10px 0 0; text-wrap: balance; }
+  h1 em { font-style: italic; color: var(--wave); }
+  .lede { max-width: 48ch; color: var(--muted); margin: 0; font-size: 17px; }
+  .lede strong { color: var(--ink); font-weight: 500; }
+
+  .stage { position: relative; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: #000; overflow: hidden; }
+  #sky { display: block; width: 100%; height: clamp(460px, 76vh, 880px); cursor: grab; touch-action: none; }
+  #sky:active { cursor: grabbing; }
+  .hud { position: absolute; background: rgba(4, 6, 10, 0.64); backdrop-filter: blur(6px); border: 1px solid var(--line); border-radius: 4px; font-family: var(--mono); font-size: 12px; line-height: 1.55; font-variant-numeric: tabular-nums; }
+  .readout { top: 14px; left: 14px; display: grid; grid-template-columns: auto auto; gap: 2px 14px; padding: 10px 14px; pointer-events: none; max-width: calc(100% - 28px); }
+  .readout dt { color: var(--faint); }
+  .readout dd { margin: 0; text-align: right; }
+  .readout .big { font-size: 15px; color: var(--wave); }
+  .readout .rate { color: var(--hot); }
+  .scope { right: 14px; bottom: 14px; width: min(400px, calc(100% - 28px)); padding: 8px 10px 6px; }
+  .scope canvas { display: block; width: 100%; height: 96px; }
+  .scope .lab { display: flex; justify-content: space-between; gap: 10px; color: var(--faint); font-size: 11px; }
+  .scope .lab b { font-weight: 400; color: var(--muted); }
+  .scope .keys { display: flex; gap: 12px; }
+  .scope .keys span { display: inline-flex; align-items: center; gap: 6px; }
+  .scope .keys i { width: 14px; height: 2px; display: inline-block; }
+  .arm { top: 14px; right: 14px; width: 176px; padding: 8px 10px; pointer-events: none; }
+  .arm canvas { display: block; width: 100%; height: 140px; }
+  .arm .lab { color: var(--faint); font-size: 11px; line-height: 1.35; }
+  .arm .lab b { color: var(--ink); font-weight: 400; }
+  .arm.flash { border-color: var(--hot); }
+  @media (max-width: 760px) { .arm { display: none; } .scope canvas { height: 70px; } }
+  .phase { position: absolute; left: 14px; bottom: 14px; font-family: var(--display); font-style: italic; font-weight: 300; font-size: clamp(22px, 3vw, 34px); color: var(--ink); pointer-events: none; text-shadow: 0 1px 12px #000; max-width: calc(100% - 450px); }
+  .phase small { display: block; font-family: var(--mono); font-style: normal; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+  @media (max-width: 760px) { .phase { bottom: auto; top: auto; left: 14px; max-width: calc(100% - 28px); bottom: 150px; } }
+  .hint { position: absolute; left: 50%; transform: translateX(-50%); bottom: 12px; font-family: var(--mono); font-size: 11px; color: rgba(230, 234, 240, 0.45); pointer-events: none; white-space: nowrap; }
+  @media (max-width: 1100px) { .hint { display: none; } }
+  .tag { position: absolute; left: 0; top: 0; pointer-events: none; font-family: var(--mono); font-size: 11px; line-height: 1.35; color: var(--ink); background: rgba(4, 6, 10, 0.7); border: 1px solid var(--line-strong); border-radius: 3px; padding: 3px 7px; white-space: nowrap; transition: opacity .3s; }
+  .tag b { color: var(--hot); font-weight: 500; }
+  .nogl { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: var(--muted); }
+
+  .transport { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 14px; padding-block: 16px 4px; }
+  .btn { appearance: none; font: 500 14px/1 var(--body); color: var(--void); background: var(--ink); border: 1px solid var(--ink); border-radius: 999px; padding: 10px 18px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+  .btn.ghost { background: transparent; color: var(--ink); border-color: var(--line-strong); }
+  .btn.sound { background: transparent; color: var(--wave); border-color: var(--wave); }
+  .btn.sound[aria-pressed="true"] { background: var(--wave); color: var(--void); }
+  .btn:hover { filter: brightness(1.1); }
+  .btn.ghost:hover { border-color: rgba(230, 234, 240, 0.5); }
+  .btn svg { width: 16px; height: 16px; }
+  .speed { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); white-space: nowrap; flex: 1 1 280px; max-width: 440px; margin-left: auto; }
+  .speed output { font-family: var(--mono); font-size: 12px; color: var(--ink); min-width: 7em; text-align: right; font-variant-numeric: tabular-nums; }
+
+  .controls { display: grid; gap: 22px 40px; grid-template-columns: 1fr; padding-block: 18px 8px; }
+  @media (min-width: 900px) { .controls { grid-template-columns: 1.2fr 1fr; } }
+  .group { display: grid; gap: 10px; align-content: start; }
+  .group-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--faint); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { appearance: none; font: 500 13px/1 var(--body); color: var(--muted); background: transparent; border: 1px solid var(--line-strong); border-radius: 999px; padding: 9px 14px; cursor: pointer; transition: color .15s, border-color .15s, background .15s; display: inline-flex; align-items: center; gap: 8px; }
+  .chip:hover { color: var(--ink); border-color: rgba(230, 234, 240, 0.45); }
+  .chip:focus-visible, .btn:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--wave); outline-offset: 2px; }
+  .chip[aria-pressed="true"] { color: var(--void); background: var(--ink); border-color: var(--ink); }
+  .chip .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; opacity: .55; }
+  .chip[aria-pressed="true"] .dot { opacity: 1; }
+  .chip.ev[aria-pressed="true"] { background: var(--hot); border-color: var(--hot); }
+  .chip.pitch[aria-pressed="true"] { background: var(--wave); border-color: var(--wave); }
+  .chip small { font-family: var(--mono); font-size: 11px; opacity: .75; font-weight: 400; }
+  .caption { margin: 4px 0 0; padding-left: 14px; border-left: 2px solid var(--hot); color: var(--muted); font-size: 15px; max-width: 64ch; min-height: 4.8em; }
+  .caption b { color: var(--ink); font-weight: 500; }
+  .note { margin: 0; font-size: 13px; color: var(--faint); max-width: 58ch; }
+  .note b { color: var(--muted); font-weight: 500; }
+
+  .slider { display: grid; grid-template-columns: 9.5em 1fr 8.5em; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); }
+  .slider output { font-family: var(--mono); font-size: 12px; color: var(--ink); text-align: right; font-variant-numeric: tabular-nums; }
+  @media (max-width: 480px) { .slider { grid-template-columns: 1fr auto; } .slider input { grid-column: 1 / -1; grid-row: 2; } }
+  .derived { display: grid; grid-template-columns: 1fr auto; margin: 4px 0 0; border-top: 1px solid var(--line); font-size: 14px; }
+  .derived dt, .derived dd { padding: 7px 0; border-bottom: 1px solid var(--line); margin: 0; }
+  .derived dt { color: var(--muted); }
+  .derived dd { font-family: var(--mono); font-size: 13px; text-align: right; font-variant-numeric: tabular-nums; }
+
+  input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 22px; background: transparent; }
+  input[type=range]::-webkit-slider-runnable-track { height: 2px; background: var(--line-strong); }
+  input[type=range]::-moz-range-track { height: 2px; background: var(--line-strong); }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--wave); margin-top: -6px; border: 0; }
+  input[type=range]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: var(--wave); border: 0; }
+
+  section { padding-block: 72px 8px; }
+  h2 { font-family: var(--display); font-weight: 300; font-size: clamp(34px, 5vw, 58px); line-height: 1.02; letter-spacing: -0.015em; margin: 8px 0 14px; text-wrap: balance; }
+  h2 em { font-style: italic; color: var(--wave); }
+  .section-lede { color: var(--muted); max-width: 64ch; margin: 0 0 28px; }
+  .section-lede strong { color: var(--ink); font-weight: 500; }
+
+  .chart-wrap { position: relative; border: 1px solid var(--line); border-radius: 4px; padding: 14px 14px 8px; background: var(--deep); }
+  .chart-title { font-size: 14px; color: var(--ink); margin: 0 0 2px 4px; font-weight: 500; }
+  .chart-unit { font-size: 12px; color: var(--faint); margin: 0 0 8px 4px; }
+  #overview { display: block; width: 100%; height: 360px; cursor: crosshair; touch-action: pan-y; }
+  .tip { position: absolute; top: 12px; left: 0; min-width: 190px; pointer-events: none; background: rgba(4, 6, 10, 0.94); border: 1px solid var(--line-strong); border-radius: 4px; padding: 8px 10px; font-size: 12px; display: grid; gap: 3px; }
+  .tip .when { color: var(--muted); font-family: var(--mono); font-size: 11px; }
+  .tip b { font-family: var(--mono); font-weight: 500; }
+  .tip span { color: var(--muted); }
+  .tip .go { color: var(--faint); font-size: 11px; }
+  details.data { margin-top: 10px; font-size: 13px; color: var(--muted); }
+  details.data summary { cursor: pointer; padding: 6px 4px; }
+  details.data table { min-width: 0; font-size: 13px; }
+  details.data th, details.data td { padding: 6px 10px; }
+
+  .guide { display: grid; gap: 1px; grid-template-columns: 1fr; background: var(--line); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+  @media (min-width: 700px) { .guide { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 1040px) { .guide { grid-template-columns: 1fr 1fr 1fr; } }
+  .entry { background: var(--void); padding: 26px 24px 24px; display: grid; grid-template-rows: auto auto 1fr auto; gap: 10px; }
+  .entry .where { font-family: var(--mono); font-size: 12px; color: var(--hot); letter-spacing: 0.04em; }
+  .entry h3 { font-family: var(--display); font-weight: 400; font-size: 27px; line-height: 1.12; margin: 0; text-wrap: balance; }
+  .entry p { margin: 0; color: var(--muted); font-size: 15px; }
+  .entry p b { color: var(--ink); font-weight: 500; }
+  .show { justify-self: start; margin-top: 8px; appearance: none; background: none; border: 0; border-bottom: 1px solid var(--wave); color: var(--wave); font: 500 14px/1.4 var(--body); padding: 2px 0; cursor: pointer; text-align: left; }
+  .show:hover { color: var(--ink); border-color: var(--ink); }
+
+  .numbers { display: grid; gap: 28px; grid-template-columns: 1fr; align-items: start; }
+  @media (min-width: 900px) { .numbers { grid-template-columns: 1fr 1.15fr; } }
+  .numbers p { margin: 0 0 14px; color: var(--muted); max-width: 60ch; }
+  .numbers p b { color: var(--ink); font-weight: 500; }
+
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 4px; }
+  table { width: 100%; border-collapse: collapse; min-width: 720px; font-size: 14px; }
+  th, td { text-align: left; padding: 14px 18px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  th { font-family: var(--mono); font-weight: 400; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); }
+  td.num { font-family: var(--mono); font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td .name { font-family: var(--display); font-size: 21px; display: block; }
+  td .sub { color: var(--faint); font-size: 13px; }
+  td button { margin-top: 6px; display: block; }
+  tr.kind td { padding-block: 10px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--hot); background: var(--deep); }
+  .cmp { min-width: 0; }
+  .cmp td, .cmp th { padding: 10px 14px; }
+  .cmp td:nth-child(2), .cmp td:nth-child(3) { font-family: var(--mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+  .cmp td:nth-child(2) { color: var(--wave); }
+  .cmp .why { color: var(--faint); font-size: 12px; display: block; font-family: var(--body); }
+
+  footer { padding-block: 64px 48px; color: var(--faint); font-size: 13px; }
+  footer p { max-width: 78ch; margin: 0 0 8px; }
+  footer i { color: var(--muted); }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">Gravitational waves · live simulation with sound</div>
+      <h1>The <em>Chirp</em></h1>
+    </div>
+    <p class="lede">Two black holes circle each other, faster and closer, until they merge. The collision shakes space itself, and the ripples reached Earth <strong>1.3 billion years later</strong>, stretching LIGO's 4 km arms by less than a proton's width. They also fall in the range of human hearing. <strong>Turn the sound on</strong>, and drag the picture to turn it.</p>
+  </header>
+</div>
+
+<div class="stage" id="stage">
+  <canvas id="sky" aria-label="Two black holes spiraling together on a sheet representing space, sending out spiral ripples"></canvas>
+  <dl class="hud readout" id="readout">
+    <dt>wave frequency</dt><dd class="big" id="rFreq">—</dd>
+    <dt>time to merger</dt><dd id="rTime">—</dd>
+    <dt>separation</dt><dd id="rSep">—</dd>
+    <dt>orbital speed</dt><dd id="rSpeed">—</dd>
+    <dt>energy radiated</dt><dd id="rEnergy">—</dd>
+    <dt>power now</dt><dd id="rPower">—</dd>
+    <dt>strain at Earth</dt><dd id="rStrain">—</dd>
+    <dt>LIGO arm change</dt><dd id="rArm">—</dd>
+    <dt>playback</dt><dd class="rate" id="rRate">—</dd>
+  </dl>
+  <div class="hud arm" id="armHud">
+    <canvas id="arm" aria-label="A LIGO detector's two arms stretching and squeezing, hugely exaggerated"></canvas>
+    <div class="lab">LIGO arms, stretch <b id="armX">exaggerated 10²⁰×</b></div>
+  </div>
+  <div class="hud scope">
+    <div class="lab"><b id="scopeTitle">Strain at Earth</b><span class="keys" id="scopeKeys" hidden><span><i style="background:var(--l1)"></i>Livingston</span><span><i style="background:var(--h1)"></i>Hanford</span></span><span id="scopeSpan">—</span></div>
+    <canvas id="scope" aria-label="Live trace of the gravitational-wave strain"></canvas>
+  </div>
+  <div class="phase" id="phase"><small id="phaseSmall">—</small><span id="phaseText">Inspiral</span></div>
+  <div class="hint" id="hint">drag to turn · scroll or pinch to zoom</div>
+  <div class="tag" id="tag0" hidden></div>
+  <div class="tag" id="tag1" hidden></div>
+  <div class="tag" id="tag2" hidden></div>
+</div>
+
+<div class="wrap">
+  <div class="transport">
+    <button class="btn" id="playBtn">Pause</button>
+    <button class="btn ghost" id="restartBtn">Restart</button>
+    <button class="btn sound" id="soundBtn" aria-pressed="false"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 6h3l4-3v10l-4-3H2z"/><path d="M11.5 5.5a3.5 3.5 0 0 1 0 5M13 3.5a6 6 0 0 1 0 9"/></svg><span id="soundLabel">Turn sound on</span></button>
+    <button class="btn ghost" id="realBtn">Hear it at real speed</button>
+    <label class="speed" for="speed">Slow motion <input id="speed" type="range" min="-100" max="100" value="0"><output id="speedOut" for="speed">normal</output></label>
+  </div>
+
+  <div class="controls">
+    <div class="group">
+      <div class="group-label">Real detections</div>
+      <div class="chips" id="events">
+        <button class="chip ev" data-ev="gw150914" aria-pressed="true">GW150914 <small>first</small></button>
+        <button class="chip ev" data-ev="gw170817" aria-pressed="false">GW170817 <small>neutron stars</small></button>
+        <button class="chip ev" data-ev="gw190521" aria-pressed="false">GW190521 <small>heaviest</small></button>
+        <button class="chip ev" data-ev="custom" aria-pressed="false">Your own</button>
+      </div>
+      <p class="caption" id="caption">—</p>
+      <div class="group-label" style="margin-top:8px">Sound pitch</div>
+      <div class="chips" id="pitches">
+        <button class="chip pitch" data-p="1" aria-pressed="false">True pitch</button>
+        <button class="chip pitch" data-p="4" aria-pressed="true">Two octaves up</button>
+        <button class="chip pitch" data-p="16" aria-pressed="false">Four octaves up</button>
+      </div>
+      <p class="note">The real signal is a low thump that many laptop and phone speakers can't reproduce. Shifting it up keeps the shape of the chirp and makes it audible. In slow motion the sound is stretched in time but keeps its pitch, so you hear the note the ripples would make right now.</p>
+      <div class="group-label" style="margin-top:8px">Show</div>
+      <div class="chips" id="toggles">
+        <button class="chip" data-key="two" aria-pressed="false"><span class="dot"></span>Both LIGO detectors</button>
+        <button class="chip" data-key="grid" aria-pressed="true"><span class="dot"></span>Grid</button>
+        <button class="chip" data-key="spin" aria-pressed="true"><span class="dot"></span>Slow turn</button>
+        <button class="chip" id="resetView"><span class="dot"></span>Reset view</button>
+      </div>
+    </div>
+    <div class="group">
+      <div class="group-label">Build your own merger</div>
+      <label class="slider" for="m1">Heavier object<input id="m1" type="range" min="0" max="1000" value="700"><output id="m1Out" for="m1">—</output></label>
+      <label class="slider" for="m2">Lighter object<input id="m2" type="range" min="0" max="1000" value="600"><output id="m2Out" for="m2">—</output></label>
+      <label class="slider" for="dist">Distance<input id="dist" type="range" min="0" max="1000" value="500"><output id="distOut" for="dist">—</output></label>
+      <p class="note">Masses are in suns. Anything up to <b>2.5 suns</b> is drawn as a neutron star, and heavier objects as black holes. Two neutron stars collide and throw out a kilonova. A neutron star meeting a black hole is swallowed whole in this model.</p>
+      <dl class="derived">
+        <dt>Chirp mass, what the pitch rise measures</dt><dd id="dChirp">—</dd>
+        <dt>Final object</dt><dd id="dFinal">—</dd>
+        <dt>Mass turned into waves</dt><dd id="dErad">—</dd>
+        <dt>Ringdown pitch at Earth</dt><dd id="dRing">—</dd>
+        <dt>Time the signal traveled</dt><dd id="dTravel">—</dd>
+        <dt>Peak strain at Earth</dt><dd id="dStrain">—</dd>
+      </dl>
+    </div>
+  </div>
+
+  <section id="signal">
+    <div class="eyebrow">What the detectors record</div>
+    <h2>The whole <em>signal</em></h2>
+    <p class="section-lede">The top panel is the strain, the fraction by which space stretches as the wave passes. The bottom panel is the wave's frequency, the pitch you hear. Watch both climb to the merger and stop. <strong>Click anywhere on the chart</strong> to jump the simulation there.</p>
+    <div class="chart-wrap">
+      <p class="chart-title" id="ovTitle">GW150914</p>
+      <p class="chart-unit" id="ovUnit">strain at Earth (top) and wave frequency in hertz (bottom), against time before the merger</p>
+      <canvas id="overview" role="img" aria-label="Strain and frequency of the gravitational wave over time"></canvas>
+      <div class="tip" id="ovTip" hidden>
+        <div class="when" id="tipWhen">—</div>
+        <div><b id="tipF">—</b> <span>wave frequency</span></div>
+        <div><b id="tipH">—</b> <span>strain</span></div>
+        <div class="go">click to jump here</div>
+      </div>
+      <details class="data"><summary>Show the numbers as a table</summary>
+        <div class="table-wrap"><table><thead><tr><th>Time to merger</th><th>Frequency</th><th>Strain amplitude</th><th>Separation</th><th>Orbital speed</th></tr></thead><tbody id="ovRows"></tbody></table></div>
+      </details>
+    </div>
+  </section>
+
+  <section id="guide">
+    <div class="eyebrow">Field guide</div>
+    <h2>What you are <em>hearing</em></h2>
+    <p class="section-lede">Each note below can set up the simulation to show you. The sheet stands for space, seen from above the orbit. The dents are the black holes' pull, and the spiral ripples are the gravitational waves, <strong>moving outward at the speed of light</strong>, drawn true to scale against the orbit but with their height exaggerated enormously.</p>
+    <div class="guide">
+      <article class="entry">
+        <div class="where">chirp mass ≈ 30 suns</div>
+        <h3>The chirp gives away the masses</h3>
+        <p>As the pair loses energy the orbit shrinks, speeds up, and the pitch rises. How fast the pitch climbs at a given pitch depends almost only on one blend of the two masses, the <b>chirp mass</b>. GW150914's came out near 30 suns. Heavier pairs chirp lower and end sooner. Neutron stars sweep up to over a thousand hertz.</p>
+        <button class="show" data-show="masses">Watch the pitch climb →</button>
+      </article>
+      <article class="entry">
+        <div class="where">Hanford ↔ Livingston · 3,002 km</div>
+        <h3>Why the detectors were 7 ms apart</h3>
+        <p>The waves travel at the speed of light, which takes 10 ms to cross the distance between the two LIGO sites. GW150914 reached Livingston first and Hanford <b>6.9 ms</b> later, which put the source somewhere on a ring in the southern sky. Hanford's arms point differently, so its trace comes out flipped.</p>
+        <button class="show" data-show="twodet">Show both detectors →</button>
+      </article>
+      <article class="entry">
+        <div class="where">4 km arm · 4 × 10⁻¹⁸ m</div>
+        <h3>A fraction of a proton</h3>
+        <p>A strain of 10⁻²¹ changes a 4 km arm by about 4 × 10⁻¹⁸ m. At GW150914's loudest moment that was <b>1/400 of a proton's width</b>, and for most of the chirp around 1/1000. LIGO bounces laser light hundreds of times along each arm and compares the two. The inset at the top right exaggerates the stretch about 10²⁰ times.</p>
+        <button class="show" data-show="proton">Go to the loudest moment →</button>
+      </article>
+      <article class="entry">
+        <div class="where">3 suns · 5 × 10⁴⁷ joules</div>
+        <h3>Where the energy went</h3>
+        <p>Three suns' worth of mass left as gravitational waves in a fraction of a second. At the peak the power was <b>3.6 × 10⁴⁹ watts</b>, which LIGO put at more than 50 times the light of every star in the observable universe. The waves pass through matter almost untouched, so by Earth they were a quiver of 10⁻²¹.</p>
+        <button class="show" data-show="energy">Watch the peak →</button>
+      </article>
+      <article class="entry">
+        <div class="where">≈ 0.5 c · 75 orbits a second</div>
+        <h3>Half the speed of light</h3>
+        <p>Each black hole was about <b>200 km across</b>, the size of a small country, and together they held 65 suns. In the final orbits they whirled around each other about 75 times a second at <b>half the speed of light</b>, then touched and merged within a few thousandths of a second.</p>
+        <button class="show" data-show="fast">Slow down the last orbits →</button>
+      </article>
+      <article class="entry">
+        <div class="where">≈ 250 Hz · fades in 4 ms</div>
+        <h3>The new hole rings like a bell</h3>
+        <p>The merged black hole starts out lopsided and settles into a smooth, spinning shape by shaking off ripples at one pitch. They die away within milliseconds. The pitch and the fade depend only on the hole's mass and spin. GW250114, the loudest event so far, rang clearly enough to confirm Hawking's rule that a black hole's surface can only grow.</p>
+        <button class="show" data-show="ring">Replay the ringdown →</button>
+      </article>
+      <article class="entry">
+        <div class="where">35 → 250 Hz · real sound</div>
+        <h3>Why you can hear it</h3>
+        <p>Mergers of star-sized black holes happen to sing in the range of human hearing, so the signal can be played straight through a speaker with no translation. At true pitch GW150914 is a low thump lasting a fraction of a second, below what small speakers can play, which is why this page can move it up two or four octaves.</p>
+        <button class="show" data-show="hear">Hear it at real speed →</button>
+      </article>
+      <article class="entry">
+        <div class="where">NGC 4993 · 130 million ly</div>
+        <h3>Neutron-star mergers make gold</h3>
+        <p>When two neutron stars collide, a few percent of a sun is flung out as neutron-rich debris. Its nuclei soak up neutrons faster than they can decay and build heavy elements such as gold, platinum and uranium. The glow of that cloud, a <b>kilonova</b>, was seen after GW170817. It made several Earths' worth of gold.</p>
+        <button class="show" data-show="gold">Collide two neutron stars →</button>
+      </article>
+      <article class="entry">
+        <div class="where">85 + 66 → 142 suns</div>
+        <h3>The heaviest: GW190521</h3>
+        <p>Stars shouldn't leave black holes between roughly 65 and 130 suns, because a star that big blows itself apart first. GW190521's 85-sun hole sits in that gap, so it was probably born in an earlier merger. The signal lasted about a tenth of a second, only <b>four cycles</b> in the detectors, at a pitch you feel more than hear.</p>
+        <button class="show" data-show="heavy">Load GW190521 →</button>
+      </article>
+    </div>
+  </section>
+
+  <section id="numbers">
+    <div class="eyebrow">Checking the model</div>
+    <h2>GW150914, <em>simulated</em> and measured</h2>
+    <div class="numbers">
+      <div>
+        <p>This page doesn't play back a recording. It computes the waveform from the physics, and the numbers on the right come straight out of that calculation for 36 and 29 suns at 410 megaparsecs, next to what LIGO measured.</p>
+        <p>The long approach uses <b>post-Newtonian theory</b>: Newton's orbits plus Einstein's corrections, worked out to high order, with the orbit shrinking as the waves carry energy away. The final plunge and merger can't be done that way, so the model hands over to a formula fitted to <b>supercomputer simulations</b> of merging black holes. The ringdown uses the true ringing pitch and fade of a spinning black hole, and the final mass and spin come from fits to the same simulations.</p>
+        <p>The biggest difference is in the timing. LIGO's paper described the signal as rising "over 0.2 s, in about 8 cycles, from 35 to 150 Hz", a rough figure from the simplest version of the theory. With the higher-order terms included, as here, the last stretch goes faster.</p>
+      </div>
+      <div class="table-wrap"><table class="cmp"><thead><tr><th>Quantity</th><th>This model</th><th>LIGO measured</th></tr></thead><tbody id="cmpRows"></tbody></table></div>
+    </div>
+  </section>
+
+  <section id="real">
+    <div class="eyebrow">Catalog</div>
+    <h2>Real events and the <em>detectors</em></h2>
+    <p class="section-lede">LIGO, Virgo and KAGRA have now caught <strong>hundreds</strong> of mergers. A few that changed the field are below; each can be loaded into the simulation with its measured masses and distance.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Event</th><th>Masses (suns)</th><th>Distance</th><th>Why it matters</th></tr></thead>
+        <tbody>
+          <tr class="kind"><td colspan="4">Black hole pairs</td></tr>
+          <tr><td><span class="name">GW150914</span><span class="sub">14 September 2015</span><button class="show" data-ev="gw150914">Load it →</button></td><td class="num">36 + 29 → 62</td><td class="num">1.3 billion ly</td><td>The first gravitational waves ever detected, 100 years after Einstein predicted them. Nobel Prize in Physics 2017 for Rainer Weiss, Barry Barish and Kip Thorne.</td></tr>
+          <tr><td><span class="name">GW151226</span><span class="sub">26 December 2015</span><button class="show" data-load="14.2,7.5,440,GW151226">Load it →</button></td><td class="num">14 + 7.5 → 21</td><td class="num">1.4 billion ly</td><td>The second detection, on Boxing Day. Lighter holes chirp longer: about a second and 55 cycles in the detectors. First sign that black holes spin.</td></tr>
+          <tr><td><span class="name">GW170814</span><span class="sub">14 August 2017</span><button class="show" data-load="30.5,25.3,540,GW170814">Load it →</button></td><td class="num">31 + 25 → 53</td><td class="num">1.8 billion ly</td><td>The first event seen by three detectors after Virgo joined. A third site shrank the patch of sky from about 1,000 to 60 square degrees.</td></tr>
+          <tr><td><span class="name">GW190521</span><span class="sub">21 May 2019</span><button class="show" data-ev="gw190521">Load it →</button></td><td class="num">85 + 66 → 142</td><td class="num">≈ 7 billion years ago</td><td>The heaviest merger at the time, and the first black hole caught forming in the "intermediate" range of 100 to 100,000 suns.</td></tr>
+          <tr><td><span class="name">GW190814</span><span class="sub">14 August 2019</span><button class="show" data-load="23.2,2.59,241,GW190814">Load it →</button></td><td class="num">23 + 2.6 → 25</td><td class="num">800 million ly</td><td>A lopsided 9-to-1 pair. The lighter object, 2.6 suns, is either the heaviest neutron star or the lightest black hole ever found.</td></tr>
+          <tr><td><span class="name">GW250114</span><span class="sub">14 January 2025</span><button class="show" data-load="33.6,32.2,440,GW250114">Load it →</button></td><td class="num">≈ 34 + 32 → 63</td><td class="num">≈ 1.3 billion ly</td><td>The clearest signal yet, a near twin of GW150914. Its ringdown confirmed that the merged hole's surface area was larger than the two before, as Hawking predicted in 1971.</td></tr>
+          <tr class="kind"><td colspan="4">Neutron stars</td></tr>
+          <tr><td><span class="name">GW170817</span><span class="sub">17 August 2017</span><button class="show" data-ev="gw170817">Load it →</button></td><td class="num">1.46 + 1.27</td><td class="num">130 million ly</td><td>The first neutron-star merger: 100 seconds of chirp, a gamma-ray burst 1.7 s later, then a kilonova in galaxy NGC 4993 watched by about 70 observatories. It also measured the expansion rate of the universe.</td></tr>
+          <tr><td><span class="name">GW190425</span><span class="sub">25 April 2019</span><button class="show" data-load="2.0,1.4,159,GW190425">Load it →</button></td><td class="num">≈ 2.0 + 1.4</td><td class="num">520 million ly</td><td>An unusually heavy pair, 3.4 suns in total, heavier than any double neutron star seen in our galaxy. Caught by one detector only, and no light was found.</td></tr>
+          <tr><td><span class="name">GW200115</span><span class="sub">15 January 2020</span><button class="show" data-load="5.9,1.44,300,GW200115">Load it →</button></td><td class="num">5.9 + 1.4</td><td class="num">1 billion ly</td><td>A black hole swallowing a neutron star, one of the first two such mergers found. The star went in whole, so there was no flash.</td></tr>
+          <tr><td><span class="name">GW230529</span><span class="sub">29 May 2023</span><button class="show" data-load="3.6,1.4,201,GW230529">Load it →</button></td><td class="num">3.6 + 1.4</td><td class="num">650 million ly</td><td>The heavier object sits in the "mass gap" between the heaviest neutron stars and the lightest black holes known.</td></tr>
+          <tr class="kind"><td colspan="4">Detectors</td></tr>
+          <tr><td><span class="name">LIGO Hanford</span><span class="sub">Washington, USA</span><button class="show" data-show="twodet">Show both LIGOs →</button></td><td class="num">4 km arms</td><td class="num">since 2015</td><td>One of the two LIGO observatories. Its laser light travels each arm about 300 times, making an effective path over 1,000 km long.</td></tr>
+          <tr><td><span class="name">LIGO Livingston</span><span class="sub">Louisiana, USA</span></td><td class="num">4 km arms</td><td class="num">3,002 km from Hanford</td><td>Light takes 10 ms between the two sites, so a real signal must show up in both within 10 ms. Local noise, like a truck passing, doesn't.</td></tr>
+          <tr><td><span class="name">Virgo</span><span class="sub">Cascina, Italy</span></td><td class="num">3 km arms</td><td class="num">joined 2017</td><td>The European detector. With three sites, arrival times pin the source down far better than two.</td></tr>
+          <tr><td><span class="name">KAGRA</span><span class="sub">Kamioka, Japan</span></td><td class="num">3 km arms</td><td class="num">joined 2020</td><td>Built underground in a mine to escape vibration, with mirrors cooled to about 20 kelvin to cut thermal noise.</td></tr>
+          <tr><td><span class="name">GEO600</span><span class="sub">Hannover, Germany</span></td><td class="num">600 m arms</td><td class="num">since 2002</td><td>A smaller test bed where techniques later used in LIGO were proven, including "squeezed" light that beats quantum noise.</td></tr>
+          <tr><td><span class="name">LIGO-India</span><span class="sub">Maharashtra, India</span></td><td class="num">4 km arms</td><td class="num">planned, 2030s</td><td>A third LIGO, placed far from the others to sharpen sky positions.</td></tr>
+          <tr><td><span class="name">LISA</span><span class="sub">ESA with NASA, in space</span></td><td class="num">2.5 million km</td><td class="num">launch ≈ 2035</td><td>Three spacecraft trailing Earth around the Sun. It will hear millihertz waves, far too low for any ground detector, from merging giant black holes in galaxy centers.</td></tr>
+          <tr><td><span class="name">Pulsar timing arrays</span><span class="sub">NANOGrav, EPTA, PPTA, others</span></td><td class="num">galaxy-sized</td><td class="num">evidence 2023</td><td>Dozens of pulsars used as cosmic clocks. Tiny shifts in their ticking revealed a slow background hum, likely from pairs of supermassive black holes orbiting over years.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    <p>How it works: the waveform is the main (quadrupole) gravitational-wave mode of two non-spinning bodies. The inspiral is the TaylorT4 post-Newtonian approximation, with the orbital frequency evolved to 3.5 post-Newtonian order and amplitude to 2nd order. For black holes it hands over at v²/c² = 0.16 to the "backwards one body" merger model of McWilliams (2019), whose frequency rises smoothly to the ringdown tone of the final hole (Berti, Cardoso &amp; Will 2006 fits). Peak amplitude, final mass, final spin and radiated energy follow fits to numerical-relativity simulations. Neutron stars are treated as points until their surfaces, 12 km in radius, touch; after that the page shows a short, faint ringing of the merged star at about 2.8 kHz, the collapse to a black hole, a kilonova and a jet. The kilonova and jet are drawn much faster than their real timescales of seconds to days. Distances convert to redshift with Planck-like cosmology, and every frequency and time is as observed at Earth.</p>
+    <p>The sheet is a picture, not a measurement. Its dents are shaped like the pull of each body, and its ripples show the wave pattern in the plane of the orbit at the right wavelength, travelling outward at the speed of light and read off at the delayed time for each distance. Their height is enlarged beyond any real scale and grows more gently than the real 1/distance fall-off. The "strain at Earth" readouts assume an average orientation of the orbit and detectors, calibrated so GW150914 peaks near its measured 1.0 × 10⁻²¹. The sound is the computed waveform itself, with only its pitch optionally raised by whole octaves.</p>
+    <p>Simplifications: spins are ignored except in the final black hole, so events with strongly spinning or precessing black holes (GW190521 among them) come out slightly different from the published values. There is no detector noise; real signals are buried in noise and dug out by matching them against thousands of model waveforms like this one.</p>
+  </footer>
+</div>
+
+<script>
+/* The Chirp: gravitational waveform model.
+   Inspiral: post-Newtonian TaylorT4 (3.5PN phase, 2PN amplitude), non-spinning.
+   Black holes: merger and ringdown from the "backwards one body" model (McWilliams 2019),
+   matched in frequency and its rate to the inspiral, ringing at the (2,2,0) quasi-normal mode
+   of the final hole (Berti et al. 2006 fits). Final mass and spin from non-spinning NR fits.
+   Neutron stars: inspiral until the stars touch, then a short, faint post-merger ring.
+   Units: G = c = 1, lengths and times in units of the total (detector-frame) mass. */
+const Wave = (() => {
+  const TSUN = 4.925491e-6;          // G·Msun/c³ in s
+  const RSUN_KM = 1.476625;          // G·Msun/c² in km
+  const MSUN_C2 = 1.78855e47;        // J
+  const LUM = 3.62829e52;            // c⁵/G in W
+  const MPC_M = 3.08568e22, LY_M = 9.46073e15;
+  const GAMMA_E = 0.5772156649;
+  const NS_MAX = 2.5, NS_R_KM = 12;
+
+  // flat ΛCDM: luminosity distance (Mpc) ↔ redshift
+  const H0 = 67.7, OM = 0.31, C_KMS = 299792.458;
+  function dL(z){ let s = 0; const n = 400; for (let i = 0; i < n; i++){ const zz = (i + 0.5) / n * z; s += 1 / Math.sqrt(OM * (1 + zz) ** 3 + 1 - OM); } return (1 + z) * C_KMS / H0 * s * z / n; }
+  function zOfD(D){ let lo = 0, hi = 5; for (let i = 0; i < 60; i++){ const m = (lo + hi) / 2; if (dL(m) < D) lo = m; else hi = m; } return (lo + hi) / 2; }
+  function lookbackGyr(z){ let s = 0; const n = 400; for (let i = 0; i < n; i++){ const zz = (i + 0.5) / n * z; s += 1 / ((1 + zz) * Math.sqrt(OM * (1 + zz) ** 3 + 1 - OM)); } return s * z / n * 977.8 / H0; }
+
+  // final state of a non-spinning black-hole merger
+  function finalBH(eta){
+    const Erad = 0.0559745 * eta + 0.580951 * eta ** 2 - 0.960673 * eta ** 3 + 3.35241 * eta ** 4;   // fraction of M
+    const af = Math.sqrt(12) * eta - 3.871 * eta ** 2 + 4.028 * eta ** 3;
+    return { Erad, af };
+  }
+  // l = m = 2, n = 0 quasi-normal mode for mass 1: angular frequency and damping time
+  function qnm(a){
+    const F = 1.5251 - 1.1568 * Math.pow(1 - a, 0.1292);
+    const Q = 0.7 + 1.4187 * Math.pow(1 - a, -0.4990);
+    return { w: F, tau: 2 * Q / F };
+  }
+
+  // TaylorT4 dx/dt, non-spinning, through 3.5PN
+  function dxdt(x, eta){
+    const pi = Math.PI, x12 = Math.sqrt(x);
+    const a2 = -743 / 336 - 11 / 4 * eta, a3 = 4 * pi;
+    const a4 = 34103 / 18144 + 13661 / 2016 * eta + 59 / 18 * eta * eta;
+    const a5 = (-4159 / 672 - 189 / 8 * eta) * pi;
+    const a6 = 16447322263 / 139708800 - 1712 / 105 * GAMMA_E + 16 / 3 * pi * pi - 856 / 105 * Math.log(16 * x)
+      + (-56198689 / 217728 + 451 / 48 * pi * pi) * eta + 541 / 896 * eta * eta - 5605 / 2592 * eta ** 3;
+    const a7 = (-4415 / 4032 + 358675 / 6048 * eta + 91495 / 1512 * eta * eta) * pi;
+    return 64 / 5 * eta * x ** 5 * (1 + a2 * x + a3 * x * x12 + a4 * x * x + a5 * x * x * x12 + a6 * x ** 3 + a7 * x ** 3 * x12);
+  }
+  // |r h22 / M| through 2PN (real part)
+  function ampPN(x, eta){
+    return 8 * Math.sqrt(Math.PI / 5) * eta * x * (1 + x * (-107 / 42 + 55 / 42 * eta) + 2 * Math.PI * x ** 1.5
+      + x * x * (-2173 / 1512 - 1069 / 216 * eta + 2047 / 1512 * eta * eta));
+  }
+  // PN binding energy (positive, fraction of M) through 2PN
+  function Ebind(x, eta){
+    return 0.5 * eta * x * (1 - (0.75 + eta / 12) * x - (27 / 8 - 19 / 8 * eta + eta * eta / 24) * x * x);
+  }
+
+  /* build({m1, m2, D (Mpc), fStart (Hz at Earth)}) → tabulated waveform, time 0 at peak strain */
+  function build(o){
+    const m1 = Math.max(o.m1, o.m2), m2 = Math.min(o.m1, o.m2);
+    const Msrc = m1 + m2, eta = m1 * m2 / (Msrc * Msrc);
+    const z = o.z != null ? o.z : zOfD(o.D), D = o.D != null ? o.D : dL(z);
+    const Mdet = Msrc * (1 + z), Tm = Mdet * TSUN;        // seconds at Earth per unit M
+    const bns = m1 <= NS_MAX && m2 <= NS_MAX;
+    const x0 = Math.pow(Math.PI * o.fStart * Tm, 2 / 3);
+
+    const fb = finalBH(eta);
+    const Eradfit = bns ? null : fb.Erad;
+    const af = bns ? 0.7 : fb.af;
+    const Mf = bns ? 0.97 : 1 - fb.Erad;
+    const Q = qnm(af);
+    const wQ = Q.w / Mf, tauQ = Q.tau * Mf;
+
+    const T = [], PH = [], W = [], A = [];
+    const push = (t, ph, w, a) => { T.push(t); PH.push(ph); W.push(w); A.push(a); };
+    const xContact = Msrc * RSUN_KM / (2 * NS_R_KM);
+    const xm = bns ? xContact : (o.xMatch || 0.16);
+
+    // inspiral: RK4 on (x, phase)
+    let t = 0, x = x0, ph = 0;
+    const f = xx => dxdt(xx, eta), g = xx => 2 * Math.pow(xx, 1.5);
+    for (let guard = 0; guard < 2e7; guard++){
+      push(t, ph, g(x), ampPN(x, eta));
+      if (x >= xm) break;
+      let dt = Math.min(0.05 * 2 * Math.PI / g(x), 0.01 * x / f(x));
+      for (let pass = 0; pass < 2; pass++){
+        const k1 = f(x), k2 = f(x + dt / 2 * k1), k3 = f(x + dt / 2 * k2), k4 = f(x + dt * k3);
+        const xn = x + dt / 6 * (k1 + 2 * k2 + 2 * k3 + k4);
+        if (xn > xm && pass === 0){ dt *= (xm - x) / (xn - x) ; continue; }
+        const p1 = g(x), p2 = g(x + dt / 2 * k1), p3 = g(x + dt / 2 * k2), p4 = g(x + dt * k3);
+        ph += dt / 6 * (p1 + 2 * p2 + 2 * p3 + p4);
+        x = pass === 1 ? xm : Math.min(xn, xm); t += dt;
+        break;
+      }
+    }
+    const tm = t, xmEnd = x;
+    let tPeak;
+
+    if (!bns){
+      // backwards-one-body merger/ringdown, matched to Ω and dΩ/dt at the end of the inspiral
+      const gam = 1 / tauQ, Oq4 = (wQ / 2) ** 4;
+      const Om = xmEnd ** 1.5, dOm = 1.5 * Math.sqrt(xmEnd) * f(xmEnd);
+      const lhs = 4 * Om ** 3 * dOm, Om4 = Om ** 4;
+      const resid = T_ => { const a = (2 * Om4 - Oq4 * (1 + T_)) / (1 - T_); return (Oq4 - a) / 2 * gam * (1 - T_ * T_) - lhs; };
+      let lo = -0.999999, hi = Math.min(0.999999, 2 * Om4 / Oq4 - 1);   // keep Ω0⁴ ≥ 0
+      // resid is positive at lo side for reasonable matches; bisection on sign change
+      const rl = resid(lo);
+      for (let i = 0; i < 200; i++){ const mid = (lo + hi) / 2; if (Math.sign(resid(mid)) === Math.sign(rl)) lo = mid; else hi = mid; }
+      const Tm_ = (lo + hi) / 2;
+      const a0 = (2 * Om4 - Oq4 * (1 + Tm_)) / (1 - Tm_), K = (Oq4 - a0) / 2;
+      const tp = tm - Math.atanh(Tm_) / gam;
+      const Om_t = tt => Math.pow(a0 + K * (1 + Math.tanh(gam * (tt - tp))), 0.25);
+      const sech = u => 1 / Math.cosh(u);
+      // strain peak of the BOB shape: max of sech/ω²
+      const shape = tt => sech(gam * (tt - tp)) / (2 * Om_t(tt)) ** 2;
+      let tpk = tm, best = 0;
+      for (let tt = tm; tt < tp + 5 * tauQ; tt += 0.02){ const v = shape(tt); if (v > best){ best = v; tpk = tt; } }
+      // amplitude: Hermite from the PN amplitude and slope to the NR peak value (|h22|/η ≈ 1.44 + 0.54η), then BOB decay
+      const Apk = eta * (1.44 + 0.54 * eta);
+      const Am = ampPN(xmEnd, eta);
+      const dAm = (ampPN(xmEnd * 1.001, eta) - Am) / (xmEnd * 0.001) * f(xmEnd);
+      const L = tpk - tm;
+      const hAmp = tt => {
+        if (tt >= tpk) return Apk * shape(tt) / best;
+        const s = (tt - tm) / L, s2 = s * s, s3 = s2 * s;
+        return (2 * s3 - 3 * s2 + 1) * Am + (s3 - 2 * s2 + s) * L * dAm + (-2 * s3 + 3 * s2) * Apk;
+      };
+      const tEnd = tp + 40 * tauQ;
+      const dt = 0.05;
+      t = tm;
+      while (t < tEnd){
+        const w1 = 2 * Om_t(t), w2 = 2 * Om_t(t + dt / 2), w3 = 2 * Om_t(t + dt);
+        ph += dt / 6 * (w1 + 4 * w2 + w3); t += dt;
+        push(t, ph, w3, hAmp(t));
+      }
+      tPeak = tpk;
+    } else {
+      // neutron stars touch: the inspiral signal shuts off within ~1 ms while the merged star rings at ~2.8 kHz
+      const wc = 2 * xmEnd ** 1.5, ac = ampPN(xmEnd, eta);
+      const wpm = 2 * Math.PI * 2800 * Msrc * TSUN;
+      const ms = 1e-3 / (Msrc * TSUN);                      // one millisecond (source frame) in units of M
+      const tEnd = tm + 40 * ms;
+      let dt = 0.05; t = tm;
+      while (t < tEnd){
+        const s = (t - tm) / ms;
+        const w = wc + (wpm - wc) * (1 - Math.exp(-s / 0.6));
+        const a = ac * (Math.exp(-s / 0.35) + 0.22 * (1 - Math.exp(-s / 0.3)) * Math.exp(-s / 12));
+        ph += dt * w; t += dt;
+        push(t, ph, w, a);
+      }
+      tPeak = tm;
+    }
+
+    // derived quantities, flux and cumulative energy (fractions of M)
+    const n = T.length, F = new Float64Array(n), E = new Float64Array(n);
+    for (let i = 0; i < n; i++){
+      const i0 = Math.max(0, i - 1), i1 = Math.min(n - 1, i + 1);
+      const adot = (A[i1] - A[i0]) / (T[i1] - T[i0]);
+      F[i] = (adot * adot + A[i] * A[i] * W[i] * W[i]) / (8 * Math.PI);
+    }
+    E[0] = Ebind(x0, eta);
+    for (let i = 1; i < n; i++) E[i] = E[i - 1] + 0.5 * (F[i] + F[i - 1]) * (T[i] - T[i - 1]);
+    const E22 = E[n - 1];
+    const Etot = bns ? E22 : Eradfit;
+    const eScale = Etot / E22;
+    // calibrate only the merger to the NR total, leaving the post-Newtonian inspiral untouched
+    let im = 0; while (im < n - 1 && T[im] < tm) im++;
+    const Em = E[im], kM = (Etot - Em) / Math.max(E22 - Em, 1e-12);
+
+    // pack into typed arrays in seconds at Earth, t = 0 at peak
+    const out = {
+      m1, m2, Msrc, eta, z, D, Mdet, Tm, bns, x0, af, Mf, wQ, tauQ, Eradfit, E22, eScale,
+      fQNM: wQ / (2 * Math.PI * Tm), tauQNMs: tauQ * Tm,
+      n, t: new Float64Array(n), ph: new Float64Array(n), f: new Float64Array(n), a: new Float64Array(n),
+      E: new Float64Array(n), P: new Float64Array(n), w: new Float64Array(n),
+      tStart: (T[0] - tPeak) * Tm, tEnd: (T[n - 1] - tPeak) * Tm, tMatch: (tm - tPeak) * Tm,
+    };
+    for (let i = 0; i < n; i++){
+      out.t[i] = (T[i] - tPeak) * Tm; out.ph[i] = PH[i]; out.w[i] = W[i];
+      out.f[i] = W[i] / (2 * Math.PI * Tm); out.a[i] = A[i];
+      const post = i > im; out.E[i] = (post ? Em + (E[i] - Em) * kM : E[i]) * Msrc; out.P[i] = F[i] * (post ? kM : 1) * LUM;
+    }
+    // where the bodies merge: black holes when the orbit shrinks to ~ the sum of horizon sizes; stars at contact
+    out.xMerge = bns ? xmEnd : 0.25;
+    out.tMergeBodies = bns ? 0 : out.tMatch;
+    for (let i = 0; i < n; i++){ const xi = Math.pow(W[i] / 2, 2 / 3); if (!bns && xi >= out.xMerge){ out.tMergeBodies = out.t[i]; break; } }
+    let ip = 0; for (let i = 1; i < n; i++) if (out.a[i] > out.a[ip]) ip = i;
+    out.aPeak = out.a[ip]; out.fPeak = out.f[ip];
+    let pp = 0; for (let i = 1; i < n; i++) if (out.P[i] > out.P[pp]) pp = i;
+    out.Ppeak = out.P[pp];
+    // strain at Earth from |r h22/M|: face-on factor √(5/4π), then a typical-orientation factor
+    out.hScale = Math.sqrt(5 / (4 * Math.PI)) * 0.53 * Mdet * RSUN_KM * 1e3 / (D * MPC_M);
+    return out;
+  }
+
+  // index of the last sample with t ≤ tt (binary search)
+  function idx(W_, tt){
+    const t = W_.t; let lo = 0, hi = W_.n - 1;
+    if (tt <= t[0]) return 0; if (tt >= t[hi]) return hi - 1;
+    while (hi - lo > 1){ const m = (lo + hi) >> 1; if (t[m] <= tt) lo = m; else hi = m; }
+    return lo;
+  }
+  // state at time tt (s at Earth, 0 = peak). Phase uses cubic Hermite with the frequency as slope.
+  function at(W_, tt, out){
+    out = out || {};
+    const i = idx(W_, tt), j = Math.min(i + 1, W_.n - 1);
+    const t0 = W_.t[i], t1 = W_.t[j], h = t1 - t0 || 1;
+    let s = Math.max(0, Math.min(1, (tt - t0) / h));
+    const w0 = 2 * Math.PI * W_.f[i], w1 = 2 * Math.PI * W_.f[j];
+    const s2 = s * s, s3 = s2 * s;
+    let ph = (2 * s3 - 3 * s2 + 1) * W_.ph[i] + (s3 - 2 * s2 + s) * h * w0 + (-2 * s3 + 3 * s2) * W_.ph[j] + (s3 - s2) * h * w1;
+    const lerp = arr => arr[i] + (arr[j] - arr[i]) * s;
+    out.ph = ph; out.f = lerp(W_.f); out.a = lerp(W_.a); out.E = lerp(W_.E); out.P = lerp(W_.P); out.w = lerp(W_.w);
+    if (tt < W_.t[0]){       // before the table: extrapolate with the leading-order chirp
+      out.a = W_.a[0]; out.E = W_.E[0]; out.P = W_.P[0];
+    }
+    if (tt > W_.t[W_.n - 1]){ out.a = 0; out.P = 0; }
+    out.h = out.a * Math.cos(out.ph);
+    return out;
+  }
+  return { build, at, idx, dL, zOfD, lookbackGyr, finalBH, qnm, TSUN, RSUN_KM, MSUN_C2, LUM, MPC_M, LY_M, NS_MAX };
+})();
+
+</script>
+<script>
+/* The Chirp: WebGL 2 renderer. A log-polar spacetime sheet (wells + retarded-time quadrupole ripples),
+   a starfield, bloom, and a screen-space pass that lenses the picture around black holes and draws
+   neutron stars, the kilonova and the jet. */
+function ChirpEngine(gl){
+  const ext = gl.getExtension('EXT_color_buffer_float') || gl.getExtension('EXT_color_buffer_half_float');
+  if (!ext) throw new Error('no float render targets');
+  gl.getExtension('OES_texture_float_linear');
+  const NR = 640, NA = 720, RHO_IN = 0.004, RHO_OUT = 5.0, NSUB_MAX = 8;
+
+  function sh(type, src){
+    const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s) + '\n' + src.split('\n').map((l, i) => (i + 1) + ' ' + l).join('\n'));
+    return s;
+  }
+  function prog(vs, fs){
+    const p = gl.createProgram();
+    gl.attachShader(p, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(p, sh(gl.FRAGMENT_SHADER, fs));
+    gl.bindAttribLocation(p, 0, 'aRA'); gl.linkProgram(p);
+    if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+    const u = {}; const n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS);
+    for (let i = 0; i < n; i++){ const info = gl.getActiveUniform(p, i); u[info.name.replace(/\[0\]$/, '')] = gl.getUniformLocation(p, info.name); }
+    return { p, u };
+  }
+  const HDR = '#version 300 es\nprecision highp float;\nprecision highp int;\n';
+  const FS_TRI = HDR + 'const vec2 P[3]=vec2[3](vec2(-1.,-1.),vec2(3.,-1.),vec2(-1.,3.));\nout vec2 vUV;\nvoid main(){ vec2 p=P[gl_VertexID]; vUV=p*.5+.5; gl_Position=vec4(p,0.,1.); }';
+
+  /* ---------- starfield ---------- */
+  const STARS = prog(FS_TRI, HDR + `
+  in vec2 vUV; out vec4 o;
+  uniform vec3 uFwd, uRight, uUp; uniform vec2 uTan;
+  vec4 hash4(vec3 p){ vec4 q = fract(vec4(p.xyzx) * vec4(.1031, .1030, .0973, .1099)); q += dot(q, q.wzxy + 33.33);
+    return fract((q.xxyz + q.yzzw) * q.zywx); }
+  vec3 layer(vec3 d, float sc, float thr, float sz){
+    vec3 q = d * sc, c = floor(q); vec4 h = hash4(c);
+    if (h.w < thr) return vec3(0.);
+    vec3 sp = c + 0.5 + 0.7 * (h.xyz - 0.5);
+    float r = length(q - sp);
+    float b = pow((h.w - thr) / (1. - thr), 3.) ;
+    vec3 col = mix(vec3(1.0, 0.78, 0.6), vec3(0.7, 0.82, 1.0), h.x);
+    return col * b * exp(-r * r / (sz * sz)) * 3.;
+  }
+  void main(){
+    vec2 n = vUV * 2. - 1.;
+    vec3 d = normalize(uFwd + n.x * uTan.x * uRight + n.y * uTan.y * uUp);
+    vec3 c = layer(d, 220., 0.90, 0.07) + layer(d, 90., 0.93, 0.05) * 1.3 + layer(d, 520., 0.85, 0.09) * 0.5;
+    // faint galactic band
+    vec3 bn = normalize(vec3(0.3, 0.8, 0.52));
+    float band = exp(-pow(dot(d, bn) / 0.22, 2.));
+    vec4 hh = hash4(floor(d * 60.));
+    c += vec3(0.05, 0.055, 0.08) * band * (0.6 + 0.4 * hh.x);
+    c += vec3(0.008, 0.01, 0.018);
+    o = vec4(c, 1.);
+  }`);
+
+  /* ---------- the sheet ---------- */
+  const SHEET = prog(HDR + `
+  in vec2 aRA;
+  uniform sampler2D uRip; uniform float uRview, uLnIn, uLnOut, uNR, uAmpRef;
+  uniform mat4 uVP; uniform vec4 uWell[3];
+  out vec3 vPos; out float vRip; out float vRho;
+  void main(){
+    float k = aRA.x;
+    float rho = exp(mix(uLnIn, uLnOut, k / (uNR - 1.)));
+    float r = uRview * rho;
+    vec2 p = r * vec2(cos(aRA.y), sin(aRA.y));
+    vec4 R = texelFetch(uRip, ivec2(int(k), 0), 0);
+    float rip = R.x * cos(2. * aRA.y - R.y);
+    float z = rip;
+    for (int i = 0; i < 3; i++){ vec4 W = uWell[i]; if (W.z > 0.){ vec2 d = p - W.xy; z -= W.z * W.w / sqrt(W.w * W.w + dot(d, d)); } }
+    vPos = vec3(p, z); vRip = rip / uAmpRef; vRho = rho;
+    gl_Position = uVP * vec4(vPos, 1.);
+  }`, HDR + `
+  in vec3 vPos; in float vRip; in float vRho; out vec4 o;
+  uniform vec3 uCam; uniform float uGrid, uGridFade, uRhoOut, uShowGrid;
+  float lines(vec2 p, float s){
+    vec2 q = p / s, w = fwidth(q);
+    vec2 g = abs(fract(q - 0.5) - 0.5) / max(w, 1e-5);
+    float l = 1. - min(min(g.x, g.y), 1.);
+    return l * (1. - smoothstep(0.18, 0.45, max(w.x, w.y)));
+  }
+  void main(){
+    vec3 dx = dFdx(vPos), dy = dFdy(vPos);
+    vec3 n = normalize(cross(dx, dy)); if (n.z < 0.) n = -n;
+    vec3 v = normalize(uCam - vPos);
+    vec3 L = normalize(vec3(-0.35, 0.45, 0.82));
+    float diff = 0.35 + 0.65 * max(dot(n, L), 0.);
+    float spec = pow(max(dot(reflect(-L, n), v), 0.), 24.);
+    float crest = clamp(vRip, 0., 1.5), trough = clamp(-vRip, 0., 1.5);
+    vec3 base = vec3(0.010, 0.016, 0.030) * diff + vec3(0.9, 0.55, 0.22) * crest * 0.10 + vec3(0.12, 0.3, 0.7) * trough * 0.07;
+    base += vec3(0.5, 0.7, 0.9) * spec * 0.18;
+    float l = max(lines(vPos.xy, uGrid * 2.), lines(vPos.xy, uGrid) * (1. - uGridFade));
+    vec3 lc = mix(vec3(0.30, 0.62, 0.80), vec3(1.0, 0.72, 0.38), clamp(crest * 0.9, 0., 1.));
+    lc *= 0.55 + 1.3 * crest + 0.25 * trough;
+    vec3 col = base + lc * l * 0.85 * uShowGrid;
+    // near the holes the funnel walls face the camera: brighten the rim a touch
+    col += vec3(0.25, 0.45, 0.75) * pow(1. - abs(dot(n, v)), 3.) * 0.08;
+    float a = 1. - smoothstep(0.45 * uRhoOut, 0.98 * uRhoOut, vRho);
+    o = vec4(col * a, a);
+  }`);
+
+  /* ---------- bloom and final composite ---------- */
+  const BRIGHT = prog(FS_TRI, HDR + `
+  in vec2 vUV; out vec4 o; uniform sampler2D uTex; uniform vec2 uTexel;
+  void main(){
+    vec3 c = vec3(0.);
+    for (int i = -1; i <= 1; i++) for (int j = -1; j <= 1; j++) c += texture(uTex, vUV + vec2(i, j) * uTexel).rgb;
+    c /= 9.; float b = max(max(c.r, c.g), c.b);
+    o = vec4(c * smoothstep(0.35, 1.2, b), 1.);
+  }`);
+  const BLUR = prog(FS_TRI, HDR + `
+  in vec2 vUV; out vec4 o; uniform sampler2D uTex; uniform vec2 uDir;
+  void main(){
+    const float w[5] = float[5](0.227, 0.194, 0.121, 0.054, 0.016);
+    vec3 c = texture(uTex, vUV).rgb * w[0];
+    for (int i = 1; i < 5; i++){ c += texture(uTex, vUV + uDir * float(i)).rgb * w[i]; c += texture(uTex, vUV - uDir * float(i)).rgb * w[i]; }
+    o = vec4(c, 1.);
+  }`);
+  const FINAL = prog(FS_TRI, HDR + `
+  in vec2 vUV; out vec4 o;
+  uniform sampler2D uScene, uBloom; uniform vec2 uRes;
+  uniform vec4 uB[${NSUB_MAX * 3}];   // per sub-frame sample: 3 bodies (x px, y px, radius px, visibility)
+  uniform vec4 uBT[3];                // body kind (0 none, 1 black hole, 2 neutron star), glow, tidal stretch, spare
+  uniform int uNS;
+  uniform vec4 uKN;                   // kilonova: x, y, radius px, strength
+  uniform vec3 uKNcol;
+  uniform vec4 uJet;                  // jet: x, y, dx, dy (px, toward +z)
+  uniform float uJetI, uFlash, uExposure;
+  uniform vec4 uHalo[3];              // soft markers so tiny far-off bodies stay findable: x, y, radius px, strength
+  vec3 shade(vec2 p, int s){
+    vec2 off = vec2(0.); float S = 0.;
+    for (int i = 0; i < 3; i++){
+      vec4 b = uB[s * 3 + i];
+      if (uBT[i].x == 1. && b.w > 0.){
+        vec2 d = p - b.xy; float d2 = max(dot(d, d), 1e-3);
+        float rE = 1.55 * b.z;
+        off += b.w * rE * rE * d / d2;
+        S += b.w * b.z * b.z / d2;
+      }
+    }
+    vec3 c = texture(uScene, (p - off) / uRes).rgb;
+    float rs = sqrt(S);                        // 1 at the edge of the shadow
+    c *= 1. - smoothstep(0.92, 1.02, rs);
+    c += vec3(1.0, 0.82, 0.62) * exp(-pow((rs - 0.9) / 0.045, 2.)) * 0.55 * step(0.001, S);
+    // neutron stars: hot, limb-darkened spheres, stretched along the line to the partner near contact
+    for (int i = 0; i < 3; i++){
+      vec4 b = uB[s * 3 + i];
+      if (uBT[i].x == 2. && b.w > 0.){
+        vec2 d = p - b.xy;
+        vec2 ax = normalize(b.xy - uB[s * 3 + (1 - min(i, 1))].xy + vec2(1e-4, 0.));
+        float st = 1. + uBT[i].z;
+        vec2 dd = vec2(dot(d, ax) / st, dot(d, vec2(-ax.y, ax.x)) * sqrt(st));
+        float q = length(dd) / max(b.z, 0.6);
+        float disk = 1. - smoothstep(0.92, 1.0, q);
+        float limb = sqrt(max(1. - q * q, 0.));
+        vec3 hot = mix(vec3(0.55, 0.7, 1.2), vec3(1.6, 1.5, 1.4), limb) * (0.5 + 0.6 * limb);
+        c = mix(c, hot * uBT[i].y, disk * b.w);
+        c += vec3(0.4, 0.55, 1.0) * exp(-max(q - 1., 0.) * 2.2) * 0.35 * b.w * uBT[i].y * (1. - disk);
+      }
+    }
+    return c;
+  }
+  void main(){
+    vec2 p = gl_FragCoord.xy;
+    vec3 c = vec3(0.);
+    for (int s = 0; s < ${NSUB_MAX}; s++){ if (s >= uNS) break; c += shade(p, s); }
+    c /= float(uNS);
+    c += texture(uBloom, vUV).rgb * 0.9;
+    for (int i = 0; i < 3; i++){
+      vec4 h = uHalo[i]; if (h.w > 0.){ float d = length(p - h.xy); c += vec3(0.55, 0.7, 1.0) * h.w * exp(-d * d / (h.z * h.z)); }
+    }
+    if (uKN.w > 0.){
+      float d = length(p - uKN.xy), R = max(uKN.z, 1.);
+      float shell = exp(-pow((d - R) / (0.28 * R + 2.), 2.)), fill = exp(-pow(d / (R + 2.), 2.));
+      c += uKNcol * uKN.w * (0.8 * shell + 0.3 * fill);
+    }
+    if (uJetI > 0.){
+      vec2 a = uJet.xy, dir = uJet.zw; float len = length(dir);
+      if (len > 1.){
+        vec2 u = dir / len; vec2 d = p - a; float t = dot(d, u); float side = abs(dot(d, vec2(-u.y, u.x)));
+        float along = abs(t);   // both jets, up and down
+        float w = 2. + along * 0.06;
+        c += vec3(0.75, 0.85, 1.0) * uJetI * exp(-pow(side / w, 2.)) * exp(-along / (len * 1.4)) * 1.6;
+      }
+    }
+    c += vec3(0.9, 0.95, 1.0) * uFlash;
+    c = vec3(1.) - exp(-c * uExposure);
+    vec2 q = vUV - 0.5; c *= 1. - 0.35 * dot(q, q) * 1.6;
+    o = vec4(pow(c, vec3(0.92)), 1.);
+  }`);
+
+  /* ---------- geometry ---------- */
+  const vao = gl.createVertexArray(); gl.bindVertexArray(vao);
+  const verts = new Float32Array(NR * (NA + 1) * 2);
+  let k = 0;
+  for (let i = 0; i < NR; i++) for (let j = 0; j <= NA; j++){ verts[k++] = i; verts[k++] = j / NA * 2 * Math.PI; }
+  const vb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, vb); gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+  const idx = new Uint32Array((NR - 1) * NA * 6); k = 0;
+  for (let i = 0; i < NR - 1; i++) for (let j = 0; j < NA; j++){
+    const a = i * (NA + 1) + j, b = a + 1, c = a + NA + 1, d = c + 1;
+    idx[k++] = a; idx[k++] = c; idx[k++] = b; idx[k++] = b; idx[k++] = c; idx[k++] = d;
+  }
+  const ib = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, idx, gl.STATIC_DRAW);
+  gl.bindVertexArray(null);
+  const emptyVao = gl.createVertexArray();
+
+  const ripTex = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, ripTex);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, NR, 1, 0, gl.RGBA, gl.FLOAT, null);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
+  /* ---------- render targets ---------- */
+  function target(w, h){
+    const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, w, h, 0, gl.RGBA, gl.HALF_FLOAT, null);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    const f = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, f);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, t, 0);
+    return { t, f, w, h };
+  }
+  let W = 0, H = 0, scene, depthRB, bA, bB;
+  function resize(w, h){
+    if (w === W && h === H) return; W = w; H = h;
+    for (const x of [scene, bA, bB]) if (x){ gl.deleteTexture(x.t); gl.deleteFramebuffer(x.f); }
+    if (depthRB) gl.deleteRenderbuffer(depthRB);
+    scene = target(w, h);
+    depthRB = gl.createRenderbuffer(); gl.bindRenderbuffer(gl.RENDERBUFFER, depthRB);
+    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT24, w, h);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, scene.f);
+    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthRB);
+    const bw = Math.max(1, w >> 2), bh = Math.max(1, h >> 2);
+    bA = target(bw, bh); bB = target(bw, bh);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  }
+
+  function render(F){
+    // stars
+    gl.bindFramebuffer(gl.FRAMEBUFFER, scene.f); gl.viewport(0, 0, W, H);
+    gl.disable(gl.DEPTH_TEST); gl.disable(gl.BLEND);
+    gl.useProgram(STARS.p); gl.bindVertexArray(emptyVao);
+    gl.uniform3fv(STARS.u.uFwd, F.cam.fwd); gl.uniform3fv(STARS.u.uRight, F.cam.right); gl.uniform3fv(STARS.u.uUp, F.cam.up);
+    gl.uniform2f(STARS.u.uTan, F.cam.tanX, F.cam.tanY);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    // sheet
+    gl.clear(gl.DEPTH_BUFFER_BIT); gl.enable(gl.DEPTH_TEST);
+    gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+    gl.bindTexture(gl.TEXTURE_2D, ripTex);
+    gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, NR, 1, gl.RGBA, gl.FLOAT, F.rip);
+    gl.useProgram(SHEET.p); gl.bindVertexArray(vao);
+    const u = SHEET.u;
+    gl.activeTexture(gl.TEXTURE0); gl.uniform1i(u.uRip, 0);
+    gl.uniform1f(u.uRview, F.Rview); gl.uniform1f(u.uLnIn, Math.log(RHO_IN)); gl.uniform1f(u.uLnOut, Math.log(RHO_OUT));
+    gl.uniform1f(u.uNR, NR); gl.uniform1f(u.uAmpRef, F.ampRef);
+    gl.uniformMatrix4fv(u.uVP, false, F.VP); gl.uniform4fv(u.uWell, F.wells);
+    gl.uniform3fv(u.uCam, F.cam.pos); gl.uniform1f(u.uGrid, F.grid); gl.uniform1f(u.uGridFade, F.gridFade);
+    gl.uniform1f(u.uRhoOut, RHO_OUT); gl.uniform1f(u.uShowGrid, F.showGrid ? 1 : 0.15);
+    gl.drawElements(gl.TRIANGLES, idx.length, gl.UNSIGNED_INT, 0);
+    gl.bindVertexArray(null); gl.disable(gl.DEPTH_TEST); gl.disable(gl.BLEND);
+    // bloom
+    gl.bindVertexArray(emptyVao);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, bA.f); gl.viewport(0, 0, bA.w, bA.h);
+    gl.useProgram(BRIGHT.p); gl.bindTexture(gl.TEXTURE_2D, scene.t); gl.uniform1i(BRIGHT.u.uTex, 0);
+    gl.uniform2f(BRIGHT.u.uTexel, 1.5 / W, 1.5 / H); gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.useProgram(BLUR.p); gl.uniform1i(BLUR.u.uTex, 0);
+    for (let pass = 0; pass < 2; pass++){
+      gl.bindFramebuffer(gl.FRAMEBUFFER, bB.f); gl.bindTexture(gl.TEXTURE_2D, bA.t); gl.uniform2f(BLUR.u.uDir, (1 + pass) / bA.w, 0); gl.drawArrays(gl.TRIANGLES, 0, 3);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, bA.f); gl.bindTexture(gl.TEXTURE_2D, bB.t); gl.uniform2f(BLUR.u.uDir, 0, (1 + pass) / bA.h); gl.drawArrays(gl.TRIANGLES, 0, 3);
+    }
+    // composite
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, W, H);
+    const f = FINAL.u; gl.useProgram(FINAL.p);
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, scene.t); gl.uniform1i(f.uScene, 0);
+    gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, bA.t); gl.uniform1i(f.uBloom, 1);
+    gl.uniform2f(f.uRes, W, H);
+    gl.uniform4fv(f.uB, F.bodies); gl.uniform4fv(f.uBT, F.btypes); gl.uniform1i(f.uNS, F.nsub);
+    gl.uniform4fv(f.uKN, F.kn); gl.uniform3fv(f.uKNcol, F.knCol);
+    gl.uniform4fv(f.uJet, F.jet); gl.uniform1f(f.uJetI, F.jetI); gl.uniform1f(f.uFlash, F.flash);
+    gl.uniform1f(f.uExposure, F.exposure); gl.uniform4fv(f.uHalo, F.halos);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindVertexArray(null);
+  }
+  return { resize, render, NR, NA, RHO_IN, RHO_OUT, NSUB_MAX };
+}
+
+</script>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const MLY_PER_MPC = 3.26156, KM_PER_M = Wave.RSUN_KM, PROTON_M = 1.68e-15, ARM_M = 4000;
+  const H1_DELAY = 0.0069;   // GW150914: Hanford 6.9 ms after Livingston, trace flipped
+
+  /* ================================================================
+     Events
+     ================================================================ */
+  const EVENTS = {
+    gw150914: { name: 'GW150914', m1: 36, m2: 29, D: 410,
+      caption: '<b>14 September 2015.</b> The first gravitational waves ever detected. Two black holes of 36 and 29 suns, about 1.3 billion light-years away, merged into one of 62. The missing 3 suns left as gravitational waves in a fraction of a second.' },
+    gw170817: { name: 'GW170817', m1: 1.46, m2: 1.27, D: 40,
+      caption: '<b>17 August 2017.</b> Two neutron stars, each a ball of 1.3 to 1.5 suns only about 24 km across. LIGO followed their chirp for 100 seconds. A gamma-ray burst arrived 1.7 s after the merger, and telescopes then watched a kilonova glow in galaxy NGC 4993.' },
+    gw190521: { name: 'GW190521', m1: 85, m2: 66, D: 5300,
+      caption: '<b>21 May 2019.</b> The heaviest merger at the time: 85 and 66 suns made a black hole of about 142, the first "intermediate-mass" black hole caught forming. The waves left about 7 billion years ago and lasted only four cycles in the detectors.' },
+  };
+
+  const State = {
+    ev: 'gw150914', m1: 36, m2: 29, D: 410, customName: null,
+    playing: !reduceMotion, speed: 1, pitch: 4, sound: false, two: false, grid: true, spin: !reduceMotion,
+    yaw: -0.9, el: 0.62, zoom: 1,
+  };
+
+  /* ================================================================
+     Model and timeline
+     ================================================================ */
+  let ev = null;           // current event: waveform + timeline constants
+  let t = 0;               // simulation time, seconds at Earth, 0 = peak strain
+  let wallAfterPeak = 0, holdAtEnd = 0, realTake = null;
+  const S = {};            // scratch state from Wave.at
+
+  function displayStart(m1, m2, D){
+    const bns = Math.max(m1, m2) <= Wave.NS_MAX;
+    if (bns) return 24;
+    const z = Wave.zOfD(D), Tm = (m1 + m2) * (1 + z) * Wave.TSUN;
+    return Math.min(20, Math.pow(0.075, 1.5) / (Math.PI * Tm));
+  }
+  function buildEvent(m1, m2, D){
+    const fDisp = displayStart(m1, m2, D);
+    const W = Wave.build({ m1, m2, D, fStart: fDisp * 0.7 });
+    let t0 = W.t[0]; for (let i = 0; i < W.n; i++) if (W.f[i] >= fDisp){ t0 = W.t[i]; break; }
+    const e = { W, fDisp, t0, bns: W.bns, nsbh: !W.bns && W.m2 <= Wave.NS_MAX,
+      C: W.bns ? 3 : 0.8, Th: 5,
+      tEnd: W.bns ? 2.3 : W.tEnd, tCollapse: 0.9, tJet: 1.7,
+      Msrc: W.Msrc, Mf: W.Msrc * W.Mf };
+    e.hPeak = W.aPeak * W.hScale;
+    e.lookback = Wave.lookbackGyr(W.z);
+    // where the table crosses the merger of the bodies
+    e.tMB = W.bns ? 0 : W.tMergeBodies;
+    return e;
+  }
+
+  function sepAt(tt, s){
+    // orbital separation in units of the total mass; 0 once merged
+    const W = ev.W;
+    if (ev.bns){
+      if (tt < 0) return 1 / Math.pow(s.w / 2, 2 / 3);
+      const sc = 1 / W.xMerge, ms = 1e-3 / (W.Msrc * Wave.TSUN) * W.Tm;   // one ms at Earth
+      return Math.max(0, sc * (1 - tt / (0.6 * ms)));
+    }
+    if (tt < ev.tMB) return 1 / Math.pow(s.w / 2, 2 / 3);
+    const sm = 1 / W.xMerge;
+    return Math.max(0, sm * (1 - (tt - ev.tMB) / (5 * W.Tm)));
+  }
+
+  function rate(tt){
+    if (realTake) return 1;
+    Wave.at(ev.W, tt, S);
+    const C = ev.C * State.speed;
+    if (tt < 0) return Math.max(C / S.f, (-tt) / ev.Th * State.speed);
+    return C / S.f * Math.pow(2, Math.max(0, wallAfterPeak - (ev.bns ? 2.2 : 2.5)) / 0.8);
+  }
+
+  /* ================================================================
+     WebGL
+     ================================================================ */
+  const canvas = $('sky');
+  const gl = canvas.getContext('webgl2', { antialias: false, alpha: false, premultipliedAlpha: false, powerPreference: 'high-performance' });
+  let eng = null;
+  function nogl(msg){ const d = document.createElement('div'); d.className = 'nogl'; d.textContent = msg; $('stage').appendChild(d); }
+  if (!gl) nogl('This simulation needs WebGL 2, which this browser or device has turned off. The sound, charts and readouts below still work.');
+  else {
+    try { eng = ChirpEngine(gl); }
+    catch (e){ console.error(e); eng = null; nogl('This simulation needs floating-point render targets, which this graphics card or browser does not offer. The sound, charts and readouts below still work.'); }
+  }
+  const NR = eng ? eng.NR : 640, rip = new Float32Array(NR * 4);
+  const rhoIn = eng ? eng.RHO_IN : 0.004, rhoOut = eng ? eng.RHO_OUT : 5;
+  const ringRho = new Float64Array(NR);
+  for (let k = 0; k < NR; k++) ringRho[k] = Math.exp(Math.log(rhoIn) + (Math.log(rhoOut) - Math.log(rhoIn)) * k / (NR - 1));
+
+  // small matrix kit (column-major)
+  function perspective(fovy, asp, n, f){ const q = 1 / Math.tan(fovy / 2), nf = 1 / (n - f); return [q / asp,0,0,0, 0,q,0,0, 0,0,(f + n) * nf,-1, 0,0,2 * f * n * nf,0]; }
+  function lookAt(e, c, up){
+    let zx = e[0] - c[0], zy = e[1] - c[1], zz = e[2] - c[2]; let l = Math.hypot(zx, zy, zz); zx /= l; zy /= l; zz /= l;
+    let xx = up[1] * zz - up[2] * zy, xy = up[2] * zx - up[0] * zz, xz = up[0] * zy - up[1] * zx; l = Math.hypot(xx, xy, xz); xx /= l; xy /= l; xz /= l;
+    const yx = zy * xz - zz * xy, yy = zz * xx - zx * xz, yz = zx * xy - zy * xx;
+    return { m: [xx,yx,zx,0, xy,yy,zy,0, xz,yz,zz,0, -(xx*e[0]+xy*e[1]+xz*e[2]), -(yx*e[0]+yy*e[1]+yz*e[2]), -(zx*e[0]+zy*e[1]+zz*e[2]), 1],
+      right: [xx, xy, xz], up: [yx, yy, yz], fwd: [-zx, -zy, -zz] };
+  }
+  function mul(a, b){ const o = new Array(16); for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++){ let s = 0; for (let k = 0; k < 4; k++) s += a[k * 4 + j] * b[i * 4 + k]; o[i * 4 + j] = s; } return o; }
+  function project(VP, x, y, z){ const cx = VP[0]*x + VP[4]*y + VP[8]*z + VP[12], cy = VP[1]*x + VP[5]*y + VP[9]*z + VP[13], cw = VP[3]*x + VP[7]*y + VP[11]*z + VP[15]; return [cx / cw, cy / cw, cw]; }
+
+  let Rview = 100, RviewSnap = true;
+  function viewTarget(tt){
+    const W = ev.W; Wave.at(W, Math.min(tt, 0), S);
+    const lam = 1 / (S.f * W.Tm), sep = 1 / Math.pow(S.w / 2, 2 / 3);
+    const pre = Math.max(8 * sep, Math.min(2.1 * lam, 22 * sep));
+    if (tt <= 0) return pre;
+    const front = tt / W.Tm;                 // distance the merger burst has travelled, in M
+    return Math.min(Math.max(pre, front * 1.05), pre * (ev.bns ? 30 : 6));
+  }
+
+  // well shape shared by GPU and CPU (for placing the bodies on the sheet)
+  function wellsHeight(wells, x, y){
+    let z = 0; for (let i = 0; i < 3; i++){ const D = wells[i * 4 + 2], w = wells[i * 4 + 3]; if (D > 0){ const dx = x - wells[i * 4], dy = y - wells[i * 4 + 1]; z -= D * w / Math.sqrt(w * w + dx * dx + dy * dy); } }
+    return z;
+  }
+
+  const frame = {
+    VP: null, cam: {}, Rview: 1, rip, ampRef: 1, wells: new Float32Array(12), grid: 1, gridFade: 0, showGrid: true,
+    bodies: new Float32Array((eng ? eng.NSUB_MAX : 8) * 12), btypes: new Float32Array(12), nsub: 1,
+    kn: new Float32Array(4), knCol: new Float32Array(3), jet: new Float32Array(4), jetI: 0, flash: 0, exposure: 1.25,
+    halos: new Float32Array(12),
+  };
+
+  // positions of the bodies at time tt, in M units: [x1,y1,m1frac, x2,y2,m2frac, finalVisible]
+  function bodiesAt(tt){
+    const W = ev.W; Wave.at(W, tt, S);
+    const sep = sepAt(tt, S), phi = S.ph / 2;
+    const q1 = W.m2 / W.Msrc, q2 = W.m1 / W.Msrc;   // distance of each body from the centre of mass, per unit separation
+    const c = Math.cos(phi), s = Math.sin(phi);
+    let fin = 0;
+    if (ev.bns) fin = tt >= 0 ? Math.min(1, tt / (0.6e-3 * W.Tm / (W.Msrc * Wave.TSUN))) : 0;
+    else fin = Math.min(1, Math.max(0, (tt - ev.tMB) / (4 * W.Tm)));
+    return { x1: q1 * sep * c, y1: q1 * sep * s, x2: -q2 * sep * c, y2: -q2 * sep * s, sep, fin };
+  }
+
+  function camera(w, h){
+    const dist = Rview * 2.35 * State.zoom;
+    const ce = Math.cos(State.el), se = Math.sin(State.el);
+    const eye = [dist * ce * Math.cos(State.yaw), dist * ce * Math.sin(State.yaw), dist * se];
+    const L = lookAt(eye, [0, 0, -0.04 * Rview], [0, 0, 1]);
+    const fov = 0.72, asp = w / h;
+    const P = perspective(fov, asp, dist * 0.02, dist * 30);
+    frame.VP = new Float32Array(mul(P, L.m));
+    frame.cam = { pos: eye, right: L.right, up: L.up, fwd: L.fwd, tanY: Math.tan(fov / 2), tanX: Math.tan(fov / 2) * asp };
+  }
+
+  let lastDt = 0.016;
+  function renderGL(){
+    if (!eng) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = Math.max(2, Math.round(canvas.clientWidth * dpr)), h = Math.max(2, Math.round(canvas.clientHeight * dpr));
+    if (canvas.width !== w || canvas.height !== h){ canvas.width = w; canvas.height = h; }
+    eng.resize(w, h);
+    const W = ev.W, M = W.Msrc;
+    camera(w, h);
+    const VP = frame.VP;
+    frame.Rview = Rview; frame.ampRef = Rview * 0.035;
+    Wave.at(W, t, S);
+    const b = bodiesAt(t);
+    // wells: the two bodies, then the merged object
+    const wl = frame.wells, depth = Rview * 0.11;
+    const m1f = W.m1 / M, m2f = W.m2 / M, mff = ev.Mf / M;
+    const wid = mf => Math.max(2.2 * mf + 0.8, 0.025 * Rview);
+    wl[0] = b.x1; wl[1] = b.y1; wl[2] = depth * m1f * (1 - b.fin); wl[3] = wid(m1f);
+    wl[4] = b.x2; wl[5] = b.y2; wl[6] = depth * m2f * (1 - b.fin); wl[7] = wid(m2f);
+    wl[8] = 0; wl[9] = 0; wl[10] = depth * mff * b.fin; wl[11] = wid(mff);
+    // ripples at each ring, read at the retarded time t − r/c
+    const aPk = W.aPeak, sepNow = Math.max(b.sep, 1.5);
+    const tmp = {};
+    for (let k = 0; k < NR; k++){
+      const r = Rview * ringRho[k];
+      const tr = t - r * W.Tm;
+      Wave.at(W, tr, tmp);
+      let A = 0;
+      if (tr >= W.t[0] && tmp.a > 0){
+        const near = smooth(0.7, 2.6, r / sepNow);
+        const radial = Math.pow(1 + r / (0.9 * Rview), -0.8);
+        const lamM = 1 / (Math.max(tmp.f, 1e-3) * W.Tm);   // wavelength in M: fade what the mesh can't draw
+        A = frame.ampRef * 1.7 * Math.pow(tmp.a / aPk, 0.45) * radial * smooth(0.025, 0.07, lamM / Rview) * smooth(0.6, 1.8, lamM / (r * 0.06 + 1e-9)) * near * smooth(0, 0.03, (tr - W.t[0]) / (W.t[W.n - 1] - W.t[0]) * 10);
+      }
+      rip[k * 4] = A; rip[k * 4 + 1] = tmp.ph % (2 * Math.PI); rip[k * 4 + 2] = 0; rip[k * 4 + 3] = 0;
+    }
+    // grid spacing in M, stepping by factors of two with a cross-fade
+    const L2 = Math.log2(Rview / 9), s0 = Math.pow(2, Math.floor(L2));
+    frame.grid = s0; frame.gridFade = L2 - Math.floor(L2); frame.showGrid = State.grid;
+    gridKm = 2 * s0 * M * KM_PER_M;
+    // bodies on screen, with sub-frame samples when the orbit is fast
+    const dtSim = rate(t) * lastDt;
+    const dphi = Math.PI * S.f * dtSim;
+    const nsub = eng ? Math.max(1, Math.min(eng.NSUB_MAX, Math.ceil(Math.abs(dphi) / 0.3))) : 1;
+    frame.nsub = State.playing ? nsub : 1;
+    const shadow = mf => 3.9 * mf;          // apparent shadow radius, in M
+    const nsR = ev.W.bns || ev.nsbh ? 12 / (M * KM_PER_M) : 0;
+    const kind1 = W.m1 <= Wave.NS_MAX ? 2 : 1, kind2 = W.m2 <= Wave.NS_MAX ? 2 : 1;
+    const bt = frame.btypes;
+    const collapse = ev.bns ? smooth(ev.tCollapse, ev.tCollapse + 0.02, t) : 1;
+    bt[0] = kind1; bt[1] = 1.0; bt[2] = 0; bt[4] = kind2; bt[5] = 1.0; bt[6] = 0;
+    bt[8] = ev.bns && collapse < 0.5 ? 2 : 1; bt[9] = ev.bns ? 1.6 : 1;
+    if (ev.bns){ const st = smooth(0.62, 1.0, (1 / W.xMerge) / Math.max(b.sep, 1e-3)) * 0.35; bt[2] = st; bt[6] = st; }
+    const px = (x, y, z) => { const p = project(VP, x, y, z); return [(p[0] * 0.5 + 0.5) * w, (p[1] * 0.5 + 0.5) * h, p[2]]; };
+    const radPx = (R, cw) => R * VP[5] === 0 ? 0 : R * (h / 2) * (1 / Math.tan(0.36)) / cw;
+    const Bf = frame.bodies;
+    let tagPos = [];
+    for (let s = 0; s < frame.nsub; s++){
+      const ts = t - dtSim * s / frame.nsub;
+      const bb = s === 0 ? b : bodiesAt(ts);
+      const list = [
+        [bb.x1, bb.y1, kind1 === 2 ? nsR : shadow(m1f), 1 - bb.fin],
+        [bb.x2, bb.y2, kind2 === 2 ? nsR : shadow(m2f), 1 - bb.fin],
+        [0, 0, ev.bns ? (collapse < 0.5 ? nsR * 1.25 : shadow(mff)) : shadow(mff), bb.fin],
+      ];
+      if (ev.nsbh){ list[1][3] *= 1 - smooth(-6 * W.Tm, 0, ts - ev.tMB); }
+      for (let i = 0; i < 3; i++){
+        const [x, y, R, vis] = list[i];
+        const z = wellsHeight(wl, x, y) + (bt[i * 4] === 2 ? R * 0.4 : 0);
+        const p = px(x, y, z);
+        const rp = radPx(R, p[2]);
+        Bf[(s * 3 + i) * 4] = p[0]; Bf[(s * 3 + i) * 4 + 1] = p[1]; Bf[(s * 3 + i) * 4 + 2] = Math.max(rp, 0.5); Bf[(s * 3 + i) * 4 + 3] = vis;
+        if (s === 0) tagPos.push([p[0] / dpr, (h - p[1]) / dpr, rp / dpr, vis]);
+      }
+    }
+    // soft halos keep far-off tiny bodies findable
+    for (let i = 0; i < 3; i++){
+      const rp = Bf[i * 4 + 2], vis = Bf[i * 4 + 3];
+      frame.halos[i * 4] = Bf[i * 4]; frame.halos[i * 4 + 1] = Bf[i * 4 + 1];
+      frame.halos[i * 4 + 2] = 9 * dpr; frame.halos[i * 4 + 3] = vis * (1 - smooth(2, 7, rp)) * 0.5;
+    }
+    // neutron-star aftermath: flash at contact, kilonova cloud, jet
+    frame.kn[3] = 0; frame.jetI = 0; frame.flash = 0;
+    if (ev.bns && t > 0){
+      const c = px(0, 0, wellsHeight(wl, 0, 0));
+      const Rk = 0.2 * t / W.Tm;                       // ejecta at a fifth of light speed, in M
+      frame.kn[0] = c[0]; frame.kn[1] = c[1]; frame.kn[2] = radPx(Math.min(Rk, 0.7 * Rview), c[2]);
+      frame.kn[3] = Math.min(1, t / 0.003) * (0.22 + 0.45 * Math.exp(-t / 0.4));
+      const red = smooth(0.02, 1.2, t);
+      frame.knCol[0] = 0.35 + 0.65 * red; frame.knCol[1] = 0.55 - 0.2 * red; frame.knCol[2] = 1.0 - 0.75 * red;
+      frame.flash = 0.55 * Math.exp(-t / 0.0012) * Math.min(1, t / 0.0002);
+      if (t > ev.tJet){
+        const top = px(0, 0, wellsHeight(wl, 0, 0) + Rview * 0.9);
+        frame.jet[0] = c[0]; frame.jet[1] = c[1]; frame.jet[2] = top[0] - c[0]; frame.jet[3] = top[1] - c[1];
+        frame.jetI = Math.exp(-(t - ev.tJet) / 0.35) * 1.4;
+        frame.flash += 0.35 * Math.exp(-(t - ev.tJet) / 0.08);
+      }
+    }
+    eng.render(frame);
+    placeTags(tagPos, b);
+  }
+  let gridKm = 0;
+  function smooth(a, b, x){ const u = Math.max(0, Math.min(1, (x - a) / (b - a))); return u * u * (3 - 2 * u); }
+
+  /* ---------- labels that follow the bodies ---------- */
+  const tags = [$('tag0'), $('tag1'), $('tag2')];
+  function placeTags(pos, b){
+    const W = ev.W, show = pos.length === 3;
+    const sepPx = show ? Math.hypot(pos[0][0] - pos[1][0], pos[0][1] - pos[1][1]) : 0;
+    const txt = [kindName(W.m1) + ' <b>' + fmtM(W.m1) + '</b>', kindName(W.m2) + ' <b>' + fmtM(W.m2) + '</b>', finalName()];
+    for (let i = 0; i < 3; i++){
+      const el = tags[i];
+      const vis = show && pos[i][3] > 0.5 && (i === 2 || (sepPx > 90 && b.sep > 0)) && pos[i][0] > 0 && pos[i][0] < canvas.clientWidth - 60;
+      el.hidden = !vis;
+      if (!vis) continue;
+      if (el._t !== txt[i]){ el.innerHTML = txt[i]; el._t = txt[i]; }
+      const off = Math.max(10, pos[i][2] + 8);
+      el.style.transform = `translate(${(pos[i][0] + off).toFixed(1)}px, ${(pos[i][1] - off - 10).toFixed(1)}px)`;
+    }
+  }
+  const kindName = m => m <= Wave.NS_MAX ? 'neutron star' : 'black hole';
+  const fmtM = m => (m < 10 ? m.toFixed(2).replace(/0$/, '') : m.toFixed(0)) + ' suns';
+  function finalName(){
+    if (ev.bns) return t < ev.tCollapse ? 'merged star, <b>' + fmtM(ev.Mf) + '</b>' : 'new black hole, <b>' + fmtM(ev.Mf) + '</b>';
+    return 'black hole <b>' + fmtM(ev.Mf) + '</b>, spin ' + ev.W.af.toFixed(2);
+  }
+
+  /* ================================================================
+     Sound
+     ================================================================ */
+  const Snd = { ctx: null, master: null, osc: null, og: null, src: null };
+  function ensureAudio(){
+    if (Snd.ctx) return true;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return false;
+    Snd.ctx = new AC();
+    Snd.master = Snd.ctx.createGain(); Snd.master.gain.value = 0.9;
+    const comp = Snd.ctx.createDynamicsCompressor(); comp.threshold.value = -10; comp.ratio.value = 4;
+    Snd.master.connect(comp); comp.connect(Snd.ctx.destination);
+    Snd.osc = Snd.ctx.createOscillator(); Snd.osc.type = 'sine'; Snd.osc.frequency.value = 100;
+    Snd.og = Snd.ctx.createGain(); Snd.og.gain.value = 0;
+    Snd.osc.connect(Snd.og); Snd.og.connect(Snd.master); Snd.osc.start();
+    return true;
+  }
+  const loud = a => 0.32 * Math.pow(Math.max(a, 0) / ev.W.aPeak, 0.6);
+  // live tone that follows the simulation clock: pitch-preserving slow motion
+  function updateTone(){
+    if (!Snd.ctx) return;
+    const now = Snd.ctx.currentTime;
+    const on = State.sound && State.playing && !realTake && t >= ev.t0 - 0.001;
+    Wave.at(ev.W, t, S);
+    const f = Math.min(16000, Math.max(8, S.f * State.pitch));
+    Snd.osc.frequency.setTargetAtTime(f, now, 0.012);
+    Snd.og.gain.setTargetAtTime(on ? loud(S.a) : 0, now, 0.03);
+  }
+  // real-speed take: the waveform itself, sample by sample
+  function synth(t0, t1){
+    const ctx = Snd.ctx, sr = ctx.sampleRate, n = Math.ceil((t1 - t0) * sr);
+    const two = State.two, buf = ctx.createBuffer(two ? 2 : 1, n, sr);
+    const L = buf.getChannelData(0), R = two ? buf.getChannelData(1) : null;
+    const W = ev.W, P = State.pitch, tmp = {};
+    let peak = 0;
+    for (let i = 0; i < n; i++){
+      const tt = t0 + i / sr;
+      Wave.at(W, tt, tmp);
+      const v = loud(tmp.a) * Math.cos(P * tmp.ph);
+      L[i] = v;
+      if (two){ Wave.at(W, tt - H1_DELAY, tmp); R[i] = -loud(tmp.a) * Math.cos(P * tmp.ph); }
+      peak = Math.max(peak, Math.abs(v));
+    }
+    const fade = Math.min(n, Math.round(0.02 * sr));
+    for (let i = 0; i < fade; i++){ const g = i / fade; L[i] *= g; L[n - 1 - i] *= g; if (R){ R[i] *= g; R[n - 1 - i] *= g; } }
+    Snd.lastPeak = peak; Snd.lastN = n;
+    return buf;
+  }
+  function stopTake(){ if (Snd.src){ try { Snd.src.stop(); } catch (e){} Snd.src = null; } realTake = null; }
+  function startTake(){
+    if (!ensureAudio()) return;
+    Snd.ctx.resume();
+    if (!State.sound) setSound(true);
+    stopTake();
+    const t0 = ev.bns ? Math.max(ev.t0, -30) : ev.t0, t1 = ev.bns ? 0.05 : Math.min(ev.W.tEnd, 12 * ev.W.tauQNMs + 0.01);
+    const buf = synth(t0, t1);
+    const src = Snd.ctx.createBufferSource(); src.buffer = buf;
+    if (State.two){ /* channel 0 Livingston (right), 1 Hanford (left) */
+      const sp = Snd.ctx.createChannelSplitter(2), mg = Snd.ctx.createChannelMerger(2);
+      src.connect(sp); sp.connect(mg, 0, 1); sp.connect(mg, 1, 0); mg.connect(Snd.master);
+    } else src.connect(Snd.master);
+    const at0 = Snd.ctx.currentTime + 0.08;
+    src.start(at0);
+    Snd.src = src;
+    realTake = { t0, t1, at0 };
+    t = t0; wallAfterPeak = 0; holdAtEnd = 0; RviewSnap = true;
+    State.playing = true; syncPlay();
+    src.onended = () => { if (Snd.src === src){ Snd.src = null; realTake = null; State.playing = false; syncPlay(); setPhaseNote(ev.bns ? 'That was the last 30 seconds at real speed' : 'That was the whole thing at real speed'); } };
+  }
+  function setSound(on){
+    State.sound = on;
+    if (on){ if (!ensureAudio()){ State.sound = false; $('soundLabel').textContent = 'No audio in this browser'; return; } Snd.ctx.resume(); }
+    else stopTake();
+    $('soundBtn').setAttribute('aria-pressed', on ? 'true' : 'false');
+    $('soundLabel').textContent = on ? 'Sound on' : 'Turn sound on';
+  }
+
+  /* ================================================================
+     Readouts
+     ================================================================ */
+  const sup = n => String(n).replace(/-/g, '⁻').replace(/[0-9]/g, d => '⁰¹²³⁴⁵⁶⁷⁸⁹'[d]);
+  function sci(x, d = 1){ if (!(x > 0)) return '0'; const e = Math.floor(Math.log10(x)); const m = x / Math.pow(10, e); return m.toFixed(d) + ' × 10' + sup(e); }
+  function fmtTime(s){
+    const a = Math.abs(s);
+    if (a >= 1) return a.toFixed(a >= 10 ? 0 : 1) + ' s';
+    if (a >= 0.001) return (a * 1e3).toFixed(a >= 0.01 ? 0 : 1) + ' ms';
+    return (a * 1e6).toFixed(0) + ' µs';
+  }
+  function fmtKm(km){ return km >= 1000 ? Math.round(km).toLocaleString('en-US') + ' km' : km.toFixed(0) + ' km'; }
+  function fmtRate(r){
+    if (Math.abs(r - 1) < 0.02) return 'real speed';
+    if (r < 1){ const k = 1 / r; return 'slowed ' + (k >= 100 ? Math.round(k / 10) * 10 : Math.round(k)).toLocaleString('en-US') + '×'; }
+    return 'fast-forward ' + (r >= 10 ? Math.round(r) : r.toFixed(1)) + '×';
+  }
+  function fmtDist(Mpc){ const gly = Mpc * MLY_PER_MPC / 1000; return gly >= 1 ? gly.toFixed(gly >= 10 ? 0 : 1) + ' billion ly' : Math.round(gly * 1000) + ' million ly'; }
+  function protonFrac(h){ const dL = h * ARM_M, f = dL / PROTON_M; if (f <= 0) return '—'; return f >= 1 ? f.toFixed(1) + ' protons' : '1/' + Math.round(1 / f).toLocaleString('en-US') + ' proton'; }
+
+  let readTick = 0;
+  function readouts(r){
+    if (++readTick % 3 && State.playing) return;
+    const W = ev.W; Wave.at(W, t, S);
+    const b = bodiesAt(t);
+    const merged = ev.bns ? t >= 0 : t >= ev.tMB;
+    $('rFreq').textContent = S.a > 0 ? S.f.toFixed(S.f < 100 ? 1 : 0) + ' Hz' : '—';
+    $('rTime').textContent = t < 0 ? fmtTime(-t) : fmtTime(t) + ' after';
+    $('rSep').textContent = !merged ? fmtKm(b.sep * W.Msrc * KM_PER_M) : 'merged';
+    const v = Math.pow(S.w / 2, 1 / 3);
+    $('rSpeed').textContent = !merged ? (v).toFixed(2) + ' c · ' + Math.round(v * 299792).toLocaleString('en-US') + ' km/s' : '—';
+    $('rEnergy').textContent = (S.E < 0.1 ? S.E.toFixed(3) : S.E.toFixed(2)) + ' suns';
+    $('rPower').textContent = S.P > 0 ? sci(S.P) + ' W' : '—';
+    const hA = S.a * W.hScale;
+    $('rStrain').textContent = hA > 0 ? sci(hA) : '—';
+    $('rArm').textContent = hA > 0 ? protonFrac(hA) : '—';
+    $('rRate').textContent = fmtRate(r);
+    phaseText(merged, v);
+  }
+  let phaseNote = null, phaseNoteUntil = 0;
+  function setPhaseNote(s){ phaseNote = s; phaseNoteUntil = performance.now() + 5000; }
+  function phaseText(merged, v){
+    const W = ev.W; let big, small;
+    if (t < ev.t0 - 1e-6){ big = 'Waiting'; small = ''; }
+    else if (!merged){
+      const orb = S.f / 2;
+      big = ev.bns && t > -0.02 ? 'Tides stretch the stars' : (!ev.bns && t > ev.tMB - 60 * W.Tm ? 'The final orbits' : 'Inspiral');
+      small = (orb < 10 ? orb.toFixed(1) : Math.round(orb)) + ' orbits a second';
+    } else if (ev.bns){
+      if (t < 0.02){ big = 'Collision'; small = 'the merged star rings at ~2.8 kHz'; }
+      else if (t < ev.tCollapse){ big = 'Kilonova'; small = 'debris flies out at a fifth of light speed'; }
+      else if (t < ev.tJet){ big = 'Collapse to a black hole'; small = 'probably within about a second'; }
+      else { big = 'Gamma-ray burst'; small = 'Fermi saw it 1.7 s after the merger'; }
+    } else if (t < ev.tMB + 8 * W.Tm){ big = 'Merger'; small = 'the horizons join'; }
+    else if (S.a > W.aPeak * 0.01){ big = 'Ringdown'; small = 'ringing at ' + Math.round(W.fQNM) + ' Hz'; }
+    else { big = 'A single black hole'; small = 'the last ripples head out at the speed of light'; }
+    if (phaseNote && performance.now() < phaseNoteUntil){ small = phaseNote; }
+    if ($('phaseText')._t !== big){ $('phaseText').textContent = big; $('phaseText')._t = big; }
+    $('phaseSmall').textContent = small;
+  }
+
+  /* ================================================================
+     Scope (live strain) and LIGO arm inset
+     ================================================================ */
+  const scope = $('scope'), sctx = scope.getContext('2d');
+  const arm = $('arm'), actx = arm.getContext('2d');
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const COL = { l1: css('--l1'), h1: css('--h1'), wave: css('--wave'), ink: css('--ink'), faint: css('--faint'), line: 'rgba(230,234,240,0.12)', hot: css('--hot') };
+  function fitCanvas(c, ctx){
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = Math.round(c.clientWidth * dpr), h = Math.round(c.clientHeight * dpr);
+    if (c.width !== w || c.height !== h){ c.width = w; c.height = h; }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return [c.clientWidth, c.clientHeight];
+  }
+  function drawScope(){
+    const [w, h] = fitCanvas(scope, sctx);
+    sctx.clearRect(0, 0, w, h);
+    const W = ev.W; Wave.at(W, t, S);
+    const f = Math.max(S.f, ev.fDisp * 0.7);
+    const span = 10 / f;
+    const hMax = ev.hPeak * 1.15;
+    sctx.strokeStyle = COL.line; sctx.lineWidth = 1;
+    sctx.beginPath(); sctx.moveTo(0, h / 2); sctx.lineTo(w, h / 2); sctx.stroke();
+    const N = Math.min(600, Math.round(w * 1.5)), tmp = {};
+    const trace = (delay, sign, col) => {
+      sctx.strokeStyle = col; sctx.lineWidth = 1.5; sctx.beginPath();
+      for (let i = 0; i <= N; i++){
+        const tt = t - span + span * i / N - delay;
+        Wave.at(W, tt, tmp);
+        const v = tt < W.t[0] ? 0 : sign * tmp.a * W.hScale * Math.cos(tmp.ph);
+        const x = i / N * w, y = h / 2 - v / hMax * (h / 2 - 3);
+        i ? sctx.lineTo(x, y) : sctx.moveTo(x, y);
+      }
+      sctx.stroke();
+    };
+    if (State.two) trace(H1_DELAY, -1, COL.h1);
+    trace(0, 1, State.two ? COL.l1 : COL.wave);
+    $('scopeSpan').textContent = 'last ' + fmtTime(span);
+  }
+  let armFlash = 0;
+  function drawArm(){
+    if ($('armHud').offsetParent === null) return;
+    const [w, h] = fitCanvas(arm, actx);
+    actx.clearRect(0, 0, w, h);
+    const W = ev.W; Wave.at(W, t, S);
+    const hNow = S.a * W.hScale * Math.cos(S.ph);
+    const ex = 0.13 / ev.hPeak;                                // exaggeration factor
+    const e = hNow * ex;
+    const ox = 22, oy = h - 22, Lx = w - 44, Ly = h - 42;
+    // arms
+    actx.lineCap = 'round';
+    actx.strokeStyle = 'rgba(143,211,232,0.25)'; actx.lineWidth = 6;
+    actx.beginPath(); actx.moveTo(ox, oy); actx.lineTo(ox + Lx, oy); actx.moveTo(ox, oy); actx.lineTo(ox, oy - Ly); actx.stroke();
+    actx.strokeStyle = COL.wave; actx.lineWidth = 2;
+    const ax = Lx * (1 + e / 2), ay = Ly * (1 - e / 2);
+    actx.beginPath(); actx.moveTo(ox, oy); actx.lineTo(ox + ax, oy); actx.moveTo(ox, oy); actx.lineTo(ox, oy - ay); actx.stroke();
+    actx.fillStyle = COL.ink;
+    for (const [x, y] of [[ox + ax, oy], [ox, oy - ay]]){ actx.beginPath(); actx.arc(x, y, 3.5, 0, 7); actx.fill(); }
+    actx.fillStyle = COL.hot; actx.beginPath(); actx.arc(ox, oy, 3, 0, 7); actx.fill();
+    // ring of free-floating test masses in the corner of the L
+    const cx = ox + Lx * 0.58, cy = oy - Ly * 0.58, R = Math.min(Lx, Ly) * 0.24;
+    actx.fillStyle = 'rgba(230,234,240,0.8)';
+    for (let i = 0; i < 16; i++){
+      const a = i / 16 * 2 * Math.PI, x = Math.cos(a), y = Math.sin(a);
+      actx.beginPath(); actx.arc(cx + R * x * (1 + e / 2), cy - R * y * (1 - e / 2), 1.6, 0, 7); actx.fill();
+    }
+    $('armX').textContent = 'exaggerated ' + (ex > 0 ? '10' + sup(Math.round(Math.log10(ex))) : '') + '×';
+    if (armFlash > 0){ armFlash--; if (!armFlash) $('armHud').classList.remove('flash'); }
+  }
+
+  /* ================================================================
+     Overview chart: the whole signal
+     ================================================================ */
+  const ov = $('overview'), octx = ov.getContext('2d');
+  let ovStatic = null, ovMap = null, ovHover = null;
+  function ovAxes(w, h){
+    const W = ev.W;
+    const padL = 58, padR = 14, top = 8, gap = 26, bottom = 30;
+    const ph = (h - top - gap - bottom) / 2;
+    const A = { x0: padL, x1: w - padR, sTop: top, sBot: top + ph, fTop: top + ph + gap, fBot: top + 2 * ph + gap };
+    if (!ev.bns){
+      let ta = ev.t0; for (let i = 0; i < W.n; i++) if (W.f[i] >= Math.max(ev.fDisp, W.fPeak / 4.5)){ ta = W.t[i]; break; }
+      const tb = Math.min(W.tEnd, 8 * W.tauQNMs + 0.004);
+      A.tx = tt => A.x0 + (tt - ta) / (tb - ta) * (A.x1 - A.x0);
+      A.xt = x => ta + (x - A.x0) / (A.x1 - A.x0) * (tb - ta);
+      A.ta = ta; A.tb = tb;
+      const narrow = w < 560; const step = niceStep((tb - ta) / (narrow ? 3 : 6));
+      A.ticks = []; for (let v = Math.ceil(ta / step) * step; v <= tb + 1e-9; v += step) A.ticks.push([v, Math.abs(v) < 1e-9 ? 'merger' : narrow ? (v < 0 ? '−' : '+') + fmtTime(Math.abs(v)) : (v < 0 ? fmtTime(-v) + ' before' : fmtTime(v) + ' after')]);
+    } else {
+      // log of time before merger, with the last 7% of the width for the aftermath
+      const tauMax = -ev.t0, tauMin = 1e-3, xm = A.x0 + (A.x1 - A.x0) * 0.93, postMax = 0.03;
+      A.tx = tt => tt < -tauMin ? A.x0 + (Math.log(tauMax) - Math.log(-tt)) / (Math.log(tauMax) - Math.log(tauMin)) * (xm - A.x0)
+        : tt <= 0 ? xm : xm + Math.min(tt, postMax) / postMax * (A.x1 - xm);
+      A.xt = x => x < xm ? -Math.exp(Math.log(tauMax) - (x - A.x0) / (xm - A.x0) * (Math.log(tauMax) - Math.log(tauMin))) : (x - xm) / (A.x1 - xm) * postMax;
+      A.ta = ev.t0; A.tb = postMax;
+      A.ticks = [[-100, '100 s'], [-10, '10 s'], [-1, '1 s'], [-0.1, '0.1 s'], [-0.01, w < 560 ? '10 ms' : '10 ms before'], [0, 'merger']].filter(v => -v[0] <= tauMax && (w >= 560 || [-100, -1, -0.01, 0].includes(v[0])));
+    }
+    A.hMax = ev.hPeak * 1.15;
+    A.fy = f => A.fBot - (Math.log(Math.max(f, 5)) - Math.log(5)) / (Math.log(4000) - Math.log(5)) * (A.fBot - A.fTop);
+    A.hy = v => (A.sTop + A.sBot) / 2 - v / A.hMax * (A.sBot - A.sTop) / 2;
+    return A;
+  }
+  function niceStep(x){ const e = Math.pow(10, Math.floor(Math.log10(x))), m = x / e; return (m < 1.5 ? 1 : m < 3.5 ? 2 : m < 7.5 ? 5 : 10) * e; }
+  function drawOverviewStatic(){
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = ov.clientWidth, h = ov.clientHeight;
+    ov.width = Math.round(w * dpr); ov.height = Math.round(h * dpr);
+    const c = document.createElement('canvas'); c.width = ov.width; c.height = ov.height;
+    const g = c.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const A = ovAxes(w, h); ovMap = A;
+    const W = ev.W, tmp = {};
+    g.font = '11px "IBM Plex Mono", monospace'; g.textBaseline = 'middle';
+    // grid and axes
+    g.strokeStyle = COL.line; g.fillStyle = COL.faint; g.lineWidth = 1;
+    const hExp = Math.floor(Math.log10(A.hMax)), hUnit = Math.pow(10, hExp);
+    const hStep = niceStep(A.hMax / hUnit / 2.2) * hUnit;
+    for (let v = -Math.floor(A.hMax / hStep) * hStep; v <= A.hMax; v += hStep){
+      const y = A.hy(v); g.beginPath(); g.moveTo(A.x0, y); g.lineTo(A.x1, y); g.stroke();
+      const lab = Math.abs(v) < hStep / 10 ? '0' : (v < 0 ? '−' : '') + (+(Math.abs(v) / hUnit).toFixed(2));
+      g.textAlign = 'right'; g.fillText(lab, A.x0 - 6, y);
+    }
+    for (const f of [10, 30, 100, 300, 1000, 3000]){
+      const y = A.fy(f); g.beginPath(); g.moveTo(A.x0, y); g.lineTo(A.x1, y); g.stroke();
+      g.textAlign = 'right'; g.fillText(f >= 1000 ? (f / 1000) + 'k' : String(f), A.x0 - 6, y);
+    }
+    g.textAlign = 'center'; g.textBaseline = 'top';
+    for (const [v, lab] of A.ticks){ const x = A.tx(v); g.strokeStyle = COL.line; g.beginPath(); g.moveTo(x, A.sTop); g.lineTo(x, A.fBot); g.stroke(); g.fillText(lab, Math.min(Math.max(x, A.x0 + 30), A.x1 - 30), A.fBot + 8); }
+    g.textAlign = 'left'; g.textBaseline = 'alphabetic'; g.fillStyle = COL.faint;
+    g.fillText('strain, × 10' + sup(hExp), A.x0 + 6, A.sTop + 12); g.fillText('hertz', A.x0 + 6, A.fTop + 12);
+    // strain: a line where cycles are resolved, an envelope where they are not
+    g.save(); g.beginPath(); g.rect(A.x0, A.sTop, A.x1 - A.x0, A.sBot - A.sTop); g.clip();
+    const cols = Math.round(A.x1 - A.x0);
+    g.fillStyle = 'rgba(143,211,232,0.55)'; g.strokeStyle = COL.wave; g.lineWidth = 1.5;
+    let pathOpen = false;
+    for (let i = 0; i < cols; i++){
+      const xa = A.x0 + i, ta = A.xt(xa), tb = A.xt(xa + 1);
+      Wave.at(W, ta, tmp); const pa = tmp.ph, aa = tmp.a; Wave.at(W, tb, tmp);
+      const cyc = (tmp.ph - pa) / (2 * Math.PI);
+      if (cyc > 0.2){
+        if (pathOpen){ g.stroke(); pathOpen = false; }
+        const a = Math.max(aa, tmp.a) * W.hScale, y0 = A.hy(a), y1 = A.hy(-a);
+        g.fillRect(xa, y0, 1, y1 - y0);
+      } else {
+        for (let s = 0; s < 4; s++){
+          const tt = ta + (tb - ta) * s / 4; Wave.at(W, tt, tmp);
+          const y = A.hy(tt < W.t[0] ? 0 : tmp.a * W.hScale * Math.cos(tmp.ph));
+          if (!pathOpen){ g.beginPath(); g.moveTo(xa + s / 4, y); pathOpen = true; } else g.lineTo(xa + s / 4, y);
+        }
+      }
+    }
+    if (pathOpen) g.stroke();
+    g.restore();
+    // frequency track, brighter where the wave is stronger
+    for (let i = 0; i < cols; i += 1){
+      const xa = A.x0 + i, tt = A.xt(xa + 0.5); Wave.at(W, tt, tmp);
+      if (!(tmp.a > 0) || tt < W.t[0]) continue;
+      const k = Math.pow(tmp.a / W.aPeak, 0.5);
+      g.fillStyle = `rgba(255,179,92,${(0.35 + 0.65 * k).toFixed(3)})`;
+      const y = A.fy(tmp.f); g.fillRect(xa, y - 1 - k * 1.5, 1.2, 2 + k * 3);
+    }
+    ovStatic = c;
+    $('ovTitle').textContent = evName() + ' · ' + fmtM(ev.W.m1) + ' + ' + fmtM(ev.W.m2).replace(' suns', '') + ' suns';
+    $('ovUnit').textContent = ev.bns ? 'strain at Earth (top) and wave frequency in hertz (bottom); time runs on a log scale so all 100 seconds fit' : 'strain at Earth (top) and wave frequency in hertz (bottom), against time before the merger';
+    ovRows();
+  }
+  function drawOverview(){
+    if (!ovStatic) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    if (ov.width !== Math.round(ov.clientWidth * dpr)){ drawOverviewStatic(); }
+    octx.setTransform(1, 0, 0, 1, 0, 0); octx.clearRect(0, 0, ov.width, ov.height); octx.drawImage(ovStatic, 0, 0);
+    octx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const A = ovMap;
+    const x = A.tx(Math.max(A.ta, Math.min(A.tb, t)));
+    octx.strokeStyle = COL.ink; octx.lineWidth = 1; octx.beginPath(); octx.moveTo(x, A.sTop); octx.lineTo(x, A.fBot); octx.stroke();
+    Wave.at(ev.W, t, S);
+    if (S.a > 0 && t >= A.ta && t <= A.tb){ octx.fillStyle = COL.hot; octx.beginPath(); octx.arc(x, A.fy(S.f), 4, 0, 7); octx.fill(); octx.strokeStyle = '#090c13'; octx.lineWidth = 2; octx.stroke(); }
+    if (ovHover != null){
+      octx.strokeStyle = 'rgba(230,234,240,0.45)'; octx.setLineDash([3, 3]); octx.beginPath(); octx.moveTo(ovHover, A.sTop); octx.lineTo(ovHover, A.fBot); octx.stroke(); octx.setLineDash([]);
+    }
+  }
+  function ovRows(){
+    const W = ev.W, tmp = {}, rows = [];
+    const pts = ev.bns ? [-60, -10, -1, -0.1, -0.01, -0.001] : [-0.2, -0.1, -0.05, -0.02, -0.01, -0.005, 0, 0.005, 0.01].filter(v => v >= ev.t0);
+    for (const tt of pts){
+      Wave.at(W, tt, tmp);
+      const b = (() => { const sv = t; const r = sepAt(tt, tmp); return r; })();
+      const merged = ev.bns ? tt >= 0 : tt >= ev.tMB;
+      rows.push(`<tr><td>${tt < 0 ? fmtTime(-tt) + ' before' : tt === 0 ? 'peak' : fmtTime(tt) + ' after'}</td><td>${tmp.f.toFixed(0)} Hz</td><td>${sci(tmp.a * W.hScale)}</td><td>${merged ? 'merged' : fmtKm(b * W.Msrc * KM_PER_M)}</td><td>${merged ? '—' : Math.pow(tmp.w / 2, 1 / 3).toFixed(2) + ' c'}</td></tr>`);
+    }
+    $('ovRows').innerHTML = rows.join('');
+  }
+  function ovPointer(e){
+    if (!ovMap) return;
+    const r = ov.getBoundingClientRect(), x = e.clientX - r.left, A = ovMap;
+    if (x < A.x0 || x > A.x1){ ovLeave(); return; }
+    ovHover = x;
+    const tt = A.xt(x), tmp = {}; Wave.at(ev.W, tt, tmp);
+    $('tipWhen').textContent = tt < 0 ? fmtTime(-tt) + ' before merger' : fmtTime(tt) + ' after the peak';
+    $('tipF').textContent = tmp.a > 0 ? tmp.f.toFixed(0) + ' Hz' : '—';
+    $('tipH').textContent = tmp.a > 0 ? sci(tmp.a * ev.W.hScale) : '—';
+    const tip = $('ovTip'); tip.hidden = false;
+    const tw = tip.offsetWidth, left = x + 14 + tw > r.width ? x - tw - 14 : x + 14;
+    tip.style.left = (left + 14) + 'px'; tip.style.top = '52px';
+    if (!State.playing) drawOverview();
+  }
+  function ovLeave(){ ovHover = null; $('ovTip').hidden = true; }
+  ov.addEventListener('pointermove', ovPointer);
+  ov.addEventListener('pointerleave', ovLeave);
+  ov.addEventListener('click', e => {
+    const r = ov.getBoundingClientRect(), x = e.clientX - r.left;
+    if (!ovMap || x < ovMap.x0 || x > ovMap.x1) return;
+    seek(Math.max(ev.t0, ovMap.xt(x)));
+  });
+
+  /* ================================================================
+     Controls
+     ================================================================ */
+  const m1s = $('m1'), m2s = $('m2'), ds = $('dist');
+  const MMIN = 1, MMAX = 150, DMIN = 10, DMAX = 10000;
+  const toM = v => MMIN * Math.pow(MMAX / MMIN, v / 1000), fromM = m => Math.round(Math.log(m / MMIN) / Math.log(MMAX / MMIN) * 1000);
+  const toD = v => DMIN * Math.pow(DMAX / DMIN, v / 1000), fromD = d => Math.round(Math.log(d / DMIN) / Math.log(DMAX / DMIN) * 1000);
+  function evName(){ return State.ev === 'custom' ? (State.customName || 'Your merger') : EVENTS[State.ev].name; }
+
+  function load(opts = {}){
+    stopTake();
+    ev = buildEvent(State.m1, State.m2, State.D);
+    t = opts.t != null ? Math.max(ev.t0, opts.t) : ev.t0;
+    wallAfterPeak = 0; holdAtEnd = 0; RviewSnap = true;
+    m1s.value = fromM(State.m1); m2s.value = fromM(State.m2); ds.value = fromD(State.D);
+    sliderOut();
+    derived();
+    document.querySelectorAll('#events .chip').forEach(b => b.setAttribute('aria-pressed', b.dataset.ev === State.ev ? 'true' : 'false'));
+    if (State.ev !== 'custom') $('caption').innerHTML = EVENTS[State.ev].caption;
+    else $('caption').innerHTML = customCaption();
+    drawOverviewStatic();
+  }
+  function customCaption(){
+    const W = ev.W, nm = State.customName;
+    const kind = ev.bns ? 'Two neutron stars' : ev.nsbh ? 'A black hole and a neutron star' : 'Two black holes';
+    return `<b>${nm ? nm + ' as measured.' : 'Your merger.'}</b> ${kind} of ${fmtM(W.m1).replace(' suns', '')} and ${fmtM(W.m2)}, ${fmtDist(W.D)} away (luminosity distance). The waves left them ${ev.lookback >= 1 ? ev.lookback.toFixed(1) + ' billion' : Math.round(ev.lookback * 1000) + ' million'} years ago. ${ev.bns ? 'The chirp lasts about ' + Math.round(-ev.t0) + ' s from 24 Hz.' : 'The final hole weighs ' + fmtM(ev.Mf) + ' and rings at ' + Math.round(W.fQNM) + ' Hz.'}`;
+  }
+  function sliderOut(){
+    const kind = m => m <= Wave.NS_MAX ? ' · NS' : '';
+    $('m1Out').textContent = fmtM(State.m1) + kind(State.m1);
+    $('m2Out').textContent = fmtM(State.m2) + kind(State.m2);
+    $('distOut').textContent = fmtDist(State.D);
+  }
+  function derived(){
+    const W = ev.W;
+    const mc = Math.pow(W.m1 * W.m2, 0.6) / Math.pow(W.m1 + W.m2, 0.2);
+    $('dChirp').textContent = mc.toFixed(mc < 10 ? 2 : 1) + ' suns';
+    $('dFinal').textContent = ev.bns ? 'neutron star, then black hole' : 'black hole, ' + fmtM(ev.Mf) + ', spin ' + W.af.toFixed(2);
+    $('dErad').textContent = (W.E[W.n - 1] < 0.1 ? W.E[W.n - 1].toFixed(3) : W.E[W.n - 1].toFixed(2)) + ' suns';
+    $('dRing').textContent = ev.bns ? '≈ 2.8 kHz, too faint to catch' : Math.round(W.fQNM) + ' Hz, fades in ' + (W.tauQNMs * 1e3).toFixed(1) + ' ms';
+    $('dTravel').textContent = (ev.lookback >= 1 ? ev.lookback.toFixed(2) + ' billion' : Math.round(ev.lookback * 1000) + ' million') + ' years';
+    $('dStrain').textContent = sci(ev.hPeak);
+  }
+  let buildTimer = 0;
+  function onSlider(){
+    State.m1 = +toM(+m1s.value).toPrecision(3); State.m2 = +toM(+m2s.value).toPrecision(3); State.D = +toD(+ds.value).toPrecision(3);
+    if (State.m2 > State.m1){ const x = State.m1; State.m1 = State.m2; State.m2 = x; }
+    State.ev = 'custom'; State.customName = null;
+    sliderOut();
+    clearTimeout(buildTimer); buildTimer = setTimeout(() => load(), 90);
+  }
+  [m1s, m2s, ds].forEach(s => s.addEventListener('input', onSlider));
+
+  function loadEvent(key, opts){
+    if (key === 'custom'){ State.ev = 'custom'; State.customName = null; load(opts); return; }
+    const E = EVENTS[key]; State.ev = key; State.m1 = E.m1; State.m2 = E.m2; State.D = E.D; State.customName = null;
+    load(opts);
+  }
+  $('events').addEventListener('click', e => { const b = e.target.closest('.chip'); if (!b) return; loadEvent(b.dataset.ev); if (!State.playing){ State.playing = true; syncPlay(); } });
+
+  document.querySelectorAll('#pitches .chip').forEach(b => b.addEventListener('click', () => {
+    State.pitch = +b.dataset.p;
+    document.querySelectorAll('#pitches .chip').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+  }));
+  document.querySelectorAll('#toggles .chip[data-key]').forEach(b => b.addEventListener('click', () => {
+    const k = b.dataset.key; State[k] = !State[k]; b.setAttribute('aria-pressed', State[k] ? 'true' : 'false');
+    if (k === 'two') $('scopeKeys').hidden = !State.two;
+  }));
+  function setToggle(k, v){ State[k] = v; const b = document.querySelector(`#toggles .chip[data-key="${k}"]`); if (b) b.setAttribute('aria-pressed', v ? 'true' : 'false'); if (k === 'two') $('scopeKeys').hidden = !v; }
+  $('resetView').addEventListener('click', () => { State.yaw = -0.9; State.el = 0.62; State.zoom = 1; });
+
+  function syncPlay(){ $('playBtn').textContent = State.playing ? 'Pause' : 'Play'; }
+  $('playBtn').addEventListener('click', () => {
+    if (realTake){ stopTake(); State.playing = false; }
+    else { State.playing = !State.playing; if (State.playing && t >= ev.tEnd - 1e-9) seek(ev.t0); }
+    syncPlay();
+  });
+  $('restartBtn').addEventListener('click', () => { stopTake(); seek(ev.t0); State.playing = true; syncPlay(); });
+  $('soundBtn').addEventListener('click', () => setSound(!State.sound));
+  $('realBtn').addEventListener('click', () => startTake());
+  const speedS = $('speed');
+  function speedFromSlider(){ const v = +speedS.value; State.speed = Math.pow(10, -v / 100); $('speedOut').textContent = Math.abs(v) < 4 ? 'normal' : v > 0 ? (1 / State.speed).toFixed(1) + '× slower' : State.speed.toFixed(1) + '× faster'; }
+  speedS.addEventListener('input', speedFromSlider);
+
+  function seek(tt){ stopTake(); t = Math.max(ev.t0, Math.min(ev.tEnd, tt)); wallAfterPeak = 0; holdAtEnd = 0; RviewSnap = true; if (!State.playing) drawAll(); }
+
+  function scrollToStage(){ $('stage').scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' }); }
+  function setSpeed(v){ speedS.value = v; speedFromSlider(); }
+  const SHOW = {
+    masses(){ loadEvent('gw150914', { t: -0.16 }); setSpeed(0); setPhaseNote('listen for the pitch climbing'); },
+    twodet(){ setToggle('two', true); loadEvent('gw150914', { t: -0.045 }); setSpeed(40); setPhaseNote('Hanford (orange) trails Livingston by 6.9 ms'); },
+    proton(){ loadEvent('gw150914', { t: -0.006 }); setSpeed(60); $('armHud').classList.add('flash'); armFlash = 400; setPhaseNote('watch the LIGO arm change in the readout'); },
+    energy(){ loadEvent('gw150914', { t: -0.008 }); setSpeed(50); setPhaseNote('power peaks as the horizons join'); },
+    fast(){ loadEvent('gw150914', { t: -0.03 }); setSpeed(70); setPhaseNote('orbital speed is in the readout'); },
+    ring(){ loadEvent('gw150914', { t: 0 }); setSpeed(70); setPhaseNote('one pitch, fading away'); },
+    hear(){ loadEvent('gw150914'); setSpeed(0); startTake(); },
+    gold(){ loadEvent('gw170817', { t: -0.03 }); setSpeed(0); setPhaseNote('the last hundredth of a second'); },
+    heavy(){ loadEvent('gw190521', { t: -0.25 }); setSpeed(0); },
+  };
+  document.addEventListener('click', e => {
+    const b = e.target.closest('button.show'); if (!b) return;
+    if (b.dataset.show && SHOW[b.dataset.show]){ SHOW[b.dataset.show](); }
+    else if (b.dataset.ev){ loadEvent(b.dataset.ev); setSpeed(0); }
+    else if (b.dataset.load){
+      const [a, c, d, nm] = b.dataset.load.split(','); State.ev = 'custom'; State.m1 = +a; State.m2 = +c; State.D = +d; State.customName = nm; load(); setSpeed(0);
+    } else return;
+    State.playing = true; syncPlay(); scrollToStage();
+  });
+
+  /* ---------- camera interaction ---------- */
+  const pointers = new Map(); let pinch0 = 0, zoom0 = 1, userTouched = false;
+  canvas.addEventListener('pointerdown', e => { canvas.setPointerCapture(e.pointerId); pointers.set(e.pointerId, [e.clientX, e.clientY]); userTouched = true;
+    if (pointers.size === 2){ const [a, b] = [...pointers.values()]; pinch0 = Math.hypot(a[0] - b[0], a[1] - b[1]); zoom0 = State.zoom; } });
+  canvas.addEventListener('pointermove', e => {
+    if (!pointers.has(e.pointerId)) return;
+    const prev = pointers.get(e.pointerId); pointers.set(e.pointerId, [e.clientX, e.clientY]);
+    if (pointers.size === 1){ State.yaw -= (e.clientX - prev[0]) * 0.006; State.el = Math.max(0.08, Math.min(1.5, State.el + (e.clientY - prev[1]) * 0.005)); }
+    else if (pointers.size === 2){ const [a, b] = [...pointers.values()]; const d = Math.hypot(a[0] - b[0], a[1] - b[1]); if (pinch0 > 0) State.zoom = Math.max(0.15, Math.min(6, zoom0 * pinch0 / d)); }
+    if (!State.playing) drawAll();
+  });
+  const up = e => { pointers.delete(e.pointerId); pinch0 = 0; };
+  canvas.addEventListener('pointerup', up); canvas.addEventListener('pointercancel', up);
+  canvas.addEventListener('wheel', e => { e.preventDefault(); State.zoom = Math.max(0.15, Math.min(6, State.zoom * Math.exp(e.deltaY * 0.0012))); if (!State.playing) drawAll(); }, { passive: false });
+
+  /* ================================================================
+     Model check table: GW150914 from this model vs LIGO
+     ================================================================ */
+  function cmpTable(){
+    const W = Wave.build({ m1: 36, m2: 29, D: 410, fStart: 20 });
+    let t35 = 0; for (let i = 0; i < W.n; i++) if (W.f[i] >= 35){ t35 = W.t[i]; break; }
+    const i35 = Wave.idx(W, t35), i0 = Wave.idx(W, 0);
+    const cyc = (W.ph[i0] - W.ph[i35]) / (2 * Math.PI);
+    const rows = [
+      ['Final black hole', fmtM(W.Msrc * W.Mf), '62 ± 4 suns'],
+      ['Mass radiated as waves', (W.Eradfit * W.Msrc).toFixed(1) + ' suns', '3.0 ± 0.5 suns'],
+      ['Spin of the final hole', W.af.toFixed(2), '0.67 (+0.05 / −0.07)'],
+      ['Peak power', sci(W.Ppeak) + ' W', '3.6 × 10⁴⁹ W'],
+      ['Peak strain at Earth', sci(W.aPeak * W.hScale), '1.0 × 10⁻²¹', 'orientation factor set to match'],
+      ['Frequency at the loudest point', Math.round(W.fPeak) + ' Hz', '≈ 150 Hz', 'read by eye from the published plot'],
+      ['Ringdown pitch', Math.round(W.fQNM) + ' Hz', '≈ 250 Hz'],
+      ['Ringdown fade time', (W.tauQNMs * 1e3).toFixed(1) + ' ms', '≈ 4 ms'],
+      ['Speed just before merging', Math.pow(W.w[Wave.idx(W, 0)] / 2, 1 / 3).toFixed(2) + ' c', '≈ 0.5 c'],
+      ['From 35 Hz to the peak', fmtTime(-t35) + ', ' + cyc.toFixed(0) + ' cycles', '≈ 0.2 s, ≈ 8 cycles', 'the paper\'s rough description; see the note'],
+    ];
+    $('cmpRows').innerHTML = rows.map(r => `<tr><td>${r[0]}${r[3] ? '<span class="why">' + r[3] + '</span>' : ''}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('');
+  }
+
+  /* ================================================================
+     Main loop
+     ================================================================ */
+  let last = performance.now(), visible = true;
+  document.addEventListener('visibilitychange', () => { visible = !document.hidden; if (!visible && Snd.ctx){ stopTake(); Snd.og && Snd.og.gain.setTargetAtTime(0, Snd.ctx.currentTime, 0.02); } });
+  function drawAll(){
+    let r = rate(t);
+    if (!Number.isFinite(Rview) || RviewSnap){ Rview = viewTarget(t); RviewSnap = false; }
+    renderGL(); drawScope(); drawArm(); drawOverview(); readouts(r);
+  }
+  function tick(now){
+    const dtw = Math.min(0.1, (now - last) / 1000); last = now; lastDt = dtw;
+    if (State.playing && visible){
+      if (realTake){
+        t = Math.min(realTake.t1, realTake.t0 + Math.max(0, Snd.ctx.currentTime - realTake.at0));
+        if (t > 0) wallAfterPeak += dtw;
+      } else if (holdAtEnd > 0){
+        holdAtEnd -= dtw; if (holdAtEnd <= 0){ t = ev.t0; wallAfterPeak = 0; RviewSnap = true; }
+      } else {
+        const r = rate(t);
+        t += r * dtw;
+        if (t > 0) wallAfterPeak += dtw;
+        if (t >= ev.tEnd || wallAfterPeak > (ev.bns ? 14 : 9)){ t = Math.min(t, ev.tEnd); holdAtEnd = 2.5; }
+      }
+      if (State.spin && !pointers.size) State.yaw += dtw * 0.035;
+    }
+    const target = viewTarget(t);
+    if (RviewSnap){ Rview = target; RviewSnap = false; }
+    else Rview = Math.exp(Math.log(Rview) + (Math.log(target) - Math.log(Rview)) * (1 - Math.exp(-dtw / (realTake ? 0.08 : 0.4))));
+    renderGL();
+    drawScope(); drawArm(); drawOverview();
+    readouts(realTake ? 1 : (holdAtEnd > 0 ? 0 : rate(t)));
+    updateTone();
+    requestAnimationFrame(tick);
+  }
+
+  loadEvent('gw150914');
+  cmpTable();
+  speedFromSlider();
+  syncPlay();
+  window.addEventListener('resize', () => drawOverviewStatic());
+  window.__chirp = { State, get t(){ return t; }, set t(v){ seek(v); }, get ev(){ return ev; }, seek, loadEvent, SHOW, Snd, synth, ensureAudio, setSound, setToggle, rate: () => rate(t) };
+  requestAnimationFrame(tick);
+})();
+
+</script>

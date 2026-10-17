@@ -1,0 +1,278 @@
+<style>
+  #sky { height: clamp(500px, 80vh, 920px); }
+  .readout { min-width: 15.5em; }
+  .chips.small .chip { padding: 7px 12px; font-size: 12px; }
+  .ctlrow { display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center; }
+  .slider2 { display: grid; grid-template-columns: 9.5em minmax(160px, 1fr) 11em; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); flex: 1 1 420px; max-width: 620px; }
+  .slider2 output { font-family: var(--mono); font-size: 12px; color: var(--ink); text-align: right; font-variant-numeric: tabular-nums; }
+  @media (max-width: 520px) { .slider2 { grid-template-columns: 1fr auto; } .slider2 input { grid-column: 1 / -1; grid-row: 2; } }
+  .chart-hud { right: 14px; bottom: 14px; width: min(340px, calc(100% - 28px)); padding: 8px 10px 6px; }
+  .chart-hud canvas { display: block; width: 100%; height: 96px; }
+  .chart-hud .lab { display: flex; justify-content: space-between; gap: 10px; color: var(--faint); font-size: 11px; }
+  .colorkey { position: absolute; left: 14px; bottom: 14px; font-family: var(--mono); font-size: 11px; color: var(--muted); pointer-events: none; background: rgba(4,6,10,.64); border: 1px solid var(--line); border-radius: 4px; padding: 8px 10px; }
+  .colorkey .bar { width: 200px; height: 8px; border-radius: 2px; margin: 6px 0 3px; }
+  .colorkey .ticks { display: flex; justify-content: space-between; }
+  @media (max-width: 760px) { .chart-hud { display: none; } .colorkey { display: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">Scale ~1 metre · a real 3D fluid simulation on your graphics card</div>
+      <h1>The <em>Wind</em> Tunnel</h1>
+    </div>
+    <p class="lede">Wings, cars, cyclists, buildings and even blood all shape the flow around them, and the flow pushes back. This is that flow, computed from the laws of motion on <strong>millions of cells of air</strong>, hundreds of times a second. <strong>Drag to turn, scroll to zoom.</strong></p>
+  </header>
+</div>
+
+<div class="stage" id="stage">
+  <canvas id="sky" aria-label="A 3D wind tunnel: smoke streams flowing past an object"></canvas>
+  <dl class="hud readout" id="readout">
+    <dt>object</dt><dd class="big" id="rObj">—</dd>
+    <dt>Reynolds number</dt><dd id="rRe">—</dd>
+    <dt>drag coefficient</dt><dd id="rCd">—</dd>
+    <dt id="rClRow">lift coefficient</dt><dd id="rCl">—</dd>
+    <dt class="opt">in real life</dt><dd class="opt" id="rForce">—</dd>
+    <div class="sep"></div>
+    <dt>simulating</dt><dd class="rate" id="rRate">—</dd>
+    <dt class="opt">elapsed</dt><dd class="opt" id="rTime">—</dd>
+  </dl>
+  <div class="hud chart-hud" id="chartHud">
+    <div class="lab"><span id="chartLab">drag coefficient, live</span><span id="chartVal"></span></div>
+    <canvas id="chart" aria-label="Live drag and lift coefficients"></canvas>
+  </div>
+  <div class="colorkey" id="colorkey" hidden></div>
+  <div class="nogl" id="nogl" hidden>This simulation needs WebGL2 with floating-point render targets. Try a recent Chrome, Edge, Firefox or Safari on a computer with a graphics card.</div>
+</div>
+
+<div class="wrap">
+  <div class="transport">
+    <button class="btn" id="play">Pause</button>
+    <button class="btn ghost" id="restart">Restart the flow</button>
+    <div class="chips small" role="group" aria-label="Quality">
+      <button class="chip" data-quality="low">Low</button>
+      <button class="chip" data-quality="medium">Medium</button>
+      <button class="chip" data-quality="high">High</button>
+      <button class="chip" data-quality="ultra">Ultra</button>
+    </div>
+  </div>
+  <div class="controls">
+    <div class="group">
+      <div class="group-label">In the tunnel</div>
+      <div class="chips" role="group" aria-label="Object">
+        <button class="chip" data-scene="wing">Wing</button>
+        <button class="chip" data-scene="cylinder">Cylinder</button>
+        <button class="chip" data-scene="sphere">Ball</button>
+        <button class="chip" data-scene="car">Car</button>
+        <button class="chip" data-scene="cyclist">Cyclist</button>
+        <button class="chip" data-scene="tower">Tower</button>
+        <button class="chip" data-scene="artery">Artery</button>
+      </div>
+      <p class="caption" id="caption"></p>
+    </div>
+    <div class="group">
+      <div class="group-label">Show</div>
+      <div class="chips" role="group" aria-label="View">
+        <button class="chip" data-view="smoke">Smoke</button>
+        <button class="chip" data-view="surface">Surface pressure</button>
+        <button class="chip" data-view="vortices">Vortices</button>
+        <button class="chip" data-view="speed">Speed</button>
+        <button class="chip" data-view="pressure">Pressure</button>
+        <button class="chip" data-view="swirl">Swirl</button>
+      </div>
+      <div class="group-label" style="margin-top:10px">Controls</div>
+      <label class="slider2" id="ctlSpeed"><span id="spdLab">Wind speed</span><input type="range" id="spd" min="0" max="1000" step="1"><output id="spdOut">—</output></label>
+      <label class="slider2" id="ctlAngle"><span>Angle of attack</span><input type="range" id="ang" min="-6" max="24" step="1"><output id="angOut">—</output></label>
+      <label class="slider2" id="ctlSev"><span>Narrowing</span><input type="range" id="sev" min="0" max="90" step="5"><output id="sevOut">—</output></label>
+      <div class="ctlrow">
+        <button class="chip" id="ctlTips">Wingtips: off</button>
+        <button class="chip" id="ctlPosture">Posture: upright</button>
+        <button class="chip" id="ctlPuffs">Smoke puffs: off</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<section id="lift">
+  <div class="eyebrow">1 · Lift</div>
+  <h2>How a wing <em>really</em> lifts</h2>
+  <p class="section-lede">A wing is a machine for throwing air <strong>downward</strong>. Tilted a few degrees and curved on top, it bends the passing stream down behind it, and by Newton's third law the air pushes the wing up. The same thing seen as pressure: air sweeping over the curved top speeds up and its pressure drops, air underneath slows and its pressure rises. Both descriptions are true at once; they are two views of one flow.</p>
+  <div class="split">
+    <div class="panel chart-pad">
+      <p class="chart-title">Lift against angle of attack, NACA 2412</p>
+      <p class="chart-unit">lift coefficient · degrees</p>
+      <canvas class="chart" id="liftChart" height="320" aria-label="Lift coefficient against angle of attack: this tunnel's measurements, real wind-tunnel data and thin-aerofoil theory"></canvas>
+      <div class="legend"><span><i style="background:#ffc46b"></i>this tunnel</span><span><i style="background:#8fd3a8"></i>real wind tunnel (Abbott &amp; von Doenhoff, Re 3–6 million)</span><span><i style="background:#687084"></i>thin-aerofoil theory, 2π per radian</span></div>
+      <div class="labbar"><button class="btn" id="sweepLift">Sweep the angle</button><span class="clock" id="sweepLiftStatus">about three minutes on a fast graphics card</span></div>
+    </div>
+    <div class="ecard">
+      <div class="kind">try it</div>
+      <h3>Watch the stream bend</h3>
+      <p>In the smoke view, follow a streak that passes just above the wing. It <b>rises before it reaches the wing</b> (upwash), races over the top, and leaves the trailing edge <b>heading downhill</b> (downwash). That downward-turned air is the lift.</p>
+      <p>Below about 10° the lift grows in a straight line with angle, close to the real measurements. Beyond that the air can no longer follow the upper surface: it breaks away into a churning wake and the lift stops growing. That is <b>stall</b>. Our tunnel stalls a few degrees early, at a lift coefficient of about 1.0 instead of 1.6. The real boundary layer on a full-size wing is a fraction of a millimetre thick and turbulent, much thinner than one cell of this simulation, and the model that stands in for it is least accurate exactly where the flow is about to break away.</p>
+      <button class="show" data-show="wing-8">Show me the downwash at 8°</button>
+      <button class="show" data-show="wing-stall">Show me a stall at 20°</button>
+      <button class="show" data-show="wing-puffs">Show me the myth of equal transit time</button>
+      <p class="note">The popular story that air over the top must "rejoin" the air underneath, and so has to go faster, is false. Send puffs of smoke past the wing and the top puff <b>arrives at the trailing edge well before</b> the bottom one. It never catches up.</p>
+    </div>
+  </div>
+</section>
+
+<section id="streets">
+  <div class="eyebrow">2 · Vortex streets</div>
+  <h2>The rhythm of a <em>wake</em></h2>
+  <p class="section-lede">Put anything blunt in a steady wind and its wake will not stay still. Eddies peel off one side, then the other, in a staggered double row that Theodore von Kármán explained in 1911. The beat is set by one number, the <strong>Strouhal number</strong> St = f·d / U, which for a cylinder sits close to <strong>0.2</strong> over an enormous range of sizes and speeds. The same pattern forms behind a hair in a breeze and behind an island in the trade winds.</p>
+  <div class="split">
+    <div class="panel chart-pad">
+      <p class="chart-title">Shedding rhythm against Reynolds number, circular cylinder</p>
+      <p class="chart-unit">Strouhal number · Reynolds number (log scale)</p>
+      <canvas class="chart" id="stChart" height="300" aria-label="Strouhal number against Reynolds number: this tunnel's measurements and laboratory data"></canvas>
+      <div class="legend"><span><i style="background:#ffc46b"></i>this tunnel (measured from the lift wiggle)</span><span><i style="background:#8fd3a8"></i>laboratory measurements (Roshko 1954; Williamson 1996)</span></div>
+      <div class="labbar"><button class="btn ghost" id="sweepSt">Sweep the Reynolds number</button><span class="clock" id="sweepStStatus">a few minutes · or explore by hand</span></div>
+    </div>
+    <div class="ecard">
+      <div class="kind">listen</div>
+      <h3>Hear a wire sing</h3>
+      <p>Every vortex shed from a wire gives it a small sideways push, and the pushes come at the shedding frequency. On a cold windy day overhead wires <b>hum</b>. The Greeks heard it in the strings of the Aeolian harp. Using the Strouhal number measured in this tunnel:</p>
+      <label class="slider"><span>Wind speed</span><input type="range" id="wireU" min="2" max="25" step="0.5" value="10"><output id="wireUOut">10 m/s</output></label>
+      <label class="slider"><span>Wire thickness</span><input type="range" id="wireD" min="1" max="20" step="0.5" value="4"><output id="wireDOut">4 mm</output></label>
+      <div class="kpis"><div class="kpi"><div class="v" id="wireF">—</div><div class="k">tone</div></div><div class="kpi"><div class="v" id="wireSt">0.20</div><div class="k">Strouhal number used</div></div></div>
+      <button class="btn" id="wirePlay" style="margin-top:12px; justify-self:start">Play the wire</button>
+      <button class="show" data-show="cyl-150">Show me a vortex street</button>
+      <button class="show" data-show="cyl-high">Show me it turn turbulent</button>
+    </div>
+  </div>
+  <div class="table-wrap" style="margin-top:28px">
+    <table>
+      <thead><tr><th>Where</th><th>Size and wind</th><th>Shedding</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td><span class="name">Overhead wire</span><span class="sub">a few mm thick</span></td><td class="num">4 mm · 10 m/s</td><td class="num">≈ 500 Hz</td><td>The hum of wires in wind; the Aeolian harp. Fishing lines and rigging sing the same way.</td></tr>
+        <tr><td><span class="name">Car aerial</span><span class="sub">whip antenna</span></td><td class="num">6 mm · 30 m/s</td><td class="num">≈ 1 kHz</td><td>A whistle at motorway speed, which is why many aerials wear a spiral wire wrapped round them to break up the vortices.</td></tr>
+        <tr><td><span class="name">Factory chimney</span><span class="sub">steel stack</span></td><td class="num">2 m · 15 m/s</td><td class="num">≈ 1.5 Hz</td><td>If the shedding matches the stack's own sway it can shake it to pieces. The spiral strakes on tall stacks stop this.</td></tr>
+        <tr><td><span class="name">Island in the trade winds</span><span class="sub">Guadalupe, Madeira, Jan Mayen</span></td><td class="num">20–40 km · 10 m/s</td><td class="num">one eddy every few hours</td><td>Kármán vortex streets hundreds of kilometres long, drawn in cloud and photographed from orbit. The same physics as The Atmosphere, at the scale of weather.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="drag">
+  <div class="eyebrow">3 · Drag</div>
+  <h2>What it costs to push <em>air</em> aside</h2>
+  <p class="section-lede">Drag grows with the <strong>square of speed</strong>, and the power to overcome it with the <strong>cube</strong>: twice as fast costs eight times the power. The drag coefficient packs the effect of shape into one number. A streamlined wing section is around 0.007; a flat plate across the wind is about 1.2. Most of a blunt body's drag is not friction but the <strong>low-pressure wake</strong> it drags behind it.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Object</th><th>Drag coefficient, real</th><th>This tunnel</th><th>Notes</th></tr></thead>
+      <tbody id="dragRows"></tbody>
+    </table>
+  </div>
+  <p class="note" style="margin-top:14px">"This tunnel" fills in as you run each object. The values in brackets were measured on an RTX 4090 at High quality. Coefficients use the frontal area (the plan area for the wing). Bluff bodies come out <b>high by 20–100%</b>: at a few million cells, a car is about 90 cells long and its underbody, wheel arches and thin turbulent boundary layer are below what the grid can resolve. The standard automotive benchmark, the Ahmed body, comes out 27% high here (0.36 vs 0.285).</p>
+</section>
+
+<section id="murmur">
+  <div class="eyebrow">4 · Medicine</div>
+  <h2>The sound of a <em>narrowed</em> artery</h2>
+  <p class="section-lede">Blood is a fluid too, and the carotid artery in the neck is a 6 mm pipe carrying it at about a third of a metre per second. That is a Reynolds number of a few hundred: the flow is smooth and silent. Plaque that narrows the artery forces the same blood through a smaller hole, so it must go <strong>faster</strong>. Downstream the fast <strong>jet</strong> cannot follow the widening wall. It separates, rolls up into eddies, and breaks into turbulence that drums on the artery wall. Through a stethoscope that is a <strong>bruit</strong>.</p>
+  <div class="split">
+    <div class="panel chart-pad">
+      <p class="chart-title">Along the artery: speed and pressure on the centre line</p>
+      <p class="chart-unit">blood speed (m/s) · pressure relative to the outflow (mmHg) · distance (mm)</p>
+      <canvas class="chart" id="artChart" height="300" aria-label="Blood speed and pressure along the centre of the artery"></canvas>
+      <div class="legend"><span><i style="background:#ff9d5c"></i>speed</span><span><i style="background:#8fc3ec"></i>pressure</span><span><i class="sq" style="background:rgba(230,234,240,.18)"></i>the narrowing</span></div>
+      <div class="kpis" style="grid-template-columns: repeat(2, 1fr)">
+        <div class="kpi"><div class="v" id="aJet">—</div><div class="k">peak jet speed</div></div>
+        <div class="kpi"><div class="v" id="aDrop">—</div><div class="k">pressure drop at the jet</div></div>
+        <div class="kpi"><div class="v new" id="aBern">—</div><div class="k">Bernoulli, 4(v₂² − v₁²)</div></div>
+        <div class="kpi"><div class="v" id="aNet">—</div><div class="k">net loss after recovery</div></div>
+      </div>
+    </div>
+    <div class="ecard">
+      <div class="kind">listen</div>
+      <h3>Put the stethoscope on</h3>
+      <p>Probes on the artery wall, a few diameters past the narrowing, record the pressure every time step. The page turns their spectrum into sound <b>at its true pitch</b>, so what you hear has the frequency content the simulation actually produces.</p>
+      <button class="btn" id="stethoscope" style="justify-self:start">Listen to the artery</button>
+      <canvas class="chart" id="specChart" height="150" aria-label="Spectrum of the wall pressure fluctuations"></canvas>
+      <p class="note" id="specNote">Lees and Dewey (1970) found that a bruit's spectrum rolls off above a <b>break frequency</b> f ≈ U / d, set by the jet's speed U and width d.</p>
+      <button class="show" data-show="art-0">Show me a healthy artery</button>
+      <button class="show" data-show="art-75">Show me a 75% narrowing</button>
+      <button class="show" data-show="art-90">Show me a 90% narrowing</button>
+    </div>
+  </div>
+  <div class="numbers" style="margin-top:28px">
+    <div>
+      <p><b>The echo rule is Bernoulli's law.</b> Cardiologists estimate the pressure drop across a narrowed valve from the jet speed measured by Doppler ultrasound: <b>ΔP ≈ 4v²</b> (mmHg, with v in m/s). The 4 is just ½ × blood's density (1,060 kg/m³), converted to mmHg. The simulation shows where the rule works and where it does not. At the jet, the drop matches Bernoulli closely (the full form subtracts the speed before the narrowing: 4(v₂² − v₁²)). Further downstream, some of the pressure is <b>recovered</b> as the jet slows. A catheter far downstream reads a smaller drop than the echo predicts, a well-known source of disagreement between the two methods.</p>
+      <p><b>Narrowing is measured two ways.</b> Ultrasound reports area, angiography the diameter. A 50% diameter stenosis (NASCET "moderate") blocks <b>75%</b> of the area; 70% of the diameter (the usual threshold for surgery in a patient with symptoms) blocks <b>91%</b>.</p>
+    </div>
+    <div class="table-wrap">
+      <table class="cmp">
+        <thead><tr><th>Area blocked</th><th>Diameter</th><th>Jet speed (sim, mean flow 0.35 m/s)</th><th>Clinical picture</th></tr></thead>
+        <tbody id="stenRows">
+          <tr><td>0%</td><td>0%</td><td>—</td><td>Smooth, silent flow (Re ≈ 640)</td></tr>
+          <tr><td>50%</td><td>29%</td><td>—</td><td>Mild; usually no bruit</td></tr>
+          <tr><td>75%</td><td>50%</td><td>—</td><td>Moderate; peak systolic velocity above 1.25 m/s by ultrasound criteria</td></tr>
+          <tr><td>90%</td><td>68%</td><td>—</td><td>Severe; peak systolic velocity above 2.3 m/s; loud bruit, or, near occlusion, silence again</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="guide">
+  <div class="eyebrow">Field guide</div>
+  <h2>Things to <em>look</em> for</h2>
+  <div class="guide">
+    <div class="entry"><div class="where">Cylinder · Re 150</div><h3>Kármán vortex street</h3><p>Eddies shed alternately from top and bottom, at a <b>Strouhal number near 0.2</b>. They drift downstream in two staggered rows.</p><button class="show" data-show="cyl-150">Show me</button></div>
+    <div class="entry"><div class="where">Wing · tips on</div><h3>Wingtip vortices</h3><p>Air under the wing leaks round the tip to the low pressure on top and twists into two <b>trailing tornadoes</b>. Contrails often curl into them, airports space landings to let them decay, and they are the source of <b>induced drag</b>.</p><button class="show" data-show="wing-tips">Show me</button></div>
+    <div class="entry"><div class="where">Wing · 20°</div><h3>Stall</h3><p>Past the critical angle, the flow <b>separates</b> from the upper surface. Lift stops rising, drag soars, and the wake turns into a turbulent mess the width of the wing.</p><button class="show" data-show="wing-stall">Show me</button></div>
+    <div class="entry"><div class="where">Tower</div><h3>Horseshoe vortex</h3><p>The wind hitting the tower's face is pushed down to the ground and rolls up into a vortex <b>wrapped around the base</b>. It is why plazas at the foot of towers are so gusty.</p><button class="show" data-show="tower-vort">Show me</button></div>
+    <div class="entry"><div class="where">Ball · Re 300</div><h3>Hairpin vortices</h3><p>At this speed the wake of a sphere loses its symmetry and sheds a chain of <b>hairpin-shaped</b> vortex loops, all to one side, the result found by Johnson and Patel (1999).</p><button class="show" data-show="sphere-300">Show me</button></div>
+    <div class="entry"><div class="where">Car</div><h3>The wake is the drag</h3><p>Paint the car with its surface pressure. The nose is <b>red</b> (pushed), the roof and pillars <b>blue</b> (sucked), and the tail sits in low pressure that pulls backwards. Most of a car's drag is this pressure difference, not friction.</p><button class="show" data-show="car-cp">Show me</button></div>
+    <div class="entry"><div class="where">Cyclist · tucked vs upright</div><h3>Hiding in the arms</h3><p>Going from sitting up to a low tuck cuts the frontal area by about a third. At 40 km/h that saves around <b>100 watts</b>, more than any lightweight frame can.</p><button class="show" data-show="cyc-tuck">Show me</button></div>
+    <div class="entry"><div class="where">Artery · 75%</div><h3>Jet and recirculation</h3><p>Beyond the narrowing the jet shoots down the middle while blood near the wall <b>flows backwards</b> in a slow recirculating zone. These low, oscillating wall stresses are where plaque tends to grow.</p><button class="show" data-show="art-75-speed">Show me</button></div>
+    <div class="entry"><div class="where">Ball · Re 100,000</div><h3>Turbulence</h3><p>Switch to vortices: the wake fills with a tangle of <b>worm-like vortex tubes</b>, stretched and twisted at every scale, from the size of the ball down to the grid.</p><button class="show" data-show="sphere-turb">Show me</button></div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="eyebrow">How it works</div>
+  <h2>Billions of tiny <em>collisions</em> a second</h2>
+  <div class="numbers">
+    <div>
+      <p>Instead of solving the equations of fluid flow directly, the <b>lattice Boltzmann method</b> follows clouds of imaginary particles on a 3D grid. Each cell holds 19 numbers: how much fluid is moving in each of 19 directions (standing still, the six faces and the twelve edges of a cube). Every time step has two parts. In <b>stream</b>, each number hops to the neighbouring cell it points at. In <b>collide</b>, the 19 numbers in each cell relax toward the mix expected for gas in local equilibrium. Out of these simple local rules, averaged over many cells, emerge exactly the <b>Navier–Stokes equations</b>, the same equations behind The Atmosphere next door.</p>
+      <p>Because every cell only talks to its neighbours, the method suits a graphics card perfectly. Here the grid is stored in floating-point textures, and each step is one pass of a fragment shader over all the cells: <b>3 to 4 billion cell updates per second</b> on an RTX 4090. That is roughly what the fastest supercomputers in the world managed around the year 2000.</p>
+      <p><b>Turbulence</b> at real-world Reynolds numbers involves eddies far smaller than a cell. A <b>large-eddy</b> model (Smagorinsky's, from 1963 weather modelling) adds extra viscosity where the resolved flow is strongly sheared, standing in for the eddies the grid cannot see. On the wing, car, cyclist and tower, a <b>wall model</b> stands in for the boundary layer. It is a fraction of a millimetre thick, so the wall uses the law of the wall to slip just enough to feel the right friction. <b>Absorbing layers</b> at the tunnel's edges soak up sound waves, which a lattice gas carries just as real air does. Curved surfaces are placed between grid points by interpolation, so the wing is a smooth aerofoil rather than a staircase.</p>
+      <p class="note"><b>Lab notes.</b> Two textbook upgrades to the collision step, multiple-relaxation-time and regularized collisions, are usually more stable. Here, both went <b>unstable</b> in the free stream at very low viscosity, as some linear stability analyses predict for moving flows. The simplest operator (BGK) plus absorbing layers won. The first wall model fed back on itself and blew up near the wing's sharp trailing edge, until it learned to stay no-slip at sharp edges, as viscosity does in real life.</p>
+    </div>
+    <div class="table-wrap">
+      <table class="cmp">
+        <thead><tr><th>Check against published results</th><th>This code</th><th>Reference</th></tr></thead>
+        <tbody>
+          <tr><td>Channel flow, walls between grid points<span class="why">velocity profile and pressure gradient</span></td><td>within 0.6%</td><td>exact (Poiseuille)</td></tr>
+          <tr><td>Cylinder in channel, Re 20, drag<span class="why">Schäfer &amp; Turek 1996 benchmark</span></td><td>5.62</td><td>5.57–5.59</td></tr>
+          <tr><td>Same, Re 100, max drag / max lift<span class="why">periodic vortex shedding</span></td><td>3.27 / 0.99</td><td>3.22–3.24 / 0.99–1.01</td></tr>
+          <tr><td>Same, Re 100, Strouhal number</td><td>0.302</td><td>0.295–0.305</td></tr>
+          <tr><td>Sphere, Re 100, drag<span class="why">Johnson &amp; Patel 1999</span></td><td>1.13</td><td>1.08–1.09</td></tr>
+          <tr><td>Sphere, Re 300, drag / Strouhal<span class="why">hairpin vortex shedding</span></td><td>0.677 / 0.133</td><td>0.656 / 0.137</td></tr>
+          <tr><td>NACA 2412, lift at −4° / 0° / 4° / 8°<span class="why">Abbott &amp; von Doenhoff 1959</span></td><td>−0.18 / 0.22 / 0.60 / 1.01</td><td>−0.2 / 0.22 / 0.64 / 1.06</td></tr>
+          <tr><td>NACA 2412, maximum lift<span class="why">stall</span></td><td>≈ 1.0 near 9°</td><td>≈ 1.6 near 16°</td></tr>
+          <tr><td>Artery, 75% / 90% narrowing: pressure drop at the jet<span class="why">against Bernoulli from the simulated speeds</span></td><td>6.1 / 25.1 mmHg</td><td>6.0 / 25.1 mmHg</td></tr>
+          <tr><td>Healthy artery: centre-line speed / mean<span class="why">Poiseuille flow, exactly 2</span></td><td>0.69 / 0.35 m/s</td><td>2.0×</td></tr>
+          <tr><td>Ahmed body, 25° slant, drag<span class="why">Ahmed, Ramm &amp; Faltin 1984</span></td><td>0.36</td><td>0.285</td></tr>
+          <tr><td>CPU reference vs GPU, 3D case<span class="why">same scheme, two implementations</span></td><td>agree to 3 × 10⁻⁵</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<footer class="wrap">
+  <p><i>The Wind Tunnel</i> is the ~1 metre rung of a series that walks down the scale ladder, after <i>Event Horizon</i>, <i>Bridges &amp; Tails</i>, <i>The Cosmic Web</i>, <i>The Chirp</i>, <i>The Clockwork</i> and <i>The Atmosphere</i>. Next: water, molecule by molecule.</p>
+  <p>Method: D3Q19 lattice Boltzmann, BGK collision with Smagorinsky large-eddy model, Bouzidi interpolated bounce-back from a signed-distance field, Werner–Wengle wall model, absorbing layers, momentum-exchange forces. Data: Schäfer &amp; Turek (1996), Johnson &amp; Patel (1999), Abbott &amp; von Doenhoff (1959), Roshko (1954), Williamson (1996), Ahmed et al. (1984), Lees &amp; Dewey (1970).</p>
+</footer>
+
+<script>
+/*SRC*/
+</script>

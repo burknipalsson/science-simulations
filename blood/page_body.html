@@ -1,0 +1,55 @@
+<header class="wrap top">
+  <div>
+    <div class="eyebrow">Ten micrometres · live plasma flow with elastic cells</div>
+    <h1>Inside a <em>Drop</em> of Blood</h1>
+  </div>
+  <p class="lede">A drop of blood holds about <strong>five million red cells per microlitre</strong>, each a soft bag of haemoglobin wider than the narrowest vessels it must pass. Here the plasma is a <strong>real fluid simulation</strong> and every cell is an <strong>elastic membrane</strong> with the measured stiffness of a red cell, solved together on your graphics card.</p>
+</header>
+
+<div class="stage" id="stage">
+  <canvas id="sky" aria-label="Live simulation of red blood cells flowing through a small blood vessel"></canvas>
+  <dl class="hud readout" id="hud"></dl>
+  <div class="status" id="status" hidden><i></i><span>preparing</span></div>
+  <div class="datebig" id="clock"><small id="clockLab">blood time</small><span>0 ms</span></div>
+  <div class="scalebar" id="scalebar"><i></i>10 µm</div>
+  <div class="nogl" id="nogl" hidden>This simulation needs WebGL2 with floating-point render targets and blending, which this browser or device doesn't provide.</div>
+</div>
+
+<div class="wrap">
+  <div class="recbar" id="recBar" hidden aria-live="polite">
+    <div class="rec-top"><span class="rec-dot"></span><span id="recMsg"></span></div>
+    <div class="rec-prog" id="recProg" hidden><i></i></div>
+    <div class="rec-actions" id="recActions"></div>
+  </div>
+  <div class="transport" id="replayBar" hidden>
+    <button class="btn" id="rpPlay">❚❚ Pause</button>
+    <label class="pace scrub">Replay <input type="range" id="rpScrub" min="0" max="1000" step="1" value="0" aria-label="Replay position"><output id="rpTime">0.0 s</output></label>
+    <div class="chips" id="rpSpeed" role="group" aria-label="Replay speed"></div>
+    <button class="btn ghost" id="rpLoop" aria-pressed="true">⟲ Loop</button>
+    <button class="btn ghost" id="rpLive">Back to live</button>
+    <p class="note" id="rpNote"></p>
+  </div>
+  <div class="transport" id="transport">
+    <button class="btn" id="play">❚❚ Pause</button>
+    <button class="btn ghost" id="restart">↺ Restart</button>
+    <label class="pace">Pace <input type="range" id="pace" min="0" max="100" value="100" aria-label="Simulation pace"><output id="paceOut">full speed</output></label>
+  </div>
+
+  <div class="controls">
+    <div class="group">
+      <div class="group-label">Vessel</div>
+      <div class="chips" id="scenes"></div>
+      <p class="caption" id="caption"></p>
+    </div>
+    <div class="group" id="knobs"></div>
+  </div>
+</div>
+
+<!--SECTIONS-->
+
+<footer class="wrap">
+  <p>Inside a Drop of Blood is part of a series of live simulations walking down the scales of nature: <i>The Cosmic Web</i>, <i>Bridges &amp; Tails</i>, <i>Event Horizon</i>, <i>The Chirp</i>, <i>The Clockwork</i>, <i>The Atmosphere</i>, <i>The Wind Tunnel</i>, and now ten micrometres, between the flow around a cyclist and the molecules of <i>The Hydrogen Bond</i> and <i>The Quantum Atom</i>.</p>
+</footer>
+<script>
+/*SRC*/
+</script>

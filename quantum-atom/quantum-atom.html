@@ -1,0 +1,2687 @@
+<title>The Quantum Atom</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root {
+    color-scheme: dark;
+    --void: #04060a;
+    --deep: #090c13;
+    --ink: #e6eaf0;
+    --muted: #9ba3b4;
+    --faint: #687084;
+    --line: rgba(230, 234, 240, 0.12);
+    --line-strong: rgba(230, 234, 240, 0.24);
+    --sun: #ffc46b;
+    --sky: #8fc3ec;
+    --hot: #ff9d5c;
+    --einstein: #b99cff;
+    --newton: #8fd3a8;
+    --display: "Newsreader", "Iowan Old Style", Georgia, serif;
+    --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { background: var(--void); color: var(--ink); margin: 0; }
+  body { font-family: var(--body); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding-inline: 16px; }
+  @media (min-width: 720px) { .wrap { padding-inline: 32px; } }
+
+  header.top { padding-block: 40px 22px; display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px 40px; }
+  .eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sun); }
+  h1 { font-family: var(--display); font-weight: 300; font-size: clamp(46px, 8.4vw, 104px); line-height: 0.92; letter-spacing: -0.025em; margin: 10px 0 0; text-wrap: balance; }
+  h1 em { font-style: italic; color: var(--sun); }
+  .lede { max-width: 46ch; color: var(--muted); margin: 0; font-size: 16px; }
+  .lede strong { color: var(--ink); font-weight: 500; }
+
+  .stage { position: relative; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: #000; overflow: hidden; }
+  #sky { display: block; width: 100%; height: clamp(480px, 78vh, 900px); cursor: grab; touch-action: none; }
+  #sky:active { cursor: grabbing; }
+  .hud { position: absolute; background: rgba(4, 6, 10, 0.64); backdrop-filter: blur(6px); border: 1px solid var(--line); border-radius: 4px; font-family: var(--mono); font-size: 12px; line-height: 1.55; font-variant-numeric: tabular-nums; }
+  .readout { top: 14px; left: 14px; display: grid; grid-template-columns: auto auto; gap: 2px 14px; padding: 10px 14px; pointer-events: none; max-width: calc(100% - 28px); }
+  .readout dt { color: var(--faint); }
+  .readout dd { margin: 0; text-align: right; }
+  .readout .big { font-size: 14px; color: var(--sun); }
+  .readout .rate { color: var(--sky); }
+  .readout .sep { grid-column: 1 / -1; height: 1px; background: var(--line); margin: 4px 0; }
+  .speedhud { right: 14px; bottom: 14px; width: min(360px, calc(100% - 28px)); padding: 8px 10px 6px; }
+  .speedhud canvas { display: block; width: 100%; height: 110px; }
+  .speedhud .lab { display: flex; justify-content: space-between; gap: 10px; color: var(--faint); font-size: 11px; }
+  .speedhud .lab b { font-weight: 400; color: var(--muted); }
+  .lighthud { right: 14px; top: 14px; padding: 10px 14px; pointer-events: none; display: grid; grid-template-columns: auto auto; gap: 2px 14px; }
+  .lighthud dt { color: var(--faint); } .lighthud dd { margin: 0; text-align: right; }
+  .lighthud .reached { color: var(--sun); }
+  .status { position: absolute; right: 14px; top: 14px; font-family: var(--mono); font-size: 11px; color: var(--muted); background: rgba(4, 6, 10, 0.64); border: 1px solid var(--line); border-radius: 3px; padding: 4px 9px; pointer-events: none; }
+  .status i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--sun); margin-right: 7px; animation: pulse 1s infinite alternate; }
+  @keyframes pulse { from { opacity: .3 } to { opacity: 1 } }
+  .datebig { position: absolute; left: 14px; bottom: 14px; font-family: var(--display); font-weight: 300; font-size: clamp(26px, 3.4vw, 42px); color: var(--ink); pointer-events: none; text-shadow: 0 1px 12px #000; line-height: 1.05; }
+  .datebig small { display: block; font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+  .hint { position: absolute; left: 50%; transform: translateX(-50%); bottom: 12px; font-family: var(--mono); font-size: 11px; color: rgba(230, 234, 240, 0.45); pointer-events: none; white-space: nowrap; }
+  @media (max-width: 1100px) { .hint { display: none; } }
+  @media (max-width: 760px) { .readout { font-size: 11px; } .readout .opt { display: none; } }
+  .tags { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+  .tag { position: absolute; left: 0; top: 0; font-family: var(--mono); font-size: 11px; line-height: 1; color: rgba(230, 234, 240, 0.8); white-space: nowrap; transform: translate(8px, -50%); text-shadow: 0 0 6px #000, 0 0 2px #000; pointer-events: auto; cursor: pointer; padding: 3px 2px; }
+  .tag.minor { color: rgba(230, 234, 240, 0.5); font-size: 10px; }
+  .tag.sel { color: var(--sun); }
+  .tag.craft { color: var(--sky); }
+  .tag.ring::before { content: ""; position: absolute; left: -15px; top: 50%; width: 10px; height: 10px; margin-top: -5px; border: 1px solid currentColor; border-radius: 50%; opacity: .7; }
+  .nogl { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: var(--muted); }
+
+  .transport { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 14px; padding-block: 16px 4px; }
+  .btn { appearance: none; font: 500 14px/1 var(--body); color: var(--void); background: var(--ink); border: 1px solid var(--ink); border-radius: 999px; padding: 10px 18px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+  .btn.ghost { background: transparent; color: var(--ink); border-color: var(--line-strong); }
+  .btn.ghost[aria-pressed="true"] { background: var(--sky); color: var(--void); border-color: var(--sky); }
+  .btn:hover { filter: brightness(1.1); }
+  .btn.ghost:hover { border-color: rgba(230, 234, 240, 0.5); }
+  .datein { font: 400 14px/1 var(--mono); color: var(--ink); background: transparent; border: 1px solid var(--line-strong); border-radius: 999px; padding: 9px 14px; width: 10.5em; }
+  .speed { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); white-space: nowrap; flex: 1 1 300px; max-width: 480px; margin-left: auto; }
+  .speed output { font-family: var(--mono); font-size: 12px; color: var(--ink); min-width: 9em; text-align: right; font-variant-numeric: tabular-nums; }
+
+  .controls { display: grid; gap: 22px 40px; grid-template-columns: 1fr; padding-block: 18px 8px; }
+  @media (min-width: 900px) { .controls { grid-template-columns: 1.25fr 1fr; } }
+  .group { display: grid; gap: 10px; align-content: start; }
+  .group-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--faint); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { appearance: none; font: 500 13px/1 var(--body); color: var(--muted); background: transparent; border: 1px solid var(--line-strong); border-radius: 999px; padding: 9px 14px; cursor: pointer; transition: color .15s, border-color .15s, background .15s; display: inline-flex; align-items: center; gap: 8px; }
+  .chip:hover { color: var(--ink); border-color: rgba(230, 234, 240, 0.45); }
+  .chip:focus-visible, .btn:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--sky); outline-offset: 2px; }
+  .chip[aria-pressed="true"] { color: var(--void); background: var(--ink); border-color: var(--ink); }
+  .chip .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; opacity: .6; }
+  .chip[aria-pressed="true"] .dot { opacity: 1; }
+  .chip small { font-family: var(--mono); font-size: 11px; opacity: .75; font-weight: 400; }
+  .caption { margin: 4px 0 0; padding-left: 14px; border-left: 2px solid var(--sun); color: var(--muted); font-size: 15px; max-width: 66ch; min-height: 4.8em; }
+  .caption b { color: var(--ink); font-weight: 500; }
+  .note { margin: 0; font-size: 13px; color: var(--faint); max-width: 60ch; }
+  .note b { color: var(--muted); font-weight: 500; }
+
+  input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 22px; background: transparent; }
+  input[type=range]::-webkit-slider-runnable-track { height: 2px; background: var(--line-strong); }
+  input[type=range]::-moz-range-track { height: 2px; background: var(--line-strong); }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--sun); margin-top: -6px; border: 0; }
+  input[type=range]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: var(--sun); border: 0; }
+
+  section { padding-block: 72px 8px; }
+  h2 { font-family: var(--display); font-weight: 300; font-size: clamp(34px, 5vw, 58px); line-height: 1.02; letter-spacing: -0.015em; margin: 8px 0 14px; text-wrap: balance; }
+  h2 em { font-style: italic; color: var(--sun); }
+  .section-lede { color: var(--muted); max-width: 66ch; margin: 0 0 28px; }
+  .section-lede strong { color: var(--ink); font-weight: 500; }
+
+  .panel { position: relative; border: 1px solid var(--line); border-radius: 4px; background: var(--deep); }
+  .split { display: grid; gap: 24px; grid-template-columns: 1fr; align-items: start; }
+  @media (min-width: 940px) { .split { grid-template-columns: 1.15fr 1fr; } }
+  .globe-wrap { position: relative; aspect-ratio: 1 / 1; max-height: 620px; width: 100%; }
+  .globe-wrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; border-radius: 4px; }
+  .globe-hud { position: absolute; left: 12px; top: 12px; font-family: var(--mono); font-size: 12px; color: var(--muted); pointer-events: none; line-height: 1.5; text-shadow: 0 0 6px #000; }
+  .globe-hud b { color: var(--ink); font-weight: 500; }
+  .globe-key { position: absolute; left: 12px; bottom: 12px; display: flex; flex-wrap: wrap; gap: 6px 14px; font-family: var(--mono); font-size: 11px; color: var(--muted); pointer-events: none; }
+  .globe-key i { display: inline-block; width: 12px; height: 8px; margin-right: 6px; vertical-align: middle; border-radius: 2px; }
+  .ecard { padding: 18px 20px; display: grid; gap: 10px; }
+  .ecard h3 { font-family: var(--display); font-weight: 400; font-size: 30px; line-height: 1.1; margin: 0; }
+  .ecard .kind { font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sun); }
+  .ecard p { margin: 0; color: var(--muted); font-size: 15px; }
+  .ecard p b { color: var(--ink); font-weight: 500; }
+  .facts { display: grid; grid-template-columns: 1fr auto; margin: 4px 0 0; border-top: 1px solid var(--line); font-size: 14px; }
+  .facts dt, .facts dd { padding: 7px 0; border-bottom: 1px solid var(--line); margin: 0; }
+  .facts dt { color: var(--muted); }
+  .facts dd { font-family: var(--mono); font-size: 13px; text-align: right; font-variant-numeric: tabular-nums; }
+  .elist { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+  .elist li { border-bottom: 1px solid var(--line); }
+  .elist button { appearance: none; background: none; border: 0; color: var(--muted); font: 400 14px/1.4 var(--body); width: 100%; text-align: left; padding: 8px 2px; cursor: pointer; display: grid; grid-template-columns: 8.5em 1fr auto; gap: 10px; align-items: baseline; }
+  .elist button:hover { color: var(--ink); }
+  .elist button[aria-current="true"] { color: var(--sun); }
+  .elist .d { font-family: var(--mono); font-size: 12px; color: var(--ink); }
+  .elist .ty { font-family: var(--mono); font-size: 11px; color: var(--faint); text-align: right; }
+
+  .chart-title { font-size: 14px; color: var(--ink); margin: 0 0 2px 4px; font-weight: 500; }
+  .chart-unit { font-size: 12px; color: var(--faint); margin: 0 0 8px 4px; }
+  .chart-pad { padding: 14px 14px 10px; }
+  canvas.chart { display: block; width: 100%; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; color: var(--muted); margin: 8px 4px 0; }
+  .legend i { display: inline-block; width: 16px; height: 2px; vertical-align: middle; margin-right: 6px; }
+  .legend i.sq { width: 9px; height: 9px; border-radius: 2px; }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; margin-top: 16px; }
+  .kpi { background: var(--void); padding: 14px 16px; }
+  .kpi .v { font-family: var(--mono); font-size: 22px; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .kpi .v.ein { color: var(--einstein); } .kpi .v.new { color: var(--newton); }
+  .kpi .k { font-size: 12px; color: var(--faint); margin-top: 2px; }
+  .slider { display: grid; grid-template-columns: 11em 1fr 8em; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); }
+  .slider output { font-family: var(--mono); font-size: 12px; color: var(--ink); text-align: right; font-variant-numeric: tabular-nums; }
+  @media (max-width: 480px) { .slider { grid-template-columns: 1fr auto; } .slider input { grid-column: 1 / -1; grid-row: 2; } }
+  .rosette-wrap { aspect-ratio: 1 / 1; width: 100%; max-height: 520px; position: relative; }
+  .rosette-wrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .overlay-note { position: absolute; left: 12px; top: 10px; font-family: var(--mono); font-size: 12px; color: var(--muted); pointer-events: none; }
+  .overlay-note b { color: var(--ink); font-weight: 500; }
+
+  .lab-wrap { position: relative; width: 100%; aspect-ratio: 2 / 1; min-height: 340px; }
+  .lab-wrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  @media (max-width: 760px) { .lab-wrap { aspect-ratio: 1 / 1.15; } }
+  .labbar { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; padding: 14px 0 4px; }
+  .labbar .clock { font-family: var(--mono); font-size: 13px; color: var(--ink); margin-left: auto; font-variant-numeric: tabular-nums; }
+  .labbar .labspeed { flex: 1 1 100%; max-width: 560px; margin-left: 0; }
+  .labbar .labspeed output { min-width: 11em; }
+
+  .guide { display: grid; gap: 1px; grid-template-columns: 1fr; background: var(--line); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+  @media (min-width: 700px) { .guide { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 1040px) { .guide { grid-template-columns: 1fr 1fr 1fr; } }
+  .entry { background: var(--void); padding: 26px 24px 24px; display: grid; grid-template-rows: auto auto 1fr auto; gap: 10px; }
+  .entry .where { font-family: var(--mono); font-size: 12px; color: var(--sun); letter-spacing: 0.04em; }
+  .entry h3 { font-family: var(--display); font-weight: 400; font-size: 27px; line-height: 1.12; margin: 0; text-wrap: balance; }
+  .entry p { margin: 0; color: var(--muted); font-size: 15px; }
+  .entry p b { color: var(--ink); font-weight: 500; }
+  .show { justify-self: start; margin-top: 8px; appearance: none; background: none; border: 0; border-bottom: 1px solid var(--sky); color: var(--sky); font: 500 14px/1.4 var(--body); padding: 2px 0; cursor: pointer; text-align: left; }
+  .show:hover { color: var(--ink); border-color: var(--ink); }
+
+  .numbers { display: grid; gap: 28px; grid-template-columns: 1fr; align-items: start; }
+  @media (min-width: 900px) { .numbers { grid-template-columns: 1fr 1.25fr; } }
+  .numbers p { margin: 0 0 14px; color: var(--muted); max-width: 60ch; }
+  .numbers p b { color: var(--ink); font-weight: 500; }
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 4px; }
+  table { width: 100%; border-collapse: collapse; min-width: 760px; font-size: 14px; }
+  th, td { text-align: left; padding: 14px 18px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  th { font-family: var(--mono); font-weight: 400; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); }
+  td.num { font-family: var(--mono); font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td .name { font-family: var(--display); font-size: 21px; display: block; }
+  td .sub { color: var(--faint); font-size: 13px; }
+  td button { margin-top: 6px; display: block; }
+  tr.kind td { padding-block: 10px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sun); background: var(--deep); }
+  .cmp { min-width: 0; }
+  .cmp td, .cmp th { padding: 10px 14px; }
+  .cmp td:nth-child(2), .cmp td:nth-child(3) { font-family: var(--mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+  .cmp td:nth-child(2) { color: var(--sun); }
+  .cmp .why { color: var(--faint); font-size: 12px; display: block; font-family: var(--body); }
+  .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; vertical-align: baseline; }
+
+  footer { padding-block: 64px 48px; color: var(--faint); font-size: 13px; }
+  footer p { max-width: 80ch; margin: 0 0 8px; }
+  footer i { color: var(--muted); }
+
+  /* water page additions */
+  .tempctl { display: grid; gap: 6px; }
+  .tempctl .tv { display: flex; justify-content: space-between; align-items: baseline; font-family: var(--mono); font-size: 13px; color: var(--ink); }
+  .tempctl .tv small { color: var(--faint); font-size: 11px; }
+  .tempctl .rel { font-size: 12px; color: var(--sky); font-family: var(--mono); min-height: 1.4em; }
+  .tempbar { position: relative; height: 6px; border-radius: 3px; background: linear-gradient(90deg, #6fb7ff, #9fe3ff 35%, #e6eaf0 50%, #ffc46b 70%, #ff7a45); opacity: .55; margin-top: -2px; }
+  .toggles { display: flex; flex-wrap: wrap; gap: 8px; }
+  .key { display: flex; flex-wrap: wrap; gap: 4px 14px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .key i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+  .key i.dash { width: 16px; height: 0; border-radius: 0; border-top: 2px dashed #ffb547; vertical-align: 3px; }
+  .stagekey { position: absolute; left: 14px; bottom: clamp(82px, calc(3.4vw + 50px), 104px); pointer-events: none; text-shadow: 0 0 6px #000; }
+  @media (max-width: 760px) { .stagekey { display: none; } }
+  .duo { display: grid; grid-template-columns: 1fr; gap: 16px; }
+  .duo-wrap { position: relative; width: 100%; aspect-ratio: 2 / 1; min-height: 320px; background: #000; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+  .duo-wrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; touch-action: none; }
+  @media (max-width: 760px) { .duo-wrap { aspect-ratio: 1 / 1.1; } }
+  .duo-lab { position: absolute; top: 12px; font-family: var(--mono); font-size: 12px; color: var(--muted); pointer-events: none; text-shadow: 0 0 6px #000; line-height: 1.5; }
+  .duo-lab b { color: var(--ink); font-weight: 500; font-size: 13px; }
+  .duo-lab .v { color: var(--sun); font-size: 16px; }
+  .duo-lab.l { left: 14px; } .duo-lab.r { right: 14px; text-align: right; }
+  .duo-foot { position: absolute; bottom: 10px; left: 0; right: 0; text-align: center; font-family: var(--mono); font-size: 11px; color: var(--faint); pointer-events: none; }
+  .bigq { font-family: var(--display); font-weight: 300; font-size: clamp(22px, 2.6vw, 30px); line-height: 1.25; color: var(--ink); margin: 0 0 12px; max-width: 34ch; }
+  .pace { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); flex: 1 1 320px; max-width: 520px; margin-left: auto; }
+  .pace output { font-family: var(--mono); font-size: 12px; color: var(--ink); min-width: 12em; text-align: right; font-variant-numeric: tabular-nums; }
+  .med { border-left: 2px solid var(--hot); padding-left: 16px; }
+  /* quantum page */
+  .plate { position: absolute; top: 0; right: 0; height: 100%; display: block; pointer-events: none; }
+  .platelab { position: absolute; right: 0; bottom: 0; padding: 8px 12px 10px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); pointer-events: none; text-align: right; line-height: 1.4; background: linear-gradient(transparent, rgba(5, 7, 11, 0.92) 30%); }
+  .platelab b { display: block; font-family: var(--display); font-size: 26px; font-weight: 300; letter-spacing: 0; text-transform: none; color: var(--ink); }
+  .gunlab { position: absolute; left: 14px; bottom: 14px; }
+  .scalebar { position: absolute; bottom: 16px; font-family: var(--mono); font-size: 11px; color: var(--muted); pointer-events: none; text-align: center; }
+  .scalebar i { display: block; height: 6px; border: 1px solid var(--muted); border-top: 0; margin-bottom: 3px; }
+  .phasekey { display: inline-flex; align-items: center; gap: 8px; }
+  .phasekey i { width: 46px; height: 8px; border-radius: 4px; background: linear-gradient(90deg, #ffc76b, #8a7ccf 25%, #4d8cff 50%, #8a7ccf 75%, #ffc76b); }
+  .row2 { display: grid; gap: 14px; }
+  .sl { display: grid; grid-template-columns: 7.5em 1fr 12.5em; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); }
+  .sl output { font-family: var(--mono); font-size: 12px; color: var(--ink); text-align: right; font-variant-numeric: tabular-nums; }
+  @media (max-width: 480px) { .sl { grid-template-columns: 1fr auto; } .sl input { grid-column: 1 / -1; grid-row: 2; } }
+  .med { border-left: 2px solid var(--hot); padding-left: 16px; }
+  .tunwrap { position: relative; height: clamp(260px, 38vw, 380px); overflow: hidden; background: #05070b; }
+  .tunwrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .tunlab { position: absolute; right: 14px; top: 10px; font-family: var(--mono); font-size: 12px; color: var(--muted); pointer-events: none; }
+  .tunctl { display: grid; gap: 18px; grid-template-columns: 1fr; padding-top: 16px; }
+  @media (min-width: 940px) { .tunctl { grid-template-columns: 1fr 1.1fr; align-items: start; } }
+  .tunk { margin-top: 0; grid-template-columns: repeat(2, 1fr); }
+  .tunk .v { font-size: 18px; }
+  #tunTable td .name, #tunTable td.where .name { font-size: 19px; }
+  @media (max-width: 760px) { #sky { height: max(340px, 96vw); } .scalebar, .datebig small { display: none; } .readout dd.opt, .readout dt.opt { display: none; } .datebig { font-size: 24px; } }
+  .mrisplit { grid-template-columns: 1fr; }
+  @media (min-width: 940px) { .mrisplit { grid-template-columns: 1.1fr 1fr; } }
+  .mriwrap { position: relative; aspect-ratio: 4 / 3; width: 100%; overflow: hidden; background: #05070b; }
+  .mriwrap canvas, .mriimg canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .mriimg { position: relative; aspect-ratio: 1 / 1; width: 100%; max-height: 560px; overflow: hidden; background: #000; }
+  .mrilab { position: absolute; left: 12px; top: 10px; font-family: var(--mono); font-size: 12px; color: var(--muted); pointer-events: none; line-height: 1.5; text-shadow: 0 0 6px #000; }
+  .mrilab b { color: var(--ink); font-weight: 500; }
+  .mriside { display: grid; gap: 14px; align-content: start; min-width: 0; }
+  .atomsplit { grid-template-columns: 1fr; }
+  @media (min-width: 940px) { .atomsplit { grid-template-columns: 1.2fr 1fr; } }
+  .atomwrap { position: relative; aspect-ratio: 1 / 1; width: 100%; max-height: 680px; background: #000; overflow: hidden; }
+  .atomwrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  #atomCv { cursor: grab; touch-action: none; }
+  .atomov { pointer-events: none; }
+  .atomname { position: absolute; right: 16px; top: 12px; font-family: var(--display); font-weight: 300; font-size: clamp(30px, 4vw, 46px); color: var(--ink); pointer-events: none; text-align: right; line-height: 1; text-shadow: 0 0 12px #000; }
+  .atomname sub { font-size: 0.5em; vertical-align: baseline; position: relative; top: 0.25em; margin-left: 1px; }
+  .atomname small { display: block; font-family: var(--mono); font-size: 12px; letter-spacing: 0.06em; color: var(--muted); margin-top: 8px; }
+  .atomhint { position: absolute; left: 14px; bottom: 12px; font-family: var(--mono); font-size: 11px; color: rgba(230, 234, 240, 0.45); pointer-events: none; }
+  .atomscale { right: 16px; bottom: 12px; white-space: nowrap; }
+  .atomside { display: grid; gap: 16px; align-content: start; min-width: 0; }
+  .atomrow { gap: 8px; }
+  .chip sub { font-size: 0.75em; }
+  .chip.act { border-color: var(--sun); color: var(--sun); }
+</style>
+<header class="wrap top">
+  <div>
+    <div class="eyebrow">The atom, one wave at a time · live Schrödinger equation</div>
+    <h1>The <em>Quantum</em> Atom</h1>
+  </div>
+  <p class="lede">Below a nanometre, matter stops behaving like little balls. An electron travels as a <strong>wave</strong>, spreading through both slits of a screen, leaking through walls, and settling around a nucleus in shapes no planet could follow. This is the <strong>Schrödinger equation solved live</strong> on your graphics card, a million points at a time.</p>
+</header>
+
+<div class="stage" id="stage">
+  <canvas id="sky" aria-label="Live simulation of an electron wave passing a double slit"></canvas>
+  <canvas class="plate" id="plate" aria-hidden="true"></canvas>
+  <dl class="hud readout" id="hud"></dl>
+  <div class="platelab" id="platelab">detector screen<b id="dotsN">0</b>electrons landed</div>
+  <div class="status" id="status" hidden><i></i><span>preparing</span></div>
+  <div class="datebig" id="clock"><small id="clockLab">electron 1 · time since it left the gun</small><span>0 fs</span></div>
+  <div class="scalebar" id="scalebar"><i></i>1 nm</div>
+  <div class="nogl" id="nogl" hidden>This simulation needs WebGL2 with floating-point render targets, which this browser or device doesn't provide.</div>
+</div>
+
+<div class="wrap">
+  <div class="transport">
+    <button class="btn" id="play">❚❚ Pause</button>
+    <button class="btn ghost" id="clear">↺ Clear the screen</button>
+    <button class="btn ghost" id="fast" aria-pressed="false">Fire faster</button>
+    <label class="pace">Pace <input type="range" id="pace" min="0" max="100" value="100" aria-label="Simulation pace"><output id="paceOut">full speed</output></label>
+  </div>
+
+  <div class="controls">
+    <div class="group">
+      <div class="group-label">Experiment</div>
+      <div class="chips" id="scenes"></div>
+      <p class="caption" id="caption"></p>
+    </div>
+    <div class="group">
+      <div class="group-label">Electron gun</div>
+      <div class="row2">
+        <label class="sl">Energy <input type="range" id="energy" min="10" max="150" step="0.1" value="54.4" aria-label="Electron energy"><output id="energyOut"></output></label>
+        <label class="sl" id="sepRow">Slit spacing <input type="range" id="sep" min="12" max="40" step="0.5" value="20" aria-label="Slit spacing"><output id="sepOut"></output></label>
+      </div>
+      <div class="group-label" style="margin-top:8px">Show</div>
+      <div class="toggles">
+        <button class="chip" id="tPred" aria-pressed="false"><span class="dot" style="color:#ffc46b"></span>The wave's prediction</button>
+        <button class="chip" id="tWatch" aria-pressed="false"><span class="dot" style="color:#9fe3ff"></span>Watch which slit</button>
+      </div>
+      <p class="note"><span class="phasekey"><i></i></span> <b>Gold crests, blue troughs</b> of the electron's wave; brightness is its strength, on a logarithmic scale so the faint diffracted wave still shows.</p>
+    </div>
+  </div>
+</div>
+
+<section class="wrap" id="guide-sec">
+  <div class="eyebrow">Field guide</div>
+  <h2>What you are <em>looking at</em></h2>
+  <p class="section-lede">The box above is about <strong>22 nanometres</strong> across, a hundred times smaller than a virus. The stripes are the electron's wave, its crests and troughs about <strong>0.17 nm</strong> apart, the size of an atom. Nothing is drawn by hand: each frame is the Schrödinger equation stepped forward by a few hundredths of a femtosecond, on a grid of a million points.</p>
+  <div class="guide" id="guide"></div>
+</section>
+<section class="wrap" id="tunnel-sec">
+  <div class="eyebrow">Quantum tunnelling</div>
+  <h2>Walking through <em>walls</em></h2>
+  <p class="section-lede">Here the electron runs along a line at a wall it does not have the energy to climb. A thrown ball would bounce off every time. The electron's wave does not stop dead at the wall: it dies away inside, exponentially. If the wall is thin enough, a little of it is still alive on the far side, and that is <strong>the chance the electron turns up there</strong>. Thicken the wall by a fraction of a nanometre and that chance collapses.</p>
+  <div class="panel tunwrap">
+    <canvas id="tunCv" aria-label="An electron wave hitting a thin energy barrier"></canvas>
+    <div class="tunlab" id="tunLab"></div>
+  </div>
+  <div class="tunctl">
+    <div class="row2">
+      <label class="sl">Wall height <input type="range" id="tunV" min="5.5" max="12" step="0.1" value="8" aria-label="Barrier height"><output id="tunVo"></output></label>
+      <label class="sl">Wall thickness <input type="range" id="tunA" min="0.05" max="0.8" step="0.01" value="0.3" aria-label="Barrier thickness"><output id="tunAo"></output></label>
+      <label class="sl">Electron energy <input type="range" id="tunE" min="1" max="7" step="0.1" value="5" aria-label="Electron energy"><output id="tunEo"></output></label>
+    </div>
+    <dl class="kpis tunk" id="tunK"></dl>
+  </div>
+  <div class="numbers" style="margin-top:28px">
+    <div class="panel chart-pad">
+      <p class="chart-title">Chance of getting through</p>
+      <p class="chart-unit">against wall thickness, logarithmic scale · line: exact calculation · dots: each run of the simulation above</p>
+      <canvas class="chart" id="tunChart" data-h="300"></canvas>
+    </div>
+    <div>
+      <p class="bigq">The curve is a straight line on a log scale: every extra slice of wall divides the chance by the same factor.</p>
+      <p>With the settings above, an electron 3 eV short of the top of the wall, each <b>0.1 nm</b> of extra thickness cuts the odds about <b>six-fold</b>; for an electron leaving a metal, about 4.5 eV short, it is <b>ten-fold</b>. That steep, exact dependence is not a curiosity. A great deal of nature and technology runs on it.</p>
+    </div>
+  </div>
+  <div class="table-wrap" style="margin-top:24px"><table id="tunTable"></table></div>
+</section>
+<section class="wrap" id="atom-sec">
+  <div class="eyebrow">A tenth of a nanometre · the hydrogen atom</div>
+  <h2>Where the electron <em>lives</em></h2>
+  <p class="section-lede">Put the electron wave in a box of its own making, the pull of a single proton, and it can only settle into certain shapes, each with an exact energy. These are the <strong>orbitals</strong> chemistry is built from. They are not paths; they are standing waves, and the brightness shows where the electron is likely to be found. Everything here comes straight from the solution of Schrödinger's equation for hydrogen, drawn in three dimensions on your graphics card.</p>
+  <div class="split atomsplit">
+    <div class="panel atomwrap">
+      <canvas id="atomCv" aria-label="Three-dimensional electron cloud of a hydrogen atom"></canvas>
+      <canvas id="atomOv" class="atomov" aria-hidden="true"></canvas>
+      <div class="atomname" id="atomName"></div>
+      <div class="atomhint">drag to turn · the vertical axis is z</div>
+      <div class="scalebar atomscale" id="atomScale"><i></i>1 Å</div>
+    </div>
+    <div class="atomside">
+      <div class="chips" id="atomModes"></div>
+      <div id="atomCtl"></div>
+      <p class="caption" id="atomCap"></p>
+      <dl class="facts" id="atomFacts"></dl>
+    </div>
+  </div>
+  <div class="panel chart-pad" style="margin-top:20px">
+    <p class="chart-title">Light given off by hydrogen</p>
+    <p class="chart-unit" id="specUnit">photons counted at each wavelength · logarithmic wavelength scale, nanometres</p>
+    <canvas class="chart" id="specCv" data-h="210"></canvas>
+  </div>
+</section>
+<section class="wrap" id="bond-sec">
+  <div class="eyebrow">The simplest chemical bond · H₂⁺</div>
+  <h2>One electron, <em>two protons</em></h2>
+  <p class="section-lede">Bring a second proton near a hydrogen atom and the electron's wave spreads over both. If it settles in the <strong>bonding</strong> shape, it piles up between the protons and its pull on each of them outweighs their repulsion: the two are held together. This is the hydrogen molecular ion, the one molecule whose Schrödinger equation can be solved exactly, and every chemical bond is a more crowded version of it.</p>
+  <div class="split">
+    <div class="panel atomwrap bondwrap">
+      <canvas id="bondCv" aria-label="Electron cloud shared by two protons"></canvas>
+      <div class="atomname" id="bondName"></div>
+      <div class="atomhint">drag to turn</div>
+      <div class="scalebar atomscale" id="bondScale"><i></i>1 Å</div>
+    </div>
+    <div class="atomside">
+      <div class="chips" id="bondModes"></div>
+      <label class="sl">Proton spacing <input type="range" id="bondR" min="0.4" max="4" step="0.01" value="1.06" aria-label="Distance between the protons"><output id="bondRo"></output></label>
+      <p class="caption" id="bondCap"></p>
+      <div class="panel chart-pad">
+        <p class="chart-title">Energy against proton spacing</p>
+        <p class="chart-unit">eV, relative to a hydrogen atom and a lone proton far apart · exact solution</p>
+        <canvas class="chart" id="bondChart" data-h="250"></canvas>
+        <div class="legend"><span><i style="background:#ffc46b"></i>bonding</span><span><i style="background:#8fc3ec"></i>antibonding</span><span><i style="background:#8fd3a8"></i>lowest vibration</span></div>
+      </div>
+      <dl class="facts" id="bondFacts"></dl>
+    </div>
+  </div>
+</section>
+<section class="wrap" id="mri-sec">
+  <div class="eyebrow">A medical aside · magnetic resonance imaging</div>
+  <h2>Listening to the body's <em>protons</em></h2>
+  <p class="section-lede">Every hydrogen nucleus is a single proton, and a proton has a quantum property called <strong>spin</strong> that makes it a tiny magnet. An MRI scanner images these protons, nearly all of them in the body's water (the molecules of <i>The Hydrogen Bond</i>) and fat. It never sees the electrons at all. Three numbers do the work: how fast the protons precess in the field, and two relaxation times, <strong>T1</strong> and <strong>T2</strong>, that differ from tissue to tissue.</p>
+  <div class="split mrisplit">
+    <div>
+      <div class="panel mriwrap"><canvas id="spinCv" aria-label="Proton spins in one voxel, tipped by radio pulses"></canvas><div class="mrilab" id="spinLab"></div></div>
+      <div class="panel chart-pad" style="margin-top:12px">
+        <p class="chart-title">What the scanner's coil picks up</p>
+        <p class="chart-unit">signal (gold: spins in step across the field, which induce the signal) and recovery along the field (green), against time in milliseconds</p>
+        <canvas class="chart" id="sigCv" data-h="150"></canvas>
+      </div>
+      <div class="labbar">
+        <button class="btn ghost" id="p90">Tip 90°</button>
+        <button class="btn ghost" id="p180">Flip 180°</button>
+        <button class="btn ghost" id="pAuto" aria-pressed="true">Repeat a spin echo</button>
+        <label class="pace" style="margin-left:0">Slowed <input type="range" id="mriRate" min="0" max="100" value="45" aria-label="Playback speed"><output id="mriRateO"></output></label>
+      </div>
+      <div class="chips" id="tissueChips" style="margin-top:10px"></div>
+    </div>
+    <div class="mriside">
+      <div class="panel mriimg"><canvas id="scanCv" aria-label="Simulated MRI image of a head"></canvas><div class="mrilab" id="scanLab"></div></div>
+      <div class="chips" id="weightChips"></div>
+      <label class="sl">Repeat time TR <input type="range" id="mriTR" min="200" max="6000" step="10" value="500" aria-label="Repetition time"><output id="mriTRo"></output></label>
+      <label class="sl">Echo time TE <input type="range" id="mriTE" min="8" max="160" step="1" value="15" aria-label="Echo time"><output id="mriTEo"></output></label>
+      <p class="caption" id="mriCap"></p>
+    </div>
+  </div>
+  <div class="numbers" style="margin-top:28px">
+    <div>
+      <p class="bigq">At 3 tesla, out of every million protons only about ten more line up with the field than against it.</p>
+      <p>That tiny excess, about <b>10 per million</b> at body temperature, is all the scanner has to work with. It is enough because a single cubic millimetre of water holds about <b>67 billion billion</b> hydrogen nuclei. Each spin precesses around the field at the <b>Larmor frequency</b>, 42.58 MHz per tesla: <b>127.7 MHz</b> in a 3 T scanner, just above the FM radio band. A radio pulse at exactly that frequency tips the spins over; as they precess together they broadcast back, and the coil hears them.</p>
+      <p class="med">The art is in the timing. <b>T2</b> is how long the spins keep in step after the pulse; <b>T1</b> is how long they take to realign with the field. Fluid has long T1 and T2, fat short T1. A short repeat time and echo time (T1-weighting) makes fat bright and fluid dark, good for anatomy. A long repeat and echo (T2-weighting) makes water bright, and most disease, from oedema around a tumour to inflammation or a stroke some hours old, carries extra water. <b>Gadolinium</b> contrast agents shorten T1 wherever they leak out of damaged blood vessels, so those spots light up on a T1-weighted scan.</p>
+    </div>
+    <div class="table-wrap"><table class="cmp" id="mriTable"></table></div>
+  </div>
+</section>
+<section class="wrap" id="check-sec">
+  <div class="eyebrow">Honest numbers</div>
+  <h2>How close is this to <em>nature?</em></h2>
+  <div class="numbers">
+    <div>
+      <p>Every simulation on this page was checked against an exact result or a measurement before any graphics were drawn, using the same code that runs here. The quantum world is a good place for this, because its simplest cases can be solved exactly.</p>
+      <p><b>The electron waves</b> (the main stage and the tunnelling lab) use the <b>split-operator method</b>: the wave is advanced alternately in position space, where the walls act, and in momentum space, where its motion is exact, with a fast Fourier transform carrying it between the two. It conserves probability by construction. On the graphics card one step, two Fourier transforms of a million-point grid, takes about a third of a millisecond, and the result agrees with an independent double-precision version on the CPU.</p>
+      <p><b>The hydrogen atom</b> is drawn from its exact solution: Laguerre polynomials for the distance from the proton, spherical harmonics for the direction. The decay rates come from the exact overlap of each pair of orbitals. <b>H₂⁺</b> is solved exactly too, in coordinates shaped like rugby balls around the two protons, where its equation separates into two simple ones. <b>MRI</b> uses the Bloch equations, the standard description of how proton spins tip, dephase and recover.</p>
+      <p>What is left out: the main stage is two-dimensional, the electron's spin and relativity are ignored (they shift hydrogen's lines by about one part in 70,000), the protons are held still while the electron moves, and the which-slit detector is an ideal, instantaneous measurement.</p>
+    </div>
+    <div class="table-wrap"><table class="cmp" id="cmpTable"></table></div>
+  </div>
+</section>
+
+
+<footer class="wrap">
+  <p>The Quantum Atom is part of a series of live simulations walking down the scales of nature: <i>The Cosmic Web</i>, <i>Bridges &amp; Tails</i>, <i>Event Horizon</i>, <i>The Chirp</i>, <i>The Clockwork</i>, <i>The Atmosphere</i>, <i>The Wind Tunnel</i>, <i>The Hydrogen Bond</i>, and now the atom itself.</p>
+</footer>
+<script>
+// CPU reference time-dependent Schrödinger solver (split-operator FFT), 1D and 2D, atomic units
+// (ħ = mₑ = e = 1). Mirrors the GPU pipeline: half potential kick, full kinetic step in k-space,
+// half potential kick. The potential may carry an imaginary absorbing part W (V − iW) so outgoing
+// waves leave the box instead of wrapping around.
+const AU = {
+  bohr_nm: 0.0529177210903, // length
+  time_fs: 0.02418884326585747, // time
+  Ha_eV: 27.211386245988, // energy
+  c: 137.035999084, // speed of light
+};
+
+function fft1d(re, im, n, inv, off = 0, st = 1){
+  for (let i = 1, j = 0; i < n; i++){
+    let bit = n >> 1; for (; j & bit; bit >>= 1) j ^= bit; j ^= bit;
+    if (i < j){
+      const a = off + i * st, b = off + j * st;
+      let t = re[a]; re[a] = re[b]; re[b] = t; t = im[a]; im[a] = im[b]; im[b] = t;
+    }
+  }
+  for (let len = 2; len <= n; len <<= 1){
+    const h = len >> 1;
+    for (let j = 0; j < h; j++){
+      const ang = 2 * Math.PI * j / len * (inv ? 1 : -1), cr = Math.cos(ang), ci = Math.sin(ang);
+      for (let i = 0; i < n; i += len){
+        const a = off + (i + j) * st, b = a + h * st;
+        const br = re[b] * cr - im[b] * ci, bi = re[b] * ci + im[b] * cr;
+        re[b] = re[a] - br; im[b] = im[a] - bi; re[a] += br; im[a] += bi;
+      }
+    }
+  }
+}
+const freq = (i, N) => i < N / 2 ? i : i - N;
+
+// Grid: nx × ny points (ny = 1 for 1D), spacing h (bohr), origin at index 0.
+function makeGrid(nx, ny, h){
+  const n = nx * ny;
+  return { nx, ny, h, n, re: new Float64Array(n), im: new Float64Array(n), V: new Float64Array(n), W: new Float64Array(n) };
+}
+function fft2(g, inv){
+  const { nx, ny, re, im } = g;
+  for (let y = 0; y < ny; y++) fft1d(re, im, nx, inv, y * nx, 1);
+  if (ny > 1) for (let x = 0; x < nx; x++) fft1d(re, im, ny, inv, x, nx);
+  if (inv){ const s = 1 / (nx * ny); for (let k = 0; k < g.n; k++){ re[k] *= s; im[k] *= s; } }
+}
+// exp(-i (V - iW) dt/2) = exp(-W dt/2) · exp(-i V dt/2)
+function kick(g, dt){
+  const { re, im, V, W } = g;
+  for (let k = 0; k < g.n; k++){
+    const a = -V[k] * dt, d = Math.exp(-W[k] * dt), c = Math.cos(a) * d, s = Math.sin(a) * d;
+    const r = re[k], i = im[k];
+    re[k] = r * c - i * s; im[k] = r * s + i * c;
+  }
+}
+function drift(g, dt){
+  const { nx, ny, h, re, im } = g;
+  fft2(g, false);
+  const dkx = 2 * Math.PI / (nx * h), dky = 2 * Math.PI / (ny * h);
+  for (let y = 0; y < ny; y++){
+    const ky = ny > 1 ? freq(y, ny) * dky : 0;
+    for (let x = 0; x < nx; x++){
+      const kx = freq(x, nx) * dkx, a = -0.5 * (kx * kx + ky * ky) * dt, k = x + nx * y;
+      const c = Math.cos(a), s = Math.sin(a), r = re[k], i = im[k];
+      re[k] = r * c - i * s; im[k] = r * s + i * c;
+    }
+  }
+  fft2(g, true);
+}
+function step(g, dt){ kick(g, dt / 2); drift(g, dt); kick(g, dt / 2); }
+
+function norm(g){
+  let s = 0; for (let k = 0; k < g.n; k++) s += g.re[k] ** 2 + g.im[k] ** 2;
+  return s * g.h ** (g.ny > 1 ? 2 : 1);
+}
+// <H> with the real potential only
+function energy(g){
+  const { nx, ny, h } = g, c = { ...g, re: g.re.slice(), im: g.im.slice() };
+  let ev = 0, nn = 0;
+  for (let k = 0; k < g.n; k++){ const p = g.re[k] ** 2 + g.im[k] ** 2; ev += p * g.V[k]; nn += p; }
+  fft2(c, false);
+  const dkx = 2 * Math.PI / (nx * h), dky = 2 * Math.PI / (ny * h);
+  let et = 0, nk = 0;
+  for (let y = 0; y < ny; y++) for (let x = 0; x < nx; x++){
+    const kx = freq(x, nx) * dkx, ky = ny > 1 ? freq(y, ny) * dky : 0, k = x + nx * y;
+    const p = c.re[k] ** 2 + c.im[k] ** 2; et += 0.5 * (kx * kx + ky * ky) * p; nk += p;
+  }
+  return et / nk + ev / nn;
+}
+// Gaussian wave packet exp(-(r-r0)²/(4σ²) + i k0·r), normalised
+function gaussian(g, x0, y0, sx, sy, kx, ky){
+  const { nx, ny, h } = g;
+  for (let y = 0; y < ny; y++) for (let x = 0; x < nx; x++){
+    const X = x * h - x0, Y = ny > 1 ? y * h - y0 : 0, k = x + nx * y;
+    const amp = Math.exp(-X * X / (4 * sx * sx) - (ny > 1 ? Y * Y / (4 * sy * sy) : 0)), ph = kx * X + ky * Y;
+    g.re[k] = amp * Math.cos(ph); g.im[k] = amp * Math.sin(ph);
+  }
+  const s = 1 / Math.sqrt(norm(g));
+  for (let k = 0; k < g.n; k++){ g.re[k] *= s; g.im[k] *= s; }
+}
+// absorbing layer of width w (bohr) on the given edges: W = Wmax ((d)/w)² inside the layer
+function absorber(g, w, Wmax, edges = 'xy'){
+  const { nx, ny, h } = g, Lx = nx * h, Ly = ny * h;
+  for (let y = 0; y < ny; y++) for (let x = 0; x < nx; x++){
+    const X = x * h, Y = y * h;
+    let d = 0;
+    if (edges.includes('x')) d = Math.max(d, w - X, X - (Lx - w));
+    if (ny > 1 && edges.includes('y')) d = Math.max(d, w - Y, Y - (Ly - w));
+    g.W[x + nx * y] = d > 0 ? Wmax * (d / w) ** 2 : 0;
+  }
+}
+
+// exact transmission through a rectangular barrier of height V0, width a, at energy E (a.u., m = 1)
+function rectT(E, V0, a){
+  if (Math.abs(E - V0) < 1e-12) return 1 / (1 + V0 * a * a / 2 * 1 / 1); // limit: 1/(1 + m V0 a²/2ħ²)
+  if (E < V0){
+    const kap = Math.sqrt(2 * (V0 - E)), s = Math.sinh(kap * a);
+    return 1 / (1 + V0 * V0 * s * s / (4 * E * (V0 - E)));
+  }
+  const q = Math.sqrt(2 * (E - V0)), s = Math.sin(q * a);
+  return 1 / (1 + V0 * V0 * s * s / (4 * E * (E - V0)));
+}
+
+
+// GPU split-operator Schrödinger solver (WebGL 2) on an N×N grid, atomic units. ψ lives in an RG32F
+// texture (re, im); the potential in another (V, W) where W ≥ 0 is the absorbing part. One step:
+// half kick · FFT · kinetic phase · inverse FFT · half kick (consecutive half kicks are merged).
+// The absorbing "screen" (a band of columns where W > 0 and the flag channel is set) adds the
+// probability it swallows each step to a per-row accumulator: the arrival distribution of the electron.
+const TDSE = (gl, N, h) => {
+  if (!gl.getExtension('EXT_color_buffer_float')) throw new Error('EXT_color_buffer_float unavailable');
+  const LOG = Math.log2(N) | 0;
+  if (1 << LOG !== N) throw new Error('N must be a power of two');
+  const VS = `#version 300 es
+  void main(){ vec2 p = vec2((gl_VertexID << 1) & 2, gl_VertexID & 2); gl_Position = vec4(p * 2.0 - 1.0, 0.0, 1.0); }`;
+  const HDR = `#version 300 es
+  precision highp float; precision highp int; precision highp sampler2D;
+  #define N ${N}
+  `;
+  const FS = {
+    // one radix-2 Stockham pass along x (uAxis 0) or y (1); natural order after LOG passes
+    fft: `uniform sampler2D uSrc, uTw; uniform int uAxis, uNs; uniform float uSign; out vec4 o;
+      void main(){
+        ivec2 c = ivec2(gl_FragCoord.xy);
+        int oi = c[uAxis], blk = oi / (2 * uNs), r = oi - blk * 2 * uNs, jm = r % uNs, j = blk * uNs + jm;
+        ivec2 c0 = c, c1 = c; c0[uAxis] = j; c1[uAxis] = j + N / 2;
+        vec2 a = texelFetch(uSrc, c0, 0).xy, b = texelFetch(uSrc, c1, 0).xy;
+        // twiddle exp(uSign·iπ jm/Ns) from a table of exp(−2πi k/N) made in double precision: GPU
+        // cos/sin are not exactly unit length and leak ~1e-6 of the norm per transform pair
+        vec2 w = texelFetch(uTw, ivec2(jm * (N / (2 * uNs)), 0), 0).xy;
+        w.y *= -uSign;
+        vec2 bw = vec2(b.x * w.x - b.y * w.y, b.x * w.y + b.y * w.x);
+        o = vec4(r < uNs ? a + bw : a - bw, 0.0, 0.0);
+      }`,
+    // kinetic phase exp(−i k²/2 dt) from a table made in double precision and polished to unit length
+    // in float32 (a packet covers only a few k, so each entry's tiny |e| ≠ 1 compounds every step),
+    // times the 1/N² of the inverse transform
+    kin: `uniform sampler2D uSrc, uKin; out vec4 o;
+      void main(){
+        ivec2 c = ivec2(gl_FragCoord.xy);
+        vec2 e = texelFetch(uKin, c, 0).xy;
+        vec2 p = texelFetch(uSrc, c, 0).xy / float(N * N);
+        o = vec4(p.x * e.x - p.y * e.y, p.x * e.y + p.y * e.x, 0.0, 0.0);
+      }`,
+    // potential kick exp(−i V dt)·exp(−W dt), tabulated on the CPU (uFac: rg = half step, ba = full step)
+    kick: `uniform sampler2D uSrc, uFac; uniform int uFull; out vec4 o;
+      void main(){
+        ivec2 c = ivec2(gl_FragCoord.xy);
+        vec4 f = texelFetch(uFac, c, 0); vec2 e = uFull == 1 ? f.zw : f.xy;
+        vec2 p = texelFetch(uSrc, c, 0).xy;
+        o = vec4(p.x * e.x - p.y * e.y, p.x * e.y + p.y * e.x, 0.0, 0.0);
+      }`,
+    // per-row screen accumulator: acc[y] += Σ_x∈screen |ψ|² (1 − e^{−2 W dt}) h²  (rows are texels of an N×1 target)
+    screen: `uniform sampler2D uSrc, uPot, uAcc; uniform float uDt, uH2; uniform int uX0, uX1; out vec4 o;
+      void main(){
+        int y = int(gl_FragCoord.x);
+        float s = 0.0;
+        for (int x = uX0; x < uX1; x++){
+          vec4 vw = texelFetch(uPot, ivec2(x, y), 0);
+          if (vw.z > 0.5){ vec2 p = texelFetch(uSrc, ivec2(x, y), 0).xy; s += dot(p, p) * (1.0 - exp(-2.0 * vw.y * uDt)); }
+        }
+        o = vec4(texelFetch(uAcc, ivec2(y, 0), 0).x + s * uH2, 0.0, 0.0, 0.0);
+      }`,
+    // Gaussian packet written on the GPU
+    gauss: `uniform vec2 uC, uS, uK; uniform float uAmp, uH; out vec4 o;
+      void main(){
+        vec2 r = (gl_FragCoord.xy - 0.5) * uH - uC;
+        float amp = uAmp * exp(-dot(r * r, 1.0 / (4.0 * uS * uS))), ph = dot(uK, r);
+        o = vec4(amp * cos(ph), amp * sin(ph), 0.0, 0.0);
+      }`,
+    // multiply ψ by a mask texture's red channel (projective measurement), scaled
+    mask: `uniform sampler2D uSrc, uMask; uniform float uScale; out vec4 o;
+      void main(){ ivec2 c = ivec2(gl_FragCoord.xy); o = vec4(texelFetch(uSrc, c, 0).xy * texelFetch(uMask, c, 0).r * uScale, 0.0, 0.0); }`,
+    // reduction to a (N/8)² texture of partial sums: (Σ|ψ|², Σ|ψ|² x, Σ|ψ|² y, Σ_mask |ψ|²)
+    reduce1: `uniform sampler2D uSrc, uMask; uniform float uH; uniform int uUseMask; out vec4 o;
+      void main(){
+        ivec2 b = ivec2(gl_FragCoord.xy) * 8; vec4 s = vec4(0.0);
+        for (int j = 0; j < 8; j++) for (int i = 0; i < 8; i++){
+          ivec2 c = b + ivec2(i, j); vec2 p = texelFetch(uSrc, c, 0).xy; float q = dot(p, p);
+          vec2 x = (vec2(c) + 0.5) * uH;
+          s += vec4(q, q * x.x, q * x.y, uUseMask == 1 ? q * texelFetch(uMask, c, 0).r : 0.0);
+        }
+        o = s;
+      }`,
+    reduce: `uniform sampler2D uSrc; out vec4 o;
+      void main(){
+        ivec2 b = ivec2(gl_FragCoord.xy) * 8; ivec2 sz = textureSize(uSrc, 0); vec4 s = vec4(0.0);
+        for (int j = 0; j < 8; j++) for (int i = 0; i < 8; i++){ ivec2 c = b + ivec2(i, j); if (c.x < sz.x && c.y < sz.y) s += texelFetch(uSrc, c, 0); }
+        o = s;
+      }`,
+  };
+  function compile(type, src){
+    const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s) + '\n' + src);
+    return s;
+  }
+  const vs = compile(gl.VERTEX_SHADER, VS), prog = {};
+  for (const k in FS){
+    const p = gl.createProgram(); gl.attachShader(p, vs); gl.attachShader(p, compile(gl.FRAGMENT_SHADER, HDR + FS[k])); gl.linkProgram(p);
+    if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+    const u = {}, n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS);
+    for (let i = 0; i < n; i++){ const nm = gl.getActiveUniform(p, i).name; u[nm] = gl.getUniformLocation(p, nm); }
+    prog[k] = { p, u };
+  }
+  function target(w, ht, ifmt, fmt, data = null){
+    const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.texImage2D(gl.TEXTURE_2D, 0, ifmt, w, ht, 0, fmt, gl.FLOAT, data);
+    for (const [k, v] of [[gl.TEXTURE_MIN_FILTER, gl.NEAREST], [gl.TEXTURE_MAG_FILTER, gl.NEAREST], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]]) gl.texParameteri(gl.TEXTURE_2D, k, v);
+    const f = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, f);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, t, 0);
+    return { t, f, w, h: ht, ifmt, fmt };
+  }
+  const E = { N, h, LOG, t: 0 };
+  E.psi = [0, 1].map(() => target(N, N, gl.RG32F, gl.RG));
+  E.pot = target(N, N, gl.RGBA32F, gl.RGBA);
+  E.maskT = target(N, N, gl.R32F, gl.RED);
+  E.acc = [0, 1].map(() => target(N, 1, gl.R32F, gl.RED));
+  E.red = []; for (let s = N / 8; s >= 1; s = Math.floor(s / 8)) { E.red.push(target(Math.max(1, s), Math.max(1, s), gl.RGBA32F, gl.RGBA)); if (s === 1) break; }
+  E.c = 0; E.a = 0;
+  const vao = gl.createVertexArray();
+  function pass(pr, tgt, setup){
+    gl.useProgram(pr.p); gl.bindFramebuffer(gl.FRAMEBUFFER, tgt.f); gl.viewport(0, 0, tgt.w, tgt.h);
+    let unit = 0;
+    const bind = (name, tex) => { gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, tex.t); gl.uniform1i(pr.u[name], unit); unit++; };
+    setup(bind, pr.u);
+    gl.bindVertexArray(vao); gl.drawArrays(gl.TRIANGLES, 0, 3);
+  }
+  function psiPass(pr, setup){
+    const src = E.psi[E.c], dst = E.psi[1 - E.c];
+    pass(pr, dst, (bind, u) => { bind('uSrc', src); setup && setup(bind, u); });
+    E.c = 1 - E.c;
+  }
+  function fft(sign){
+    for (let axis = 0; axis < 2; axis++) for (let Ns = 1; Ns < N; Ns *= 2)
+      psiPass(prog.fft, (b, u) => { b('uTw', E.tw); gl.uniform1i(u.uAxis, axis); gl.uniform1i(u.uNs, Ns); gl.uniform1f(u.uSign, sign); });
+  }
+  const kick = full => psiPass(prog.kick, (b, u) => { b('uFac', E.fac); gl.uniform1i(u.uFull, full ? 1 : 0); });
+  const drift = () => { fft(-1); psiPass(prog.kin, (b) => b('uKin', E.kin)); fft(1); };
+  // write d·e^{ia} into arr[i], arr[i+1] as float32; when d = 1 nudge the pair by up to 2 ulps so its
+  // length is 1 to ~1e-10 (round-to-nearest alone leaves |e|² − 1 ~ 1e-7, a steady leak of norm)
+  const f32 = new Float32Array(1), i32 = new Int32Array(f32.buffer);
+  const nudge = (v, k) => { f32[0] = v; i32[0] += k; return f32[0]; };
+  function unitPhase(arr, i, a, d){
+    const c = Math.cos(a) * d, s = Math.sin(a) * d;
+    arr[i] = c; arr[i + 1] = s;
+    if (d !== 1) return;
+    const c0 = arr[i], s0 = arr[i + 1];
+    let best = Math.abs(c0 * c0 + s0 * s0 - 1), bc = c0, bs = s0;
+    for (let p = -2; p <= 2; p++) for (let q = -2; q <= 2; q++){
+      const cc = nudge(c0, p), ss = nudge(s0, q), e = Math.abs(cc * cc + ss * ss - 1);
+      if (e < best){ best = e; bc = cc; bs = ss; }
+    }
+    arr[i] = bc; arr[i + 1] = bs;
+  }
+  { const tw = new Float32Array(2 * N); for (let k = 0; k < N / 2; k++) unitPhase(tw, 2 * k, -2 * Math.PI * k / N, 1);
+    E.tw = target(N, 1, gl.RG32F, gl.RG, tw); }
+  // tables for time step dt: kinetic phases and the potential kick factors
+  E.dt = NaN; E.potCPU = new Float32Array(4 * N * N);
+  E.kin = target(N, N, gl.RG32F, gl.RG); E.fac = target(N, N, gl.RGBA32F, gl.RGBA);
+  const facCPU = new Float32Array(4 * N * N);
+  function buildKin(){
+    const t = new Float32Array(2 * N * N), dk = 2 * Math.PI / (N * h), k2 = new Float64Array(N);
+    for (let i = 0; i < N; i++) k2[i] = ((i < N / 2 ? i : i - N) * dk) ** 2;
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) unitPhase(t, 2 * (x + N * y), -0.5 * (k2[x] + k2[y]) * E.dt, 1);
+    gl.bindTexture(gl.TEXTURE_2D, E.kin.t); gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, N, N, gl.RG, gl.FLOAT, t);
+  }
+  // rebuild kick factors for rows [y0, y1)
+  function buildFac(y0 = 0, y1 = N){
+    const P = E.potCPU, dt = E.dt;
+    for (let k = y0 * N; k < y1 * N; k++){
+      const V = P[4 * k], W = P[4 * k + 1];
+      for (const [o, s] of [[0, 0.5 * dt], [2, dt]]) unitPhase(facCPU, 4 * k + o, -V * s, Math.exp(-W * s));
+    }
+    gl.bindTexture(gl.TEXTURE_2D, E.fac.t);
+    gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, y0, N, y1 - y0, gl.RGBA, gl.FLOAT, facCPU.subarray(4 * y0 * N, 4 * y1 * N));
+  }
+  E.setDt = dt => { if (dt === E.dt) return; E.dt = dt; buildKin(); buildFac(); };
+  E.screenX = null; // [x0, x1) columns of the screen band, or null
+  function screenAcc(dt){
+    if (!E.screenX) return;
+    const src = E.acc[E.a], dst = E.acc[1 - E.a];
+    pass(prog.screen, dst, (b, u) => { b('uSrc', E.psi[E.c]); b('uPot', E.pot); b('uAcc', src); gl.uniform1f(u.uDt, dt); gl.uniform1f(u.uH2, h * h); gl.uniform1i(u.uX0, E.screenX[0]); gl.uniform1i(u.uX1, E.screenX[1]); });
+    E.a = 1 - E.a;
+  }
+  // n steps of size dt. The screen accounting samples ψ once per step, before the full kick.
+  E.step = (dt, n = 1) => {
+    E.setDt(dt);
+    kick(false);
+    for (let i = 0; i < n; i++){
+      drift();
+      screenAcc(dt);
+      kick(i < n - 1);
+    }
+    E.t += n * dt;
+  };
+  // potential upload: V (Hartree), W (absorbing, Hartree), screen flag, and a spare channel for drawing
+  // (rows y0..y1 only when given, for painting)
+  E.setPotential = (rgba, y0 = 0, y1 = N) => {
+    if (rgba !== E.potCPU) E.potCPU.set(rgba.subarray(4 * y0 * N, 4 * y1 * N), 4 * y0 * N);
+    gl.bindTexture(gl.TEXTURE_2D, E.pot.t); gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, y0, N, y1 - y0, gl.RGBA, gl.FLOAT, E.potCPU.subarray(4 * y0 * N, 4 * y1 * N));
+    if (E.dt) buildFac(y0, y1);
+  };
+  E.setMask = (r) => { gl.bindTexture(gl.TEXTURE_2D, E.maskT.t); gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, N, N, gl.RED, gl.FLOAT, r); };
+  E.setPsi = (rg) => { gl.bindTexture(gl.TEXTURE_2D, E.psi[E.c].t); gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, N, N, gl.RG, gl.FLOAT, rg); };
+  E.gaussian = (x0, y0, sx, sy, kx, ky) => {
+    const amp = 1 / Math.sqrt(2 * Math.PI * sx * sy);
+    pass(prog.gauss, E.psi[E.c], (b, u) => { gl.uniform2f(u.uC, x0, y0); gl.uniform2f(u.uS, sx, sy); gl.uniform2f(u.uK, kx, ky); gl.uniform1f(u.uAmp, amp); gl.uniform1f(u.uH, h); });
+    E.t = 0;
+  };
+  E.applyMask = (scale = 1) => psiPass(prog.mask, (b, u) => { b('uMask', E.maskT); gl.uniform1f(u.uScale, scale); });
+  E.clearScreen = () => { for (const a of E.acc){ gl.bindFramebuffer(gl.FRAMEBUFFER, a.f); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT); } };
+  // (norm, <x>, <y>, masked norm) via an 8×8 reduction chain and a 1-texel readback
+  E.moments = (useMask = false) => {
+    pass(prog.reduce1, E.red[0], (b, u) => { b('uSrc', E.psi[E.c]); b('uMask', E.maskT); gl.uniform1f(u.uH, h); gl.uniform1i(u.uUseMask, useMask ? 1 : 0); });
+    for (let i = 1; i < E.red.length; i++) pass(prog.reduce, E.red[i], (b) => b('uSrc', E.red[i - 1]));
+    const last = E.red[E.red.length - 1], out = new Float32Array(4 * last.w * last.h);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, last.f); gl.readPixels(0, 0, last.w, last.h, gl.RGBA, gl.FLOAT, out);
+    const s = [0, 0, 0, 0]; for (let i = 0; i < out.length; i++) s[i & 3] += out[i];
+    const h2 = h * h;
+    return { norm: s[0] * h2, x: s[1] / s[0], y: s[2] / s[0], masked: s[3] * h2 };
+  };
+  E.readScreen = () => { const tmp = new Float32Array(4 * N), out = new Float32Array(N); gl.bindFramebuffer(gl.FRAMEBUFFER, E.acc[E.a].f); gl.readPixels(0, 0, N, 1, gl.RGBA, gl.FLOAT, tmp); for (let i = 0; i < N; i++) out[i] = tmp[4 * i]; return out; };
+  E.readPsi = () => { const out = new Float32Array(2 * N * N), tmp = new Float32Array(4 * N * N); gl.bindFramebuffer(gl.FRAMEBUFFER, E.psi[E.c].f); gl.readPixels(0, 0, N, N, gl.RGBA, gl.FLOAT, tmp); for (let i = 0; i < N * N; i++){ out[2 * i] = tmp[4 * i]; out[2 * i + 1] = tmp[4 * i + 1]; } return out; };
+  E.psiTex = () => E.psi[E.c].t;
+  E.finish = () => { const px = new Float32Array(4); gl.bindFramebuffer(gl.FRAMEBUFFER, E.psi[E.c].f); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.FLOAT, px); };
+  return E;
+};
+
+// Wave-lab scenes for the live 2D solver, in atomic units on an L×L box (L = 409.6 bohr ≈ 21.7 nm).
+// Each scene gives the potential (V, W, screen flag, wall shade), the electron's packet, the time step
+// and when an electron counts as finished. x runs left→right (the beam), y bottom→top.
+const Scenes = (() => {
+  const L = 409.6;
+  const SCREEN_W = 28, EDGE_W = 26; // absorbing widths (bohr): detector screen on the right, open edges elsewhere
+  const WALL_V = 10;                 // Hartree (272 eV): opaque to 54 eV electrons (2 bohr of it lets through e⁻¹⁶)
+  const ABS_W = 2;                   // peak absorbing rate (Hartree): ∫W dt ≈ 9 across a layer, so ~1e-8 comes back
+  // electron kinetic energy (eV) ↔ wavenumber (a.u.)
+  const kOfE = eV => Math.sqrt(2 * eV / 27.211386);
+  const defaults = { eV: 54.4, d: 20, w: 6, ws: 4, barrierEV: 58, barrierW: 2.0 };
+  const EDGE = 0.4; // tanh edge width of tunnelling barriers (bohr): smooth enough for the grid to resolve
+
+  function base(N){
+    const h = L / N, pot = new Float32Array(4 * N * N);
+    // absorbing edges: W ramps quadratically over EDGE_W on top/bottom/left; the right band is the screen
+    for (let j = 0; j < N; j++) for (let i = 0; i < N; i++){
+      const x = (i + 0.5) * h, y = (j + 0.5) * h, k = 4 * (i + N * j);
+      const dl = EDGE_W - x, dt = y - (L - EDGE_W), db = EDGE_W - y, dr = x - (L - SCREEN_W);
+      let W = 0;
+      const e = Math.max(dl, dt, db);
+      if (e > 0) W = ABS_W * (e / EDGE_W) ** 2;
+      if (dr > 0){ W = Math.max(W, ABS_W * (dr / SCREEN_W) ** 2); pot[k + 2] = 1; }
+      pot[k + 1] = W;
+    }
+    return { N, h, L, pot };
+  }
+  // fill a rectangle of wall (x0..x1, y0..y1 in bohr) with potential V, shade s for drawing
+  function rect(S, x0, x1, y0, y1, V, s = 1){
+    const { N, h, pot } = S;
+    for (let j = Math.max(0, Math.floor(y0 / h)); j < Math.min(N, Math.ceil(y1 / h)); j++)
+      for (let i = Math.max(0, Math.floor(x0 / h)); i < Math.min(N, Math.ceil(x1 / h)); i++){
+        const x = (i + 0.5) * h, y = (j + 0.5) * h;
+        if (x >= x0 && x < x1 && y >= y0 && y < y1){ const k = 4 * (i + N * j); pot[k] = V; pot[k + 3] = s; }
+      }
+  }
+  const XW = 110, THICK = 2; // the slit wall
+  const make = {
+    // two slits a distance d apart (centre to centre), each w wide
+    double(N, o){
+      const S = base(N), c = L / 2;
+      rect(S, XW, XW + THICK, 0, c - o.d / 2 - o.w / 2, WALL_V);
+      rect(S, XW, XW + THICK, c - o.d / 2 + o.w / 2, c + o.d / 2 - o.w / 2, WALL_V);
+      rect(S, XW, XW + THICK, c + o.d / 2 + o.w / 2, L, WALL_V);
+      S.slits = [c - o.d / 2, c + o.d / 2];
+      return S;
+    },
+    single(N, o){
+      const S = base(N), c = L / 2;
+      rect(S, XW, XW + THICK, 0, c - o.ws / 2, WALL_V);
+      rect(S, XW, XW + THICK, c + o.ws / 2, L, WALL_V);
+      S.slits = [c];
+      return S;
+    },
+    // a thin barrier across the whole beam, lower than a wall: some of the wave leaks through
+    barrier(N, o){
+      const S = base(N), V0 = o.barrierEV / 27.211386;
+      for (let j = 0; j < N; j++) for (let i = 0; i < N; i++){
+        const v = barrierV((i + 0.5) * S.h - XW, V0, o.barrierW), k = 4 * (i + N * j);
+        if (v > 1e-4 * V0){ S.pot[k] = v; S.pot[k + 3] = 0.5 * v / V0; }
+      }
+      return S;
+    },
+    open(N){ return base(N); },
+  };
+  // smooth-edged barrier profile, x measured from its left edge
+  const barrierV = (x, V0, a) => V0 * 0.5 * (Math.tanh(x / EDGE) - Math.tanh((x - a) / EDGE));
+  // exact stationary transmission through that profile at energy E (a.u.), by a transfer matrix over
+  // thin constant slices (validated: the h = 0.4 time-dependent run agrees to 0.0006)
+  function barrierT(E, V0, a){
+    const dx = 0.005, k0 = Math.sqrt(2 * E);
+    let m00r = 1, m00i = 0, m01r = 0, m01i = 0, m10r = 0, m10i = 0, m11r = 1, m11i = 0;
+    let kpr = k0, kpi = 0;
+    const csqrt = (re) => re >= 0 ? [Math.sqrt(re), 0] : [0, Math.sqrt(-re)];
+    const cdiv = (ar, ai, br, bi) => { const d = br * br + bi * bi; return [(ar * br + ai * bi) / d, (ai * br - ar * bi) / d]; };
+    const cmul = (ar, ai, br, bi) => [ar * br - ai * bi, ar * bi + ai * br];
+    const apply = (d00r, d00i, d01r, d01i, d10r, d10i, d11r, d11i) => {
+      const n00 = cmul(d00r, d00i, m00r, m00i), n00b = cmul(d01r, d01i, m10r, m10i);
+      const n01 = cmul(d00r, d00i, m01r, m01i), n01b = cmul(d01r, d01i, m11r, m11i);
+      const n10 = cmul(d10r, d10i, m00r, m00i), n10b = cmul(d11r, d11i, m10r, m10i);
+      const n11 = cmul(d10r, d10i, m01r, m01i), n11b = cmul(d11r, d11i, m11r, m11i);
+      m00r = n00[0] + n00b[0]; m00i = n00[1] + n00b[1]; m01r = n01[0] + n01b[0]; m01i = n01[1] + n01b[1];
+      m10r = n10[0] + n10b[0]; m10i = n10[1] + n10b[1]; m11r = n11[0] + n11b[0]; m11i = n11[1] + n11b[1];
+    };
+    const step = (kr, ki, len) => {
+      const [rr, ri] = cdiv(kpr, kpi, kr, ki);
+      // interface matrix ½[[1+r, 1−r],[1−r, 1+r]]
+      apply(0.5 * (1 + rr), 0.5 * ri, 0.5 * (1 - rr), -0.5 * ri, 0.5 * (1 - rr), -0.5 * ri, 0.5 * (1 + rr), 0.5 * ri);
+      if (len){
+        // propagation diag(e^{ik dx}, e^{−ik dx})
+        const ea = Math.exp(-ki * len), eb = Math.exp(ki * len);
+        const p0 = [ea * Math.cos(kr * len), ea * Math.sin(kr * len)], p1 = [eb * Math.cos(kr * len), -eb * Math.sin(kr * len)];
+        const a0 = cmul(p0[0], p0[1], m00r, m00i), a1 = cmul(p0[0], p0[1], m01r, m01i), b0 = cmul(p1[0], p1[1], m10r, m10i), b1 = cmul(p1[0], p1[1], m11r, m11i);
+        m00r = a0[0]; m00i = a0[1]; m01r = a1[0]; m01i = a1[1]; m10r = b0[0]; m10i = b0[1]; m11r = b1[0]; m11i = b1[1];
+      }
+      kpr = kr; kpi = ki;
+    };
+    for (let x = -8 * EDGE + dx / 2; x < a + 8 * EDGE; x += dx){ const [kr, ki] = csqrt(2 * (E - barrierV(x, V0, a))); step(kr, ki, dx); }
+    step(k0, 0, 0);
+    const [Br, Bi] = cdiv(-m10r, -m10i, m11r, m11i), mb = cmul(m01r, m01i, Br, Bi);
+    return (m00r + mb[0]) ** 2 + (m00i + mb[1]) ** 2;
+  }
+  // build a scene: potential plus the electron packet and timing
+  function build(name, N, opts = {}){
+    const o = { ...defaults, ...opts }, S = make[name](N, o);
+    const k0 = kOfE(o.eV);
+    S.name = name; S.opts = o; S.k0 = k0;
+    // packet: long enough in y to light both slits evenly, a few wavelengths long in x
+    S.packet = { x0: 66, y0: L / 2, sx: 9, sy: o.sy || (name === 'barrier' ? 30 : name === 'double' ? Math.max(10, o.d / 2) : 10), kx: k0, ky: 0 };
+    // time step: keep the largest kinetic phase per step, k_max²/2·dt, and V·dt below ~1 rad
+    const kmax = Math.PI / S.h;
+    S.dt = Math.min(0.9 / (0.5 * kmax * kmax), 0.9 / WALL_V);
+    // an electron is done once the packet could have crossed to the screen and been absorbed
+    S.tEnd = (L - S.packet.x0) / k0 * 1.45;
+    // which-path measurement time: the packet centre one packet length past the wall
+    S.tMeasure = (XW + THICK + 3 * S.packet.sx - S.packet.x0) / k0;
+    S.screenCols = [Math.floor((L - SCREEN_W) / S.h), N];
+    S.XW = XW; S.THICK = THICK;
+    return S;
+  }
+  // masks for a which-path measurement: beyond the wall, the half nearer each slit
+  function whichMask(S, side){
+    const { N, h } = S, m = new Float32Array(N * N), c = L / 2;
+    for (let j = 0; j < N; j++) for (let i = 0; i < N; i++){
+      const x = (i + 0.5) * h, y = (j + 0.5) * h;
+      if (x > XW + THICK) m[i + N * j] = side === 'up' ? (y > c ? 1 : 0) : side === 'down' ? (y <= c ? 1 : 0) : 1;
+      else m[i + N * j] = side === 'back' ? 1 : 0;
+    }
+    if (side === 'back') for (let k = 0; k < N * N; k++) m[k] = m[k] ? 1 : 0;
+    return m;
+  }
+  return { L, kOfE, defaults, build, whichMask, rect, barrierV, barrierT, XW, THICK, WALL_V, SCREEN_W };
+})();
+
+// Draws the live wavefunction: brightness from |ψ|² on a log scale, hue from the phase (shown in a
+// frame rotating with the electron's mean energy, so wavefronts hold still instead of strobing),
+// walls as dark metal and lower barriers as translucent amber.
+const WaveView = (gl) => {
+  const VS = `#version 300 es
+  out vec2 vUv;
+  void main(){ vec2 p = vec2((gl_VertexID << 1) & 2, gl_VertexID & 2); vUv = p; gl_Position = vec4(p * 2.0 - 1.0, 0.0, 1.0); }`;
+  const FS = `#version 300 es
+  precision highp float; precision highp sampler2D;
+  in vec2 vUv; out vec4 o;
+  uniform sampler2D uPsi, uPot;
+  uniform vec4 uCrop;        // visible box region in grid uv: x0, y0, x1, y1
+  uniform float uN, uRot, uLo, uSpan, uWallV;
+  uniform vec2 uRes;
+  uniform vec4 uSlits;       // y of the two slits and the wall x (uv), and the box size L (bohr)
+  uniform float uFlash;
+  vec2 fetchPsi(vec2 uv){
+    // manual bilinear filtering (RG32F is not filterable everywhere)
+    vec2 g = uv * uN - 0.5; vec2 f = fract(g); ivec2 i = ivec2(floor(g));
+    vec2 a = texelFetch(uPsi, clamp(i, ivec2(0), ivec2(int(uN) - 1)), 0).xy;
+    vec2 b = texelFetch(uPsi, clamp(i + ivec2(1, 0), ivec2(0), ivec2(int(uN) - 1)), 0).xy;
+    vec2 c = texelFetch(uPsi, clamp(i + ivec2(0, 1), ivec2(0), ivec2(int(uN) - 1)), 0).xy;
+    vec2 d = texelFetch(uPsi, clamp(i + ivec2(1, 1), ivec2(0), ivec2(int(uN) - 1)), 0).xy;
+    return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+  }
+  vec3 hue(float t){
+    // smooth cyclic palette: gold → rose → violet → sky → teal → gold
+    vec3 c0 = vec3(1.00, 0.76, 0.42), c1 = vec3(1.00, 0.45, 0.55), c2 = vec3(0.62, 0.50, 1.00), c3 = vec3(0.45, 0.78, 1.00), c4 = vec3(0.40, 0.95, 0.78);
+    t = fract(t) * 5.0; int k = int(t); float f = smoothstep(0.0, 1.0, fract(t));
+    vec3 a = k == 0 ? c0 : k == 1 ? c1 : k == 2 ? c2 : k == 3 ? c3 : c4;
+    vec3 b = k == 0 ? c1 : k == 1 ? c2 : k == 2 ? c3 : k == 3 ? c4 : c0;
+    return mix(a, b, f);
+  }
+  void main(){
+    vec2 uv = mix(uCrop.xy, uCrop.zw, vUv);
+    vec2 p = fetchPsi(uv);
+    float q = dot(p, p);
+    float b = clamp((log(q + 1e-30) * 0.4342945 - uLo) / uSpan, 0.0, 1.0);
+    float ph = atan(p.y, p.x) + uRot;
+    // crests gold, troughs blue, the zero-crossings a dimmer violet between them
+    float cr = 0.5 + 0.5 * cos(ph);
+    vec3 tint = mix(vec3(0.30, 0.55, 1.00), vec3(1.00, 0.78, 0.42), smoothstep(0.0, 1.0, cr)) * (0.55 + 0.45 * abs(cos(ph)));
+    vec3 col = tint * pow(b, 1.5) * 1.25;
+    // potential
+    vec4 pv = texelFetch(uPot, ivec2(uv * uN), 0);
+    if (pv.w > 0.0){
+      float v = pv.x / uWallV;
+      vec3 metal = vec3(0.30, 0.31, 0.34) + 0.05 * sin(uv.y * 900.0);
+      vec3 amber = vec3(1.0, 0.62, 0.25);
+      col = pv.w > 0.75 ? metal : mix(col, amber, 0.35 + 0.25 * clamp(v, 0.0, 1.0));
+    }
+    // a faint grid every nanometre (18.897 bohr) over the vacuum
+    vec2 per = vec2(18.897 / uSlits.w), dpx = (uCrop.zw - uCrop.xy) / uRes;
+    vec2 dl = abs(fract(uv / per + 0.5) - 0.5) * per / dpx;
+    col += vec3(0.022, 0.026, 0.034) * (1.0 - smoothstep(0.0, 1.0, min(dl.x, dl.y)));
+    // which-path detectors: a glow at the slit mouths when a measurement fires
+    if (uFlash > 0.0){
+      for (int s = 0; s < 2; s++){
+        vec2 c = vec2(uSlits.z, s == 0 ? uSlits.x : uSlits.y);
+        vec2 dd = (uv - c) * vec2(1.0, 1.0) * 60.0;
+        col += vec3(0.6, 0.9, 1.0) * uFlash * exp(-dot(dd, dd) * 2.0);
+      }
+    }
+    o = vec4(col, 1.0);
+  }`;
+  const sh = (t, s) => { const x = gl.createShader(t); gl.shaderSource(x, s); gl.compileShader(x); if (!gl.getShaderParameter(x, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(x)); return x; };
+  const p = gl.createProgram(); gl.attachShader(p, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(p, sh(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(p);
+  const u = {}; for (const n of ['uPsi', 'uPot', 'uCrop', 'uN', 'uRot', 'uLo', 'uSpan', 'uWallV', 'uRes', 'uSlits', 'uFlash']) u[n] = gl.getUniformLocation(p, n);
+  const vao = gl.createVertexArray();
+  return {
+    // o: { engine, crop:[x0,y0,x1,y1] uv, rot, lo, span, wallV, slits:[y0,y1,xw], flash, vp:[x,y,w,h] }
+    draw(o){
+      const E = o.engine;
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      gl.viewport(...o.vp);
+      gl.useProgram(p);
+      gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, E.psiTex()); gl.uniform1i(u.uPsi, 0);
+      gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, E.pot.t); gl.uniform1i(u.uPot, 1);
+      gl.uniform4f(u.uCrop, ...o.crop); gl.uniform1f(u.uN, E.N); gl.uniform1f(u.uRot, o.rot);
+      gl.uniform1f(u.uLo, o.lo); gl.uniform1f(u.uSpan, o.span); gl.uniform1f(u.uWallV, o.wallV);
+      gl.uniform2f(u.uRes, o.vp[2], o.vp[3]);
+      gl.uniform4f(u.uSlits, ...(o.slits || [0, 0, 0]), o.L);
+      gl.uniform1f(u.uFlash, o.flash || 0);
+      gl.bindVertexArray(vao); gl.drawArrays(gl.TRIANGLES, 0, 3);
+    },
+  };
+};
+
+// Exact hydrogen: eigenfunctions ψ_nlm, energies with the reduced-mass correction, electric-dipole
+// matrix elements and Einstein A coefficients, all from the analytic solution (atomic units).
+const H = (() => {
+  const mp_me = 1836.15267343, mu = mp_me / (1 + mp_me); // reduced mass / mₑ
+  const Ha_eV = 27.211386245988, c = 137.035999084, au_s = 2.4188843265857e-17;
+  const R_inf_cm = 109737.31568160, R_H_cm = R_inf_cm * mu; // Rydberg constants, cm⁻¹
+
+  // energy of level n in Hartree (infinite nuclear mass) and with the reduced mass
+  const E = n => -0.5 / (n * n);
+  const Emu = n => -0.5 * mu / (n * n);
+  const fact = k => { let f = 1; for (let i = 2; i <= k; i++) f *= i; return f; };
+  // generalised Laguerre L_k^α(x)
+  function laguerre(k, a, x){
+    if (k === 0) return 1;
+    let l0 = 1, l1 = 1 + a - x;
+    for (let i = 1; i < k; i++){ const l2 = ((2 * i + 1 + a - x) * l1 - (i + a) * l0) / (i + 1); l0 = l1; l1 = l2; }
+    return l1;
+  }
+  // normalised radial function R_nl(r), ∫ R² r² dr = 1
+  function radial(n, l, r){
+    const rho = 2 * r / n, N = Math.sqrt((2 / n) ** 3 * fact(n - l - 1) / (2 * n * fact(n + l)));
+    return N * Math.exp(-rho / 2) * rho ** l * laguerre(n - l - 1, 2 * l + 1, rho);
+  }
+  // associated Legendre P_l^m(x), m ≥ 0, Condon–Shortley phase
+  function legendre(l, m, x){
+    let pmm = 1;
+    if (m > 0){ const s = Math.sqrt((1 - x) * (1 + x)); let f = 1; for (let i = 1; i <= m; i++){ pmm *= -f * s; f += 2; } }
+    if (l === m) return pmm;
+    let pm1 = x * (2 * m + 1) * pmm;
+    if (l === m + 1) return pm1;
+    let pl = 0;
+    for (let ll = m + 2; ll <= l; ll++){ pl = (x * (2 * ll - 1) * pm1 - (ll + m - 1) * pmm) / (ll - m); pmm = pm1; pm1 = pl; }
+    return pl;
+  }
+  // real spherical harmonics (m > 0: cos mφ, m < 0: sin |m|φ), orthonormal
+  function Yreal(l, m, th, ph){
+    const am = Math.abs(m), N = Math.sqrt((2 * l + 1) / (4 * Math.PI) * fact(l - am) / fact(l + am));
+    const P = legendre(l, am, Math.cos(th));
+    if (m === 0) return N * P;
+    return Math.SQRT2 * N * P * (m > 0 ? Math.cos(am * ph) : Math.sin(am * ph)) * (am % 2 ? -1 : 1);
+  }
+  function psiReal(n, l, m, x, y, z){
+    const r = Math.hypot(x, y, z), th = r > 0 ? Math.acos(z / r) : 0, ph = Math.atan2(y, x);
+    return radial(n, l, r) * Yreal(l, m, th, ph);
+  }
+  // radial integral ∫ R_nl R_n'l' r³ dr by Gauss–Laguerre-free brute quadrature (smooth integrand)
+  function radInt(n1, l1, n2, l2, pw = 3){
+    const rmax = 8 * Math.max(n1, n2) ** 2 + 40, N = 20000, h = rmax / N;
+    let s = 0;
+    for (let i = 1; i < N; i++){ const r = i * h; s += (i % 2 ? 4 : 2) * radial(n1, l1, r) * radial(n2, l2, r) * r ** pw; }
+    return s * h / 3;
+  }
+  // angular factor of the dipole between complex-m states, summed over polarisations:
+  // Σ_q |<l m|C_q|l' m'>|² summed over m' = max(l,l')/(2l+1) for l' = l ± 1
+  // line strength-based Einstein A for n l → n' l' (summed over final m, averaged over initial m)
+  function einsteinA(n1, l1, n2, l2){
+    if (Math.abs(l1 - l2) !== 1) return 0;
+    const dE = Emu(n1) - Emu(n2); // Hartree, >0 for emission
+    if (dE <= 0) return 0;
+    // reduced-mass scaling: lengths scale 1/μ, the radial integral as 1/μ
+    const Rint = radInt(n1, l1, n2, l2) / mu, lmax = Math.max(l1, l2);
+    const d2 = Rint * Rint * lmax / (2 * l1 + 1); // |<f|r|i>|² summed over final m, averaged over initial
+    const w = dE; // angular frequency in a.u.
+    return 4 * w ** 3 * d2 / (3 * c ** 3) / au_s; // s⁻¹
+  }
+  // vacuum wavenumber and wavelengths of n1 → n2 (with the reduced mass)
+  const wavenumber = (n1, n2) => R_H_cm * (1 / (n2 * n2) - 1 / (n1 * n1));
+  const lambdaVac_nm = (n1, n2) => 1e7 / wavenumber(n1, n2);
+  // refractive index of standard air (Edlén 1966 / Morton 2000), σ in µm⁻¹
+  function nAir(lam_vac_nm){
+    const s2 = (1e3 / lam_vac_nm) ** 2;
+    return 1 + 8.34254e-5 + 2.406147e-2 / (130 - s2) + 1.5998e-4 / (38.9 - s2);
+  }
+  const lambdaAir_nm = (n1, n2) => { const l = lambdaVac_nm(n1, n2); return l > 200 ? l / nAir(l) : l; };
+  return { mu, Ha_eV, c, au_s, R_H_cm, E, Emu, laguerre, radial, legendre, Yreal, psiReal, radInt, einsteinA, wavenumber, lambdaVac_nm, lambdaAir_nm, nAir };
+})();
+
+// Exact H₂⁺ (Born–Oppenheimer, clamped protons a distance R apart), atomic units.
+// In prolate spheroidal coordinates ξ = (r_A + r_B)/R ∈ [1,∞), η = (r_A − r_B)/R ∈ [−1,1] the equation
+// separates (m = 0, σ states): ψ = X(ξ) Y(η), p² = −ε R²/2 with ε the electronic energy, and
+//   d/dξ[(ξ²−1) X'] + (−A + 2Rξ − p²ξ²) X = 0,     d/dη[(1−η²) Y'] + (A + p²η²) Y = 0.
+// The angular equation is diagonalised in Legendre polynomials (even l: σg, odd l: σu); the radial one
+// is shot outward from ξ = 1; p is then found where both give the same separation constant A.
+const H2p = (() => {
+  const LMAX = 40;
+  // eigenvalue A and Legendre coefficients of the angular equation (lowest state of the given parity)
+  function angular(p, parity){
+    const ls = []; for (let l = parity; l < LMAX; l += 2) ls.push(l);
+    const n = ls.length;
+    // <l|η|l+1> for normalised P_l
+    const eta = (l) => (l + 1) / Math.sqrt((2 * l + 1) * (2 * l + 3));
+    // (η²)_{l,l} and (η²)_{l,l+2} in the normalised basis
+    const d = ls.map(l => (l > 0 ? eta(l - 1) ** 2 : 0) + eta(l) ** 2), o = ls.map(l => eta(l) * eta(l + 1));
+    // M = diag(l(l+1)) − p² η²: symmetric tridiagonal in this basis; Jacobi on a small dense matrix
+    const M = Array.from({ length: n }, (_, i) => new Float64Array(n));
+    for (let i = 0; i < n; i++){ M[i][i] = ls[i] * (ls[i] + 1) - p * p * d[i]; if (i + 1 < n){ M[i][i + 1] = M[i + 1][i] = -p * p * o[i]; } }
+    const { vals, vecs } = jacobi(M);
+    let k = 0; for (let i = 1; i < n; i++) if (vals[i] < vals[k]) k = i;
+    return { A: vals[k], ls, coef: vecs.map(v => v[k]) };
+  }
+  function jacobi(A0){
+    const n = A0.length, A = A0.map(r => Float64Array.from(r)), V = Array.from({ length: n }, (_, i) => { const r = new Float64Array(n); r[i] = 1; return r; });
+    for (let sweep = 0; sweep < 60; sweep++){
+      let off = 0; for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) off += A[i][j] ** 2;
+      if (off < 1e-30) break;
+      for (let pp = 0; pp < n; pp++) for (let q = pp + 1; q < n; q++){
+        if (Math.abs(A[pp][q]) < 1e-300) continue;
+        const th = (A[q][q] - A[pp][pp]) / (2 * A[pp][q]), t = Math.sign(th || 1) / (Math.abs(th) + Math.sqrt(th * th + 1));
+        const c = 1 / Math.sqrt(t * t + 1), s = t * c;
+        for (let k = 0; k < n; k++){ const a = A[k][pp], b = A[k][q]; A[k][pp] = c * a - s * b; A[k][q] = s * a + c * b; }
+        for (let k = 0; k < n; k++){ const a = A[pp][k], b = A[q][k]; A[pp][k] = c * a - s * b; A[q][k] = s * a + c * b; }
+        for (let k = 0; k < n; k++){ const a = V[k][pp], b = V[k][q]; V[k][pp] = c * a - s * b; V[k][q] = s * a + c * b; }
+      }
+    }
+    return { vals: A.map((r, i) => r[i]), vecs: V };
+  }
+  // shoot the radial equation for given R, p, A; returns {nodes, sign at the end}. Uses the
+  // variable t = ξ − 1 and the system X' = P/(t(t+2)), P' = (A − 2Rξ + p²ξ²) X with P = (ξ²−1)X'.
+  function shoot(R, p, A, store){
+    const c0 = A - 2 * R + p * p;
+    const tmax = 1 + 45 / p;
+    // series start at t0: X = 1 + a1 t, P = c0 t + b2 t² (b2 from P' = (A − 2Rξ + p²ξ²)X expanded)
+    const a1 = c0 / 2, t0 = 1e-6;
+    let t = t0, X = 1 + a1 * t0, P = c0 * t0 + 0.5 * ((-2 * R + 2 * p * p) + c0 * a1) * t0 * t0;
+    const f = (t, X, P) => { const xi = 1 + t; return [P / (t * (t + 2)), (A - 2 * R * xi + p * p * xi * xi) * X]; };
+    let nodes = 0;
+    if (store){ store.length = 0; store.push([1, 1]); }
+    while (t < tmax){
+      // RK4 steps: fine near the singular point ξ = 1, coarser further out
+      const hh = Math.min(1e-4 + 0.05 * t, 0.02, 0.02 / p);
+      const [k1, l1] = f(t, X, P), [k2, l2] = f(t + hh / 2, X + hh / 2 * k1, P + hh / 2 * l1);
+      const [k3, l3] = f(t + hh / 2, X + hh / 2 * k2, P + hh / 2 * l2), [k4, l4] = f(t + hh, X + hh * k3, P + hh * l3);
+      const Xn = X + hh / 6 * (k1 + 2 * k2 + 2 * k3 + k4);
+      P += hh / 6 * (l1 + 2 * l2 + 2 * l3 + l4);
+      if (Xn * X < 0) nodes++;
+      X = Xn; t += hh;
+      if (store) store.push([1 + t, X]);
+      if (Math.abs(X) > 1e30) break;
+    }
+    return { nodes, sign: Math.sign(X), X };
+  }
+  // Illinois (modified regula falsi) root of f on a bracket [a, b]
+  function illinois(f, a, b, fa, fb, tol){
+    let side = 0;
+    for (let it = 0; it < 100; it++){
+      const c = (a * fb - b * fa) / (fb - fa), fc = f(c);
+      if (fc * fb > 0){ b = c; fb = fc; if (side === -1) fa /= 2; side = -1; }
+      else if (fa * fc > 0){ a = c; fa = fc; if (side === 1) fb /= 2; side = 1; }
+      else return c;
+      if (Math.abs(b - a) < tol * (1 + Math.abs(c))) return c;
+    }
+    return 0.5 * (a + b);
+  }
+  // radial separation constant of the nodeless state for given R, p. A above the eigenvalue gives a
+  // nodeless solution growing positive; just below, a node appears far out. Bracket by bisection on
+  // that, then root-find the end value X(ξmax), which passes through zero at the eigenvalue.
+  function radialA(R, p, guess){
+    const good = A => { const s = shoot(R, p, A); return s.nodes === 0 && s.sign > 0; };
+    let lo, hi;
+    if (guess !== undefined && good(guess + 0.05) && !good(guess - 0.05)){ lo = guess - 0.05; hi = guess + 0.05; }
+    else { lo = -p * p - 2 * R - 50; hi = 2 * R + 50; }
+    for (let it = 0; it < 60 && hi - lo > 1e-3; it++){ const mid = 0.5 * (lo + hi); if (good(mid)) hi = mid; else lo = mid; }
+    const end = A => { const s = shoot(R, p, A); return Math.sign(s.X) * Math.min(Math.abs(s.X), 1e30); };
+    const fl = end(lo), fh = end(hi);
+    if (!(fl < 0 && fh > 0)) return 0.5 * (lo + hi);
+    return illinois(end, lo, hi, fl, fh, 1e-15);
+  }
+  // electronic energy ε(R) of 1sσg (parity 0) or 2pσu (parity 1)
+  function solve(R, parity = 0){
+    let last;
+    const g = p => { last = radialA(R, p, last); return last - angular(p, parity).A; };
+    // bracket p in a range covering ε between −2.0 and −0.4 (He⁺-like down to separated atoms)
+    let a = R * Math.sqrt(0.2), b = R * Math.sqrt(1.0), ga = g(a), gb = g(b);
+    for (let i = 0; i < 40 && ga * gb > 0; i++){ a *= 0.8; b *= 1.25; ga = g(a); gb = g(b); }
+    const p = illinois(g, a, b, ga, gb, 1e-14), eps = -2 * p * p / (R * R);
+    return { R, p, eps, E: eps + 1 / R, ang: angular(p, parity), A: angular(p, parity).A };
+  }
+  // tabulated wavefunction factors for drawing: X(ξ) on ξ ∈ [1, ξmax], Y(η) on [−1, 1]
+  function wavefunction(R, parity = 0, nx = 256, ny = 256){
+    const s = solve(R, parity), pts = [];
+    shoot(R, s.p, s.A + 1e-12, pts);
+    // keep the decaying part: cut where X has its minimum before the shooting blows up
+    let cut = pts.length - 1, best = Infinity;
+    for (let i = 0; i < pts.length; i++){ const v = Math.abs(pts[i][1]); if (v < best){ best = v; cut = i; } if (v > 10 * best && best < 1e-6) break; }
+    const xiMax = pts[cut][0], X = new Float64Array(nx), Y = new Float64Array(ny);
+    for (let i = 0; i < nx; i++){
+      const xi = 1 + (xiMax - 1) * i / (nx - 1);
+      let j = Math.min(cut - 1, Math.floor((xi - 1) / (xiMax - 1) * cut));
+      while (j > 0 && pts[j][0] > xi) j--; while (j < cut - 1 && pts[j + 1][0] < xi) j++;
+      const f = (xi - pts[j][0]) / (pts[j + 1][0] - pts[j][0]);
+      X[i] = Math.abs(pts[j][1] * (1 - f) + pts[j + 1][1] * f) < 1e-300 ? 0 : pts[j][1] * (1 - f) + pts[j + 1][1] * f;
+    }
+    for (let i = 0; i < ny; i++){
+      const eta = -1 + 2 * i / (ny - 1);
+      let v = 0; s.ang.ls.forEach((l, k) => { v += s.ang.coef[k] * Math.sqrt((2 * l + 1) / 2) * legendreP(l, eta); });
+      Y[i] = v;
+    }
+    // normalise ∫|ψ|² dV = 1 with dV = (R/2)³ (ξ² − η²) dξ dη dφ
+    let nrm = 0;
+    const dxi = (xiMax - 1) / (nx - 1), deta = 2 / (ny - 1);
+    for (let i = 0; i < nx; i++) for (let j = 0; j < ny; j++){
+      const xi = 1 + i * dxi, eta = -1 + j * deta, w = (i === 0 || i === nx - 1 ? 0.5 : 1) * (j === 0 || j === ny - 1 ? 0.5 : 1);
+      nrm += w * (X[i] * Y[j]) ** 2 * (xi * xi - eta * eta);
+    }
+    nrm *= dxi * deta * 2 * Math.PI * (R / 2) ** 3;
+    const sc = 1 / Math.sqrt(nrm);
+    for (let i = 0; i < nx; i++) X[i] *= sc;
+    if (Y[ny - 1] < 0) for (let i = 0; i < ny; i++) Y[i] = -Y[i];
+    return { ...s, xiMax, X, Y };
+  }
+  function legendreP(l, x){
+    if (l === 0) return 1; let p0 = 1, p1 = x;
+    for (let k = 2; k <= l; k++){ const p2 = ((2 * k - 1) * x * p1 - (k - 1) * p0) / k; p0 = p1; p1 = p2; }
+    return p1;
+  }
+  // vibrational levels of the nuclei on a potential curve U(R) (Hartree), reduced mass μ (mₑ units):
+  // finite differences on a uniform grid, lowest eigenvalues by inverse iteration / Sturm bisection
+  function vibLevels(Rs, U, mu, count){
+    const n = Rs.length, h = Rs[1] - Rs[0], k = 1 / (2 * mu * h * h);
+    const d = U.map(u => u + 2 * k), e = -k;
+    // Sturm sequence count of eigenvalues below x for the symmetric tridiagonal matrix
+    const below = x => { let c = 0, q = 1; for (let i = 0; i < n; i++){ q = d[i] - x - (i ? e * e / q : 0); if (q === 0) q = 1e-300; if (q < 0) c++; } return c; };
+    const out = [];
+    for (let v = 0; v < count; v++){
+      let lo = Math.min(...U), hi = Math.max(...U) + 4 * k;
+      for (let it = 0; it < 100; it++){ const m = 0.5 * (lo + hi); if (below(m) > v) hi = m; else lo = m; }
+      out.push(0.5 * (lo + hi));
+    }
+    return out;
+  }
+  return { angular, shoot, radialA, solve, wavefunction, legendreP, vibLevels };
+})();
+
+// generated by gen_atom_data.js: hydrogen n ≤ 8 (exact non-relativistic, reduced mass)
+const ATOM_DATA = {"NMAX":8,"E":{"1":-13.598287,"2":-3.399572,"3":-1.510921,"4":-0.849893,"5":-0.543931,"6":-0.37773,"7":-0.277516,"8":-0.212473},"A":{"21-10":626490000,"30-21":6313580,"31-10":167253000,"31-20":22448300,"32-21":64651000,"40-21":2578150,"40-31":1835420,"41-10":68186700,"41-20":9668060,"41-30":3065120,"41-32":347536,"42-21":20625200,"42-31":7037600,"43-32":13788000,"50-21":1288620,"50-31":904690,"50-41":645073,"51-10":34375300,"51-20":4948320,"51-30":1637710,"51-32":149536,"51-40":737186,"51-42":188458,"52-21":9425360,"52-31":3391470,"52-41":1485780,"52-43":50476.8,"53-32":4542140,"53-42":2584410,"54-43":4254180,"60-21":734997,"60-31":507168,"60-41":358239,"60-51":268173,"61-10":19728300,"61-20":2858320,"61-30":955088,"61-32":78240.8,"61-40":445621,"61-42":94168.1,"61-50":242956,"61-52":95933,"62-21":5144980,"62-31":1877780,"62-41":862191,"62-43":21449.7,"62-51":449485,"62-53":39079.6,"63-32":2146030,"63-42":1286980,"63-52":723256,"63-54":11372.8,"64-43":1372780,"64-53":1105690,"65-54":1644830,"70-21":458652,"70-31":312820,"70-41":217378,"70-51":161724,"70-61":126511,"71-10":12361900,"71-20":1797170,"71-30":602541,"71-32":46361.2,"71-40":282803,"71-42":53907.3,"71-50":159087,"71-52":53072.8,"71-60":97895,"71-62":51043.8,"72-21":3131070,"72-31":1149570,"72-41":533785,"72-43":11239.2,"72-51":290239,"72-53":19120.1,"72-61":170413,"72-63":25238.4,"73-32":1207050,"73-42":733990,"73-52":433116,"73-54":4651.03,"73-62":259412,"73-64":11102.3,"74-43":645845,"74-53":548157,"74-63":376363,"74-65":3354.11,"75-54":508707,"75-64":532277,"76-65":740778,"80-21":305406,"80-31":206680,"80-41":141953,"80-51":103994,"80-61":81042.9,"80-71":65699.8,"81-10":8254850,"81-20":1202540,"81-30":403786,"81-32":29860.5,"81-40":189746,"81-42":33958.7,"81-50":107113,"81-52":32454.8,"81-60":67791.2,"81-62":30403.5,"81-70":45345.6,"81-72":28729.9,"82-21":2052330,"82-31":755844,"82-41":352451,"82-43":6706.36,"82-51":193333,"82-53":10883.9,"82-61":117945,"82-63":13619.3,"82-71":75414.1,"82-73":15931.2,"83-32":753881,"83-42":461062,"83-52":275357,"83-54":2388.37,"83-62":172571,"83-64":5236.82,"83-72":110108,"83-74":8468.88,"84-43":364296,"84-53":313473,"84-63":226221,"84-65":1305.67,"84-73":153598,"84-75":3855.66,"85-54":233826,"85-64":257788,"85-74":209186,"85-76":1189.97,"86-65":217562,"86-75":280609,"87-76":372483},"total":{"10":0,"20":0,"21":626490000,"30":6313580,"31":189701000,"32":64651000,"40":4413570,"41":81267400,"42":27662800,"43":13788000,"50":2838390,"51":42036500,"52":14353100,"53":7126550,"54":4254180,"60":1868580,"61":24498700,"62":8394970,"63":4167640,"64":2478470,"65":1644830,"70":1277090,"71":15505800,"72":5330670,"73":2649320,"74":1573720,"75":1040980,"76":740778,"80":904776,"81":10426600,"82":3594460,"83":1789070,"84":1062750,"85":701991,"86":498171,"87":372483},"branch":{"1,-1>0":[1],"1,0>0":[1],"1,1>0":[1],"1,-1>2":[0.3,0.3,0.1,0,0.3],"1,0>2":[0,0.29998,0.40004,0.29998,0],"1,1>2":[0.3,0,0.1,0.3,0.3],"2,-2>1":[0.5,0,0.5],"2,-1>1":[0.5,0.5,0],"2,0>1":[0.16665,0.6667,0.16665],"2,1>1":[0,0.5,0.5],"2,2>1":[0.5,0,0.5],"2,-2>3":[0.35714,0.2381,0.02381,0,0.02381,0,0.35714],"2,-1>3":[0,0.2381,0.38095,0.14286,0,0.2381,0],"2,0>3":[0,0,0.28568,0.42863,0.28568,0,0],"2,1>3":[0,0.2381,0,0.14286,0.38095,0.2381,0],"2,2>3":[0.35714,0,0.02381,0,0.02381,0.2381,0.35714],"3,-3>2":[0.5,0,0,0,0.5],"3,-2>2":[0.33333,0.33333,0,0.33333,0],"3,-1>2":[0.03333,0.53333,0.4,0,0.03333],"3,0>2":[0,0.19997,0.60006,0.19997,0],"3,1>2":[0.03333,0,0.4,0.53333,0.03333],"3,2>2":[0,0.33333,0,0.33333,0.33333],"3,3>2":[0.5,0,0,0,0.5],"3,-3>4":[0.38889,0.19444,0.01389,0,0,0,0.01389,0,0.38889],"3,-2>4":[0,0.29167,0.33333,0.04167,0,0.04167,0,0.29167,0],"3,-1>4":[0,0,0.20833,0.41667,0.16667,0,0.20833,0,0],"3,0>4":[0,0,0,0.27774,0.44452,0.27774,0,0,0],"3,1>4":[0,0,0.20833,0,0.16667,0.41667,0.20833,0,0],"3,2>4":[0,0.29167,0,0.04167,0,0.04167,0.33333,0.29167,0],"3,3>4":[0.38889,0,0.01389,0,0,0,0.01389,0.19444,0.38889],"4,-4>3":[0.5,0,0,0,0,0,0.5],"4,-3>3":[0.25,0.375,0,0,0,0.375,0],"4,-2>3":[0.01786,0.42857,0.26786,0,0.26786,0,0.01786],"4,-1>3":[0,0.05357,0.53571,0.35714,0,0.05357,0],"4,0>3":[0,0,0.21425,0.57151,0.21425,0,0],"4,1>3":[0,0.05357,0,0.35714,0.53571,0.05357,0],"4,2>3":[0.01786,0,0.26786,0,0.26786,0.42857,0.01786],"4,3>3":[0,0.375,0,0,0,0.375,0.25],"4,4>3":[0.5,0,0,0,0,0,0.5],"4,-4>5":[0.40909,0.16364,0.00909,0,0,0,0,0,0.00909,0,0.40909],"4,-3>5":[0,0.32727,0.29091,0.02727,0,0,0,0.02727,0,0.32727,0],"4,-2>5":[0,0,0.25455,0.38182,0.05455,0,0.05455,0,0.25455,0,0],"4,-1>5":[0,0,0,0.19091,0.43636,0.18182,0,0.19091,0,0,0],"4,0>5":[0,0,0,0,0.27268,0.45465,0.27268,0,0,0,0],"4,1>5":[0,0,0,0.19091,0,0.18182,0.43636,0.19091,0,0,0],"4,2>5":[0,0,0.25455,0,0.05455,0,0.05455,0.38182,0.25455,0,0],"4,3>5":[0,0.32727,0,0.02727,0,0,0,0.02727,0.29091,0.32727,0],"4,4>5":[0.40909,0,0.00909,0,0,0,0,0,0.00909,0.16364,0.40909],"5,-5>4":[0.5,0,0,0,0,0,0,0,0.5],"5,-4>4":[0.2,0.4,0,0,0,0,0,0.4,0],"5,-3>4":[0.01111,0.35556,0.31111,0,0,0,0.31111,0,0.01111],"5,-2>4":[0,0.03333,0.46667,0.23333,0,0.23333,0,0.03333,0],"5,-1>4":[0,0,0.06667,0.53333,0.33333,0,0.06667,0,0],"5,0>4":[0,0,0,0.22217,0.55566,0.22217,0,0,0],"5,1>4":[0,0,0.06667,0,0.33333,0.53333,0.06667,0,0],"5,2>4":[0,0.03333,0,0.23333,0,0.23333,0.46667,0.03333,0],"5,3>4":[0.01111,0,0.31111,0,0,0,0.31111,0.35556,0.01111],"5,4>4":[0,0.4,0,0,0,0,0,0.4,0.2],"5,5>4":[0.5,0,0,0,0,0,0,0,0.5],"5,-5>6":[0.42308,0.14103,0.00641,0,0,0,0,0,0,0,0.00641,0,0.42308],"5,-4>6":[0,0.35256,0.25641,0.01923,0,0,0,0,0,0.01923,0,0.35256,0],"5,-3>6":[0,0,0.28846,0.34615,0.03846,0,0,0,0.03846,0,0.28846,0,0],"5,-2>6":[0,0,0,0.23077,0.41026,0.0641,0,0.0641,0,0.23077,0,0,0],"5,-1>6":[0,0,0,0,0.17949,0.44872,0.19231,0,0.17949,0,0,0,0],"5,0>6":[0,0,0,0,0,0.26917,0.46166,0.26917,0,0,0,0,0],"5,1>6":[0,0,0,0,0.17949,0,0.19231,0.44872,0.17949,0,0,0,0],"5,2>6":[0,0,0,0.23077,0,0.0641,0,0.0641,0.41026,0.23077,0,0,0],"5,3>6":[0,0,0.28846,0,0.03846,0,0,0,0.03846,0.34615,0.28846,0,0],"5,4>6":[0,0.35256,0,0.01923,0,0,0,0,0,0.01923,0.25641,0.35256,0],"5,5>6":[0.42308,0,0.00641,0,0,0,0,0,0,0,0.00641,0.14103,0.42308],"6,-6>5":[0.5,0,0,0,0,0,0,0,0,0,0.5],"6,-5>5":[0.16667,0.41667,0,0,0,0,0,0,0,0.41667,0],"6,-4>5":[0.00758,0.30303,0.34091,0,0,0,0,0,0.34091,0,0.00758],"6,-3>5":[0,0.02273,0.40909,0.27273,0,0,0,0.27273,0,0.02273,0],"6,-2>5":[0,0,0.04545,0.48485,0.21212,0,0.21212,0,0.04545,0,0],"6,-1>5":[0,0,0,0.07576,0.5303,0.31818,0,0.07576,0,0,0],"6,0>5":[0,0,0,0,0.22721,0.54558,0.22721,0,0,0,0],"6,1>5":[0,0,0,0.07576,0,0.31818,0.5303,0.07576,0,0,0],"6,2>5":[0,0,0.04545,0,0.21212,0,0.21212,0.48485,0.04545,0,0],"6,3>5":[0,0.02273,0,0.27273,0,0,0,0.27273,0.40909,0.02273,0],"6,4>5":[0.00758,0,0.34091,0,0,0,0,0,0.34091,0.30303,0.00758],"6,5>5":[0,0.41667,0,0,0,0,0,0,0,0.41667,0.16667],"6,6>5":[0.5,0,0,0,0,0,0,0,0,0,0.5],"7,-7>6":[0.5,0,0,0,0,0,0,0,0,0,0,0,0.5],"7,-6>6":[0.14286,0.42857,0,0,0,0,0,0,0,0,0,0.42857,0],"7,-5>6":[0.00549,0.26374,0.36264,0,0,0,0,0,0,0,0.36264,0,0.00549],"7,-4>6":[0,0.01648,0.36264,0.3022,0,0,0,0,0,0.3022,0,0.01648,0],"7,-3>6":[0,0,0.03297,0.43956,0.24725,0,0,0,0.24725,0,0.03297,0,0],"7,-2>6":[0,0,0,0.05495,0.49451,0.1978,0,0.1978,0,0.05495,0,0,0],"7,-1>6":[0,0,0,0,0.08242,0.52747,0.30769,0,0.08242,0,0,0,0],"7,0>6":[0,0,0,0,0,0.2307,0.5386,0.2307,0,0,0,0,0],"7,1>6":[0,0,0,0,0.08242,0,0.30769,0.52747,0.08242,0,0,0,0],"7,2>6":[0,0,0,0.05495,0,0.1978,0,0.1978,0.49451,0.05495,0,0,0],"7,3>6":[0,0,0.03297,0,0.24725,0,0,0,0.24725,0.43956,0.03297,0,0],"7,4>6":[0,0.01648,0,0.3022,0,0,0,0,0,0.3022,0.36264,0.01648,0],"7,5>6":[0.00549,0,0.36264,0,0,0,0,0,0,0,0.36264,0.26374,0.00549],"7,6>6":[0,0.42857,0,0,0,0,0,0,0,0,0,0.42857,0.14286],"7,7>6":[0.5,0,0,0,0,0,0,0,0,0,0,0,0.5],"0,0>1":[0.33333,0.33333,0.33333]},"lam":{"2-1":[121.5684,121.5684],"3-1":[102.5734,102.5734],"3-2":[656.4696,656.2883],"4-1":[97.2548,97.2548],"4-2":[486.2738,486.138],"4-3":[1875.6274,1875.1154],"5-1":[94.9753,94.9753],"5-2":[434.173,434.051],"5-3":[1282.1672,1281.8165],"5-4":[4052.2815,4051.1767],"6-1":[93.7814,93.7814],"6-2":[410.2935,410.1777],"6-3":[1094.116,1093.8164],"6-4":[2625.8784,2625.1622],"6-5":[7459.8819,7457.8485],"7-1":[93.0758,93.0758],"7-2":[397.1236,397.0113],"7-3":[1005.2191,1004.9436],"7-4":[2166.1287,2165.5376],"7-5":[4653.7921,4652.5233],"7-6":[12371.9272,12368.5551],"8-1":[92.6236,92.6236],"8-2":[389.019,388.9088],"8-3":[954.8649,954.603],"8-4":[1945.0951,1944.5642],"8-5":[3740.5676,3739.5476],"8-6":[7502.5098,7500.4648],"8-7":[19061.9323,19056.7368]}};
+
+// generated by gen_bond_data.js: exact Born–Oppenheimer H₂⁺ curves (Hartree, bohr)
+const BOND_DATA = {"R":[0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1,1.05,1.1,1.15,1.2,1.25,1.3,1.35,1.4,1.45,1.5,1.55,1.6,1.65,1.7,1.75,1.8,1.85,1.9,1.95,2,2.05,2.1,2.15,2.2,2.25,2.3,2.35,2.4,2.45,2.5,2.55,2.6,2.65,2.7,2.75,2.8,2.85,2.9,2.95,3,3.05,3.1,3.15,3.2,3.25,3.3,3.35,3.4,3.45,3.5,3.55,3.6,3.65,3.7,3.75,3.8,3.85,3.9,3.95,4,4.05,4.1,4.15,4.2,4.25,4.3,4.35,4.4,4.45,4.5,4.55,4.6,4.65,4.7,4.75,4.8,4.85,4.9,4.95,5,5.05,5.1,5.15,5.2,5.25,5.3,5.35,5.4,5.45,5.5,5.55,5.6,5.65,5.7,5.75,5.8,5.85,5.9,5.95,6,6.05,6.1,6.15,6.2,6.25,6.3,6.35,6.4,6.45,6.5,6.55,6.6,6.65,6.7,6.75,6.8,6.85,6.9,6.95,7,7.05,7.1,7.15,7.2,7.25,7.3,7.35,7.4,7.45,7.5,7.55,7.6,7.65,7.7,7.75,7.8,7.85,7.9,7.95,8,8.05,8.1,8.15,8.2,8.25,8.3,8.35,8.4,8.45,8.5,8.55,8.6,8.65,8.7,8.75,8.8,8.85,8.9,8.95,9,9.05,9.1,9.15,9.2,9.25,9.3,9.35,9.4,9.45,9.5,9.55,9.6,9.65,9.7,9.75,9.8,9.85,9.9,9.95,10,10.05,10.1,10.15,10.2,10.25,10.3,10.35,10.4,10.45,10.5,10.55,10.6,10.65,10.7,10.75,10.8,10.85,10.9,10.95,11,11.05,11.1,11.15,11.2,11.25,11.3,11.35,11.4,11.45,11.5,11.55,11.6,11.65,11.7,11.75,11.8,11.85,11.9,11.95,12],"Eg":[0.265012,0.11530636,-0.00481805,-0.10244498,-0.18262484,-0.24905039,-0.30448009,-0.35101267,-0.39027049,-0.4235253,-0.45178631,-0.47586319,-0.49641187,-0.51396843,-0.52897452,-0.54179657,-0.55274062,-0.56206385,-0.56998353,-0.57668417,-0.5823232,-0.58703553,-0.59093722,-0.59412851,-0.59669627,-0.59871602,-0.60025363,-0.60136671,-0.60210578,-0.60251524,-0.60263421,-0.60249726,-0.60213494,-0.60157438,-0.60083963,-0.5999521,-0.59893088,-0.59779299,-0.59655364,-0.59522642,-0.59382351,-0.59235584,-0.59083319,-0.58926438,-0.58765729,-0.58601903,-0.584356,-0.58267395,-0.58097804,-0.57927295,-0.57756286,-0.57585155,-0.57414241,-0.5724385,-0.57074256,-0.56905705,-0.56738417,-0.56572591,-0.56408403,-0.56246011,-0.56085554,-0.55927157,-0.5577093,-0.55616968,-0.55465357,-0.5531617,-0.5516947,-0.5502531,-0.54883736,-0.54744785,-0.54608488,-0.54474869,-0.54343944,-0.54215725,-0.5409022,-0.53967431,-0.53847355,-0.53729986,-0.53615314,-0.53503325,-0.53394003,-0.53287328,-0.53183279,-0.5308183,-0.52982956,-0.52886626,-0.52792811,-0.52701479,-0.52612594,-0.52526124,-0.52442029,-0.52360275,-0.5228082,-0.52203628,-0.52128656,-0.52055865,-0.51985212,-0.51916657,-0.51850157,-0.51785669,-0.51723151,-0.5166256,-0.51603852,-0.51546986,-0.51491919,-0.51438607,-0.51387008,-0.51337081,-0.51288782,-0.5124207,-0.51196905,-0.51153245,-0.51111049,-0.51070279,-0.51030894,-0.50992855,-0.50956126,-0.50920666,-0.50886441,-0.50853413,-0.50821547,-0.50790807,-0.50761159,-0.5073257,-0.50705006,-0.50678436,-0.50652827,-0.50628148,-0.50604371,-0.50581464,-0.505594,-0.50538151,-0.50517689,-0.50497987,-0.50479021,-0.50460764,-0.50443193,-0.50426283,-0.50410012,-0.50394357,-0.50379296,-0.50364809,-0.50350874,-0.50337472,-0.50324584,-0.50312191,-0.50300275,-0.50288818,-0.50277804,-0.50267216,-0.50257039,-0.50247257,-0.50237855,-0.50228819,-0.50220136,-0.50211791,-0.50203773,-0.50196068,-0.50188665,-0.50181552,-0.50174719,-0.50168153,-0.50161846,-0.50155786,-0.50149965,-0.50144372,-0.50139,-0.5013384,-0.50128882,-0.5012412,-0.50119545,-0.50115151,-0.50110929,-0.50106874,-0.50102979,-0.50099237,-0.50095642,-0.50092188,-0.5008887,-0.50085683,-0.50082621,-0.50079678,-0.50076852,-0.50074136,-0.50071526,-0.50069018,-0.50066609,-0.50064293,-0.50062067,-0.50059928,-0.50057873,-0.50055897,-0.50053998,-0.50052172,-0.50050416,-0.50048729,-0.50047106,-0.50045546,-0.50044046,-0.50042603,-0.50041215,-0.5003988,-0.50038596,-0.50037361,-0.50036172,-0.50035028,-0.50033928,-0.50032869,-0.50031849,-0.50030868,-0.50029923,-0.50029013,-0.50028137,-0.50027293,-0.50026481,-0.50025698,-0.50024944,-0.50024217,-0.50023517,-0.50022842,-0.50022192,-0.50021564,-0.5002096,-0.50020376,-0.50019814,-0.50019271,-0.50018748,-0.50018243,-0.50017755,-0.50017285,-0.50016831],"Eu":[1.48311453,1.29774529,1.14235629,1.00996644,0.89559592,0.79560028,0.70725408,0.62848141,0.55767596,0.4935777,0.43518637,0.3816994,0.33246657,0.28695638,0.24473065,0.20542516,0.16873469,0.13440141,0.10220574,0.07195914,0.04349846,0.01668137,-0.00861729,-0.03250834,-0.05509064,-0.07645297,-0.09667551,-0.11583111,-0.13398627,-0.15120198,-0.16753439,-0.18303537,-0.19775299,-0.2117319,-0.22501371,-0.2376372,-0.24963866,-0.26105202,-0.27190911,-0.28223977,-0.29207205,-0.30143228,-0.31034527,-0.31883435,-0.32692149,-0.33462742,-0.34197165,-0.34897261,-0.3556477,-0.36201333,-0.368085,-0.37387737,-0.37940428,-0.38467883,-0.3897134,-0.39451972,-0.39910887,-0.40349136,-0.40767713,-0.41167561,-0.41549573,-0.41914594,-0.42263428,-0.42596837,-0.42915542,-0.43220229,-0.43511549,-0.4379012,-0.44056529,-0.44311333,-0.44555064,-0.44788224,-0.45011294,-0.45224728,-0.45428961,-0.45624404,-0.45811452,-0.45990477,-0.46161836,-0.46325869,-0.46482897,-0.4663323,-0.46777162,-0.46914971,-0.47046924,-0.47173278,-0.47294274,-0.47410144,-0.47521109,-0.47627381,-0.47729161,-0.47826642,-0.47920008,-0.48009434,-0.48095089,-0.48177132,-0.48255717,-0.48330991,-0.48403093,-0.48472158,-0.48538314,-0.48601684,-0.48662384,-0.48720527,-0.4877622,-0.48829566,-0.48880664,-0.48929606,-0.48976485,-0.49021385,-0.49064389,-0.49105577,-0.49145024,-0.49182803,-0.49218983,-0.49253631,-0.49286811,-0.49318584,-0.49349008,-0.49378139,-0.49406032,-0.49432737,-0.49458304,-0.49482781,-0.49506213,-0.49528644,-0.49550114,-0.49570664,-0.49590333,-0.49609157,-0.49627171,-0.49644409,-0.49660904,-0.49676686,-0.49691786,-0.49706231,-0.4972005,-0.49733268,-0.4974591,-0.49758001,-0.49769564,-0.49780621,-0.49791194,-0.49801302,-0.49810965,-0.49820202,-0.49829031,-0.49837469,-0.49845533,-0.49853239,-0.49860601,-0.49867635,-0.49874354,-0.49880772,-0.49886901,-0.49892754,-0.49898343,-0.49903679,-0.49908772,-0.49913634,-0.49918273,-0.49922701,-0.49926925,-0.49930955,-0.49934798,-0.49938464,-0.4994196,-0.49945292,-0.49948469,-0.49951497,-0.49954383,-0.49957132,-0.49959751,-0.49962246,-0.49964621,-0.49966882,-0.49969035,-0.49971084,-0.49973033,-0.49974888,-0.49976651,-0.49978328,-0.49979922,-0.49981437,-0.49982877,-0.49984244,-0.49985542,-0.49986775,-0.49987945,-0.49989054,-0.49990107,-0.49991105,-0.4999205,-0.49992946,-0.49993795,-0.49994598,-0.49995358,-0.49996077,-0.49996757,-0.49997399,-0.49998005,-0.49998578,-0.49999118,-0.49999627,-0.50000107,-0.50000559,-0.50000984,-0.50001384,-0.50001759,-0.50002112,-0.50002442,-0.50002752,-0.50003042,-0.50003313,-0.50003566,-0.50003802,-0.50004022,-0.50004226,-0.50004416,-0.50004592,-0.50004754,-0.50004905,-0.50005043,-0.5000517,-0.50005286,-0.50005393,-0.50005489,-0.50005577,-0.50005656,-0.50005726,-0.50005789],"vib":[-0.59739716,-0.58741396,-0.57801412,-0.56917728,-0.5608863,-0.55312704],"Re":1.997193,"Emin":-0.60263462};
+
+// Main stage: the live 2D Schrödinger solver firing electrons one at a time at a slit screen.
+'use strict';
+
+const APP = (() => {
+const $ = id => document.getElementById(id);
+const cv = $('sky'), plate = $('plate'), pctx = plate.getContext('2d');
+const gl = cv.getContext('webgl2', { antialias: false, alpha: false, powerPreference: 'high-performance', preserveDrawingBuffer: !!window.__DEV });
+if (!gl || !gl.getExtension('EXT_color_buffer_float')) { $('nogl').hidden = false; return null; }
+const fmt = (x, d) => x.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+const AU_FS = 0.02418884, BOHR_NM = 0.0529177, HA_EV = 27.211386;
+const view = WaveView(gl);
+
+const SC = {
+  double: {
+    label: 'Two slits', scene: 'double', watch: false,
+    caption: 'Electrons leave the gun on the left <b>one at a time</b>, each as a wave about a nanometre wide. The wave passes through <b>both slits at once</b>, and the two halves overlap and interfere: bright where crests meet crests, dark where crests meet troughs. Yet each electron lands as <b>a single dot</b>. Only after many electrons does the striped pattern appear.',
+  },
+  watch: {
+    label: 'Watch which slit', scene: 'double', watch: true,
+    caption: 'Now a detector at the slits checks <b>which one each electron goes through</b>. When it catches one, the wave collapses into that slit (it lights up) and no longer interferes with itself. The stripes vanish; the dots pile up in one plain hump. About two electrons in three find no slit at all and <b>bounce off the wall</b>; the detector sees nothing, and they never reach the screen.',
+  },
+  single: {
+    label: 'One slit', scene: 'single', watch: false,
+    caption: 'A single slit about <b>0.2 nm</b> wide, close to the electron\'s own wavelength. Squeezing the wave through a narrow gap makes it fan out: the narrower the slit, the wider the spread. This is the <b>uncertainty principle</b> in action: pin down where the electron is across the slit, and its sideways momentum becomes uncertain.',
+  },
+  barrier: {
+    label: 'Through a wall', scene: 'barrier', watch: false,
+    caption: 'A wall one tenth of a nanometre thick whose energy, <b>58 eV</b>, is higher than the electron\'s. A thrown ball would bounce straight back every time. The wave does not stop dead at the wall: it decays inside, and if the wall is thin enough, some of it comes out the other side. That part is an electron <b>tunnelling</b> through.',
+  },
+};
+
+const state = {
+  name: 'double', S: null, E: null, N: 1024, playing: true, pace: 100, spf: 30, fast: false, pred: false,
+  el: null, fired: 0, landed: 0, dots: [], cache: new Map(), flash: 0, eV: 54.4, d: 20, visible: true, rate: 0,
+  pause: 0, hold: 0, tally: { up: 0, down: 0, back: 0 },
+};
+
+// ---------- scenes ----------
+const cacheKey = (outcome) => `${state.name === 'watch' ? 'double' : state.name}|${state.eV}|${state.d}|${outcome}`;
+function build(){
+  const def = SC[state.name];
+  const S = Scenes.build(def.scene, state.N, { eV: state.eV, d: state.d });
+  if (!state.E || state.E.N !== state.N) state.E = TDSE(gl, state.N, S.h);
+  state.S = S; state.E.setPotential(S.pot); state.E.screenX = S.screenCols;
+  state.def = def;
+  if (S.slits) state.masks = null;
+  // for the barrier: the exact 1D transmission of this packet, ∫|φ(k)|² T(k) dk
+  if (def.scene === 'barrier'){
+    const V0 = S.opts.barrierEV / HA_EV, a = S.opts.barrierW, s = S.packet.sx;
+    let num = 0, den = 0;
+    for (let k = S.k0 - 6 / (2 * s); k <= S.k0 + 6 / (2 * s); k += 6 / (2 * s) / 40){ const w = Math.exp(-2 * s * s * (k - S.k0) ** 2); num += w * Scenes.barrierT(k * k / 2, V0, a); den += w; }
+    S.Texact = num / den;
+    const m = new Float32Array(state.N * state.N);
+    for (let j = 0; j < state.N; j++) for (let i = 0; i < state.N; i++) m[i + state.N * j] = (i + 0.5) * S.h > Scenes.XW + a + 2 ? 1 : 0;
+    state.E.setMask(m);
+  }
+}
+function loadScene(name){
+  state.name = name;
+  [...$('scenes').children].forEach(b => b.setAttribute('aria-pressed', b.dataset.s === name));
+  $('caption').innerHTML = SC[name].caption;
+  $('sepRow').hidden = SC[name].scene !== 'double';
+  setPressed('tWatch', SC[name].watch);
+  clearScreen();
+  build(); newElectron();
+}
+function setPressed(id, v){ $(id).setAttribute('aria-pressed', v ? 'true' : 'false'); }
+function clearScreen(){ state.dots = []; state.fired = 0; state.landed = 0; state.tally = { up: 0, down: 0, back: 0 }; drawPlate(true); }
+function newElectron(){
+  const P = state.S.packet;
+  state.E.gaussian(P.x0, P.y0, P.sx, P.sy, P.kx, P.ky);
+  state.E.clearScreen();
+  state.el = { t: 0, measured: false, outcome: null, through: null };
+  state.fired++;
+}
+// the electron reached the end of its run: pick where it landed from what the screen absorbed
+function finishElectron(){
+  const el = state.el, dist = state.E.readScreen();
+  let tot = 0; for (const v of dist) tot += v;
+  const outcome = el.outcome || 'coherent';
+  if (outcome !== 'back') state.cache.set(cacheKey(outcome), { dist, tot, pUp: el.pUp, pDown: el.pDown });
+  if (outcome !== 'back' && Math.random() < tot) addDot(sampleRow(dist, tot), true);
+}
+function sampleRow(dist, tot){
+  let u = Math.random() * tot, i = 0;
+  while (i < dist.length - 1 && (u -= dist[i]) > 0) i++;
+  return (i + Math.random()) * state.S.h; // y in bohr
+}
+function addDot(y, fresh){
+  state.dots.push({ y, x: Math.random(), fresh: fresh ? 1 : 0 });
+  state.landed++;
+  if (state.dots.length > 60000){ state.dots.splice(0, 10000); drawPlate(true); }
+}
+// which-path measurement: collapse into the half beyond the wall nearer one slit, or back
+function measure(){
+  const E = state.E, S = state.S, el = state.el;
+  if (!state.masks) state.masks = { up: Scenes.whichMask(S, 'up'), down: Scenes.whichMask(S, 'down') };
+  E.setMask(state.masks.up); const pUp = E.moments(true).masked;
+  E.setMask(state.masks.down); const pDown = E.moments(true).masked;
+  const tot = E.moments().norm;
+  el.pUp = pUp / tot; el.pDown = pDown / tot;
+  // fast firing needs one electron seen through each slit; until then let the detector catch the
+  // missing one (the dots themselves are always drawn with the true probabilities)
+  const haveUp = state.cache.has(cacheKey('up')), haveDown = state.cache.has(cacheKey('down'));
+  let u = Math.random() * tot;
+  if (state.fast && !(haveUp && haveDown)) u = !haveUp ? pUp * Math.random() : pUp + pDown * Math.random();
+  if (u < pUp){ el.outcome = 'up'; E.setMask(state.masks.up); E.applyMask(1 / Math.sqrt(pUp)); }
+  else if (u < pUp + pDown){ el.outcome = 'down'; E.setMask(state.masks.down); E.applyMask(1 / Math.sqrt(pDown)); }
+  else {
+    el.outcome = 'back';
+    const m = state.masks.back || (state.masks.back = Scenes.whichMask(S, 'back'));
+    E.setMask(m); E.applyMask(1 / Math.sqrt(Math.max(1e-9, tot - pUp - pDown)));
+  }
+  el.measured = true; state.flash = 1; state.tally[el.outcome]++;
+}
+
+// ---------- fast mode: every electron has the same wave, so landing spots can be drawn directly ----------
+function fastDots(dtSec){
+  const watch = state.def.watch;
+  const c = watch ? [state.cache.get(cacheKey('up')), state.cache.get(cacheKey('down'))] : [state.cache.get(cacheKey('coherent'))];
+  if (c.some(x => !x)) return;
+  state.fastRate = Math.min(3000, (state.fastRate || 300) * (1 + dtSec * 0.5));
+  const n = Math.floor(dtSec * state.fastRate * 2 * Math.random() + Math.random());
+  for (let i = 0; i < n; i++){
+    state.fired++;
+    if (watch){
+      const u = Math.random(), pick = u < c[0].pUp ? c[0] : u < c[0].pUp + c[0].pDown ? c[1] : null;
+      if (pick && Math.random() < pick.tot) addDot(sampleRow(pick.dist, pick.tot), false);
+    } else if (Math.random() < c[0].tot) addDot(sampleRow(c[0].dist, c[0].tot), false);
+  }
+}
+
+// ---------- drawing ----------
+let W = 0, H = 0, dpr = 1, plateW = 0;
+function resize(){
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const r = cv.getBoundingClientRect();
+  W = Math.round(r.width * dpr); H = Math.round(r.height * dpr);
+  if (cv.width !== W || cv.height !== H){ cv.width = W; cv.height = H; }
+  plateW = Math.round(Math.max(84, Math.min(170, r.width * 0.12)));
+  plate.style.width = plateW + 'px';
+  plate.width = Math.round(plateW * dpr); plate.height = H;
+  drawPlate(true);
+}
+// visible part of the box: from just inside the gun's edge to the screen, as tall as the canvas allows
+function crop(){
+  const S = state.S, L = S.L, x0 = 20, simW = W - plateW * dpr;
+  let hgt = (L - x0) * H / simW;
+  hgt = Math.min(L - 30, Math.max(140, hgt));
+  const y0 = (L - hgt) / 2;
+  return { x0, x1: L, y0, y1: y0 + hgt, simW };
+}
+// the plate: settled dots are baked into an offscreen layer once; fresh ones glow on top until they fade
+const base = document.createElement('canvas'), bctx = base.getContext('2d');
+let baked = 0;
+function dotY(d, c, h){ return h - (d.y - c.y0) / (c.y1 - c.y0) * h; }
+function bake(d, c, w, h){
+  const y = dotY(d, c, h); if (y < 0 || y > h) return;
+  bctx.fillStyle = 'rgba(170,225,255,0.7)';
+  bctx.beginPath(); bctx.arc((0.12 + 0.8 * d.x) * w, y, 1.3 * dpr, 0, 6.2832); bctx.fill();
+}
+function drawPlate(full){
+  if (!state.S || !H) return;
+  const c = crop(), S = state.S, w = plate.width, h = plate.height;
+  if (full || base.width !== w || base.height !== h){
+    base.width = w; base.height = h; baked = 0;
+    bctx.fillStyle = '#05070b'; bctx.fillRect(0, 0, w, h);
+    bctx.fillStyle = 'rgba(255,255,255,0.08)'; bctx.fillRect(0, 0, Math.max(1, dpr), h);
+  }
+  // bake every dot that has finished glowing (dots only ever settle in order)
+  bctx.globalCompositeOperation = 'lighter';
+  while (baked < state.dots.length && !state.dots[baked].fresh) bake(state.dots[baked++], c, w, h);
+  bctx.globalCompositeOperation = 'source-over';
+  pctx.drawImage(base, 0, 0);
+  pctx.globalCompositeOperation = 'lighter';
+  for (let k = baked; k < state.dots.length; k++){
+    const d = state.dots[k], y = dotY(d, c, h);
+    if (y < 0 || y > h) continue;
+    pctx.fillStyle = `rgba(255,236,190,${0.4 + 0.6 * d.fresh})`;
+    pctx.beginPath(); pctx.arc((0.12 + 0.8 * d.x) * w, y, 1.3 * dpr * (1 + 2.5 * d.fresh), 0, 6.2832); pctx.fill();
+  }
+  pctx.globalCompositeOperation = 'source-over';
+  if (state.pred){
+    const watch = state.def.watch;
+    const parts = watch ? [state.cache.get(cacheKey('up')), state.cache.get(cacheKey('down'))] : [state.cache.get(cacheKey('coherent'))];
+    if (parts.every(Boolean)){
+      const prob = new Float64Array(state.N);
+      parts.forEach((p, k) => { const wgt = watch ? (k === 0 ? p.pUp : p.pDown) : 1; for (let i = 0; i < state.N; i++) prob[i] += wgt * p.dist[i]; });
+      let mx = 0; for (let i = 0; i < state.N; i++) mx = Math.max(mx, prob[i]);
+      pctx.strokeStyle = 'rgba(255,196,107,0.9)'; pctx.lineWidth = 1.5 * dpr; pctx.beginPath();
+      for (let i = 0; i < state.N; i++){
+        const y = h - ((i + 0.5) * S.h - c.y0) / (c.y1 - c.y0) * h;
+        const x = w * (0.05 + 0.9 * prob[i] / mx);
+        i ? pctx.lineTo(x, y) : pctx.moveTo(x, y);
+      }
+      pctx.stroke();
+    }
+  }
+}
+function render(){
+  const S = state.S, E = state.E, c = crop(), L = S.L;
+  const rot = 0.5 * S.k0 * S.k0 * state.el.t;
+  view.draw({ engine: E, crop: [c.x0 / L, c.y0 / L, c.x1 / L, c.y1 / L], rot, lo: -7.6, span: 4.4, wallV: Scenes.WALL_V, L,
+    slits: S.slits && state.def.watch && state.el.outcome && state.el.outcome !== 'back'
+      ? Array(2).fill(S.slits[state.el.outcome === 'up' ? 1 : 0] / L).concat([(S.XW + S.THICK) / L]) : [0, 0, 0],
+    flash: state.el.outcome === 'back' ? 0 : state.flash, vp: [0, 0, c.simW, H] });
+  // scale bar: 1 nm
+  const pxPerBohr = c.simW / dpr / (c.x1 - c.x0), sb = $('scalebar');
+  sb.style.width = (18.897 * pxPerBohr) + 'px'; sb.style.left = ((c.simW / dpr) / 2 - 9.45 * pxPerBohr) + 'px';
+}
+function hud(){
+  const S = state.S, k = S.k0, lam = 2 * Math.PI / k * BOHR_NM, v = k * 2.18769e6; // m/s
+  const rows = [
+    ['Electron energy', `${fmt(state.eV, 1)} eV`, 'big'],
+    ['Wavelength', `${fmt(lam, 3)} nm`],
+    ['Speed', `${fmt(v / 1000, 0)} km/s`, 'opt'],
+    ['Box', `${fmt(S.L * BOHR_NM, 1)} nm across`, 'opt'],
+    ['', '', 'sep'],
+    ['Electrons fired', fmt(state.fired, 0)],
+    ['Landed on screen', fmt(state.landed, 0), 'rate'],
+  ];
+  if (state.def.scene === 'barrier'){
+    rows.push(['', '', 'sep'], ['Got through (sim)', state.lastT == null ? '…' : `${fmt(100 * state.lastT, 1)}%`, 'rate'], ['Exact calculation', `${fmt(100 * S.Texact, 1)}%`]);
+  }
+  if (state.def.watch){
+    const T = state.tally;
+    rows.push(['', '', 'sep'], ['This electron', !state.el.outcome ? 'on its way…' : state.el.outcome === 'up' ? 'caught at the upper slit' : state.el.outcome === 'down' ? 'caught at the lower slit' : 'bounced off the wall'],
+      ['Upper · lower · bounced', `${T.up} · ${T.down} · ${T.back}`, 'rate']);
+  }
+  $('hud').innerHTML = rows.map(([a, b, c]) => c === 'sep' ? '<div class="sep"></div>' : `<dt class="${c === 'opt' ? 'opt' : ''}">${a}</dt><dd class="${c || ''}">${b}</dd>`).join('');
+  $('dotsN').textContent = fmt(state.landed, 0);
+  $('clockLab').textContent = state.fast ? 'electrons fired, landing spots drawn from the wave' : `electron ${fmt(state.fired, 0)} · since it left the gun`;
+  $('clock').querySelector('span').textContent = state.fast ? `≈ ${fmt(state.fastRate || 300, 0)} per second` : `${fmt(state.el.t * AU_FS, 2)} fs`;
+}
+
+// ---------- main loop ----------
+let last = performance.now(), lastHud = 0;
+function frame(now){
+  requestAnimationFrame(frame);
+  const dtSec = Math.min(0.1, (now - last) / 1000); last = now;
+  if (!state.visible || !state.S) return;
+  const S = state.S, E = state.E, el = state.el;
+  if (state.playing){
+    if (state.hold > 0){ state.hold -= dtSec; if (state.hold <= 0) newElectron(); }
+    else {
+      const t0 = performance.now();
+      let n = Math.max(1, Math.round(state.spf * state.pace / 100));
+      if (state.def.watch && !el.measured) n = Math.min(n, Math.max(1, Math.round((S.tMeasure - el.t) / S.dt)));
+      // a bounced electron (which-path detector saw nothing) ends early: its wave is just heading home
+      const tEnd = el.outcome === 'back' ? S.tMeasure + 40 : S.tEnd;
+      n = Math.min(n, Math.max(1, Math.round((tEnd - el.t) / S.dt)));
+      E.step(S.dt, n); el.t += n * S.dt;
+      if (state.def.watch && !el.measured && el.t >= S.tMeasure - 1e-9){
+        measure();
+      }
+      // tunnelling: once the packet has cleared the barrier (and before anything reaches an edge),
+      // the share of the wave beyond it is the transmission probability
+      if (state.def.scene === 'barrier' && el.through == null && el.t >= (Scenes.XW + 50 - S.packet.x0) / S.k0){
+        const m = E.moments(true);
+        el.through = m.masked / m.norm; state.lastT = el.through;
+      }
+      E.finish();
+      const ms = performance.now() - t0;
+      if (state.pace === 100) state.spf = Math.max(4, Math.min(400, state.spf * Math.min(1.25, Math.max(0.8, 11 / Math.max(ms, 0.5)))));
+      if (el.t >= tEnd - 1e-9){ finishElectron(); state.hold = state.fast ? 0.05 : 0.35; }
+    }
+    if (state.fast) fastDots(dtSec);
+  }
+  state.flash *= 0.94;
+  for (const d of state.dots) if (d.fresh) d.fresh = Math.max(0, d.fresh - dtSec * 0.6);
+  render();
+  drawPlate();
+  if (now - lastHud > 120){ hud(); lastHud = now; }
+}
+
+// ---------- controls ----------
+function setup(){
+  const sc = $('scenes');
+  for (const k in SC){
+    const b = document.createElement('button'); b.className = 'chip'; b.dataset.s = k; b.textContent = SC[k].label;
+    b.onclick = () => loadScene(k); sc.appendChild(b);
+  }
+  $('play').onclick = () => { state.playing = !state.playing; $('play').textContent = state.playing ? '❚❚ Pause' : '▶ Play'; };
+  $('clear').onclick = () => { clearScreen(); hud(); };
+  $('fast').onclick = () => { state.fast = !state.fast; state.fastRate = 300; setPressed('fast', state.fast); };
+  $('tPred').onclick = () => { state.pred = !state.pred; setPressed('tPred', state.pred); drawPlate(true); };
+  $('tWatch').onclick = () => loadScene(state.name === 'watch' ? 'double' : 'watch');
+  const pace = $('pace');
+  const paceLab = () => { $('paceOut').textContent = state.pace === 100 ? 'full speed' : `${state.pace}% of full speed`; };
+  pace.oninput = () => { state.pace = Math.max(1, +pace.value); paceLab(); }; paceLab();
+  const en = $('energy'), sep = $('sep');
+  const enLab = () => { const k = Scenes.kOfE(state.eV); $('energyOut').textContent = `${fmt(state.eV, 1)} eV · λ ${fmt(2 * Math.PI / k * BOHR_NM, 3)} nm`; };
+  const sepLab = () => { $('sepOut').textContent = `${fmt(state.d * BOHR_NM, 2)} nm`; };
+  let rebuildT = 0;
+  const rebuild = () => { clearTimeout(rebuildT); rebuildT = setTimeout(() => { clearScreen(); build(); newElectron(); }, 150); };
+  en.oninput = () => { state.eV = +en.value; enLab(); rebuild(); };
+  sep.oninput = () => { state.d = +sep.value; sepLab(); rebuild(); };
+  enLab(); sepLab();
+  // run only while the stage is on screen and the tab is visible
+  let onScreen = true;
+  const vis = () => { state.visible = onScreen && !document.hidden; last = performance.now(); };
+  document.addEventListener('visibilitychange', vis);
+  new IntersectionObserver(es => es.forEach(e => { onScreen = e.isIntersecting; vis(); }), { rootMargin: '100px' }).observe(cv);
+  window.addEventListener('resize', resize);
+}
+
+// pick the grid: 1024² on a strong GPU, 512² otherwise (decided by timing a few steps)
+function chooseSize(){
+  try {
+    const E = TDSE(gl, 1024, Scenes.L / 1024);
+    E.setPotential(new Float32Array(4 * 1024 * 1024)); E.gaussian(100, 200, 9, 20, 2, 0);
+    E.step(0.02, 4); E.finish();
+    const t0 = performance.now(); E.step(0.02, 20); E.finish();
+    const ms = (performance.now() - t0) / 20;
+    state.benchMs = ms;
+    if (ms < 1.5){ state.E = E; return 1024; }
+    return 512;
+  } catch (e) { return 512; }
+}
+
+setup();
+state.N = window.__N || chooseSize();
+resize();
+loadScene('double');
+requestAnimationFrame(frame);
+return { state, loadScene, $ };
+})();
+
+// Tunnelling lab: a 1D split-operator solver (CPU, 4096 points over 43 nm) firing a 5 eV electron at a
+// smooth-edged barrier, compared with the exact transfer-matrix transmission of that same barrier
+// (validated: agreement 0.02–0.4% down to T = 2×10⁻⁵).
+const TUNNEL = (() => {
+const $ = id => document.getElementById(id);
+const cv = $('tunCv'); if (!cv) return null;
+const ctx = cv.getContext('2d');
+const HA = 27.211386, NM = 18.8973; // eV per Hartree, bohr per nm
+const fmt = (x, d) => x.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+const N = 4096, h = 0.2, Lb = N * h, XB = Lb / 2, S0 = 30, ABS = 60, DT = 0.1;
+const g = makeGrid(N, 1, h);
+for (let i = 0; i < N; i++){ const x = (i + 0.5) * h; g.W[i] = 0.05 * Math.max(0, (ABS - x) / ABS) ** 2 + 0.05 * Math.max(0, (x - (Lb - ABS)) / ABS) ** 2; }
+const S = { V: 8, a: 0.3, E: 5, t: 0, tEnd: 0, k0: 0, runs: [], T: null, Tex: null, visible: false, hold: 0, mag: 1 };
+
+function setup(){
+  const V0 = S.V / HA, a = S.a * NM;
+  for (let i = 0; i < N; i++) g.V[i] = Scenes.barrierV((i + 0.5) * h - XB, V0, a);
+  S.k0 = Math.sqrt(2 * S.E / HA);
+  gaussian(g, XB - 150, 0, S0, 0, S.k0, 0);
+  // gaussian() puts x at grid points i·h; that half-cell offset is irrelevant here
+  S.t = 0; S.tEnd = 280 / S.k0; S.T = null;
+  // exact: packet-averaged transfer-matrix transmission
+  let num = 0, den = 0;
+  for (let j = -30; j <= 30; j++){ const k = S.k0 + j * 6 / (2 * S0) / 30, w = Math.exp(-2 * S0 * S0 * (k - S.k0) ** 2); num += w * Scenes.barrierT(k * k / 2, V0, a); den += w; }
+  S.Tex = num / den;
+  // magnify the far side so even a tiny transmitted wave shows
+  S.mag = Math.pow(10, Math.max(0, Math.floor(-Math.log10(Math.max(S.Tex, 1e-12)) - 0.3)));
+  drawChart();
+}
+function measure(){
+  let s = 0; const i0 = Math.ceil((XB + S.a * NM + 3) / h);
+  for (let i = i0; i < N; i++) s += g.re[i] ** 2 + g.im[i] ** 2;
+  return s * h;
+}
+
+let W = 0, Hh = 0, dpr = 1;
+function resize(){
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const r = cv.getBoundingClientRect(); W = cv.width = Math.round(r.width * dpr); Hh = cv.height = Math.round(r.height * dpr);
+  const c = $('tunChart'), hb = +c.dataset.h, rr = c.getBoundingClientRect();
+  c.style.height = hb + 'px'; c.width = Math.round(rr.width * dpr); c.height = Math.round(hb * dpr);
+  drawChart();
+}
+function draw(){
+  ctx.fillStyle = '#05070b'; ctx.fillRect(0, 0, W, Hh);
+  const x0 = XB - 260, x1 = XB + 260, X = x => (x - x0) / (x1 - x0) * W;
+  const base = Hh * 0.82, eMax = 13, Y = eV => base - eV / eMax * Hh * 0.7;
+  // grid every nm
+  ctx.strokeStyle = 'rgba(230,234,240,0.05)'; ctx.lineWidth = 1;
+  for (let x = Math.ceil(x0 / NM) * NM; x < x1; x += NM){ ctx.beginPath(); ctx.moveTo(X(x), 0); ctx.lineTo(X(x), Hh); ctx.stroke(); }
+  // barrier
+  ctx.strokeStyle = 'rgba(230,234,240,0.18)'; ctx.lineWidth = 1 * dpr;
+  ctx.beginPath(); ctx.moveTo(0, base); ctx.lineTo(W, base); ctx.stroke();
+  ctx.fillStyle = 'rgba(155,163,180,0.7)'; ctx.font = `${11 * dpr}px "IBM Plex Mono", monospace`; ctx.fillText('0 eV', 10 * dpr, base - 6 * dpr);
+  const bx0 = XB - 3, bx1 = XB + S.a * NM + 3;
+  ctx.fillStyle = 'rgba(255,157,92,0.22)'; ctx.strokeStyle = 'rgba(255,157,92,0.9)'; ctx.lineWidth = 1.5 * dpr;
+  ctx.beginPath(); ctx.moveTo(X(bx0), base);
+  for (let i = Math.floor(bx0 / h); i < bx1 / h; i++){ const x = (i + 0.5) * h; ctx.lineTo(X(x), Y(g.V[i] * HA)); }
+  ctx.lineTo(X(bx1), base); ctx.closePath(); ctx.fill(); ctx.stroke();
+  // electron energy
+  ctx.setLineDash([5 * dpr, 5 * dpr]); ctx.strokeStyle = 'rgba(143,195,236,0.7)'; ctx.lineWidth = 1 * dpr;
+  ctx.beginPath(); ctx.moveTo(0, Y(S.E)); ctx.lineTo(W, Y(S.E)); ctx.stroke(); ctx.setLineDash([]);
+  ctx.font = `${11 * dpr}px "IBM Plex Mono", monospace`; ctx.fillStyle = 'rgba(143,195,236,0.9)';
+  ctx.fillText(`electron energy ${fmt(S.E, 1)} eV`, 10 * dpr, Y(S.E) - 6 * dpr);
+  ctx.fillStyle = 'rgba(255,157,92,0.95)'; ctx.fillText(`wall ${fmt(S.V, 1)} eV`, X(XB) + 8 * dpr + S.a * NM / (x1 - x0) * W, Y(S.V) - 6 * dpr);
+  // the wave: envelope |ψ| as a glow, Re ψ as a gold line; far side magnified
+  const amp = Hh * 0.30 * Math.sqrt(Math.sqrt(2 * Math.PI) * S0), iB = (XB + S.a * NM + 1.5) / h;
+  const rot = 0.5 * S.k0 * S.k0 * S.t;
+  for (const pass of [0, 1]){
+    ctx.beginPath();
+    for (let px = 0; px <= W; px += dpr){
+      const x = x0 + px / W * (x1 - x0), i = Math.min(N - 1, Math.max(0, Math.round(x / h - 0.5)));
+      const m = i > iB ? S.mag : 1, c = Math.cos(rot), s = Math.sin(rot);
+      const re = (g.re[i] * c - g.im[i] * s) * m, im = (g.re[i] * s + g.im[i] * c) * m;
+      const y = pass === 0 ? Math.hypot(re, im) : re;
+      const yy = Y(S.E) - y * amp;
+      px === 0 ? ctx.moveTo(px, yy) : ctx.lineTo(px, yy);
+    }
+    if (pass === 0){ ctx.strokeStyle = 'rgba(143,195,236,0.55)'; ctx.lineWidth = 1.2 * dpr; ctx.stroke(); }
+    else { ctx.strokeStyle = 'rgba(255,196,107,0.95)'; ctx.lineWidth = 1.6 * dpr; ctx.stroke(); }
+  }
+  if (S.mag > 1){
+    ctx.fillStyle = 'rgba(155,163,180,0.9)'; ctx.font = `${12 * dpr}px "IBM Plex Mono", monospace`;
+    ctx.fillText(`far side magnified × ${fmt(S.mag, 0)}`, X(XB) + 30 * dpr, Hh - 14 * dpr);
+  }
+  // 1 nm scale
+  ctx.fillStyle = 'rgba(155,163,180,0.9)'; ctx.fillRect(14 * dpr, Hh - 18 * dpr, NM / (x1 - x0) * W, 1 * dpr);
+  ctx.fillText('1 nm', 14 * dpr, Hh - 24 * dpr);
+}
+function labels(){
+  $('tunLab').innerHTML = `${fmt(S.t * 0.02418884, 2)} fs`;
+  const T = S.T, ex = S.Tex;
+  const pct = v => v >= 0.01 ? `${fmt(100 * v, 2)}%` : v >= 1e-6 ? `1 in ${fmt(1 / v, 0)}` : `${v.toExponential(1)}`;
+  $('tunK').innerHTML = [
+    ['Got through (simulation)', T == null ? '…' : pct(T)],
+    ['Exact calculation', pct(ex)],
+    ['A classical ball', 'never'],
+    ['Wall thickness', `${fmt(S.a, 2)} nm ≈ ${fmt(S.a / 0.1, 1)} atoms`],
+  ].map(([k, v]) => `<div class="kpi"><div class="v">${v}</div><div class="k">${k}</div></div>`).join('');
+}
+// T against thickness: exact (monochromatic at the electron's energy) and the simulation's runs
+function drawChart(){
+  const c = $('tunChart'), x = c.getContext('2d'), w = c.width, hh = c.height;
+  if (!w) return;
+  x.clearRect(0, 0, w, hh);
+  const pl = 52 * dpr, pr = 14 * dpr, pt = 12 * dpr, pb = 30 * dpr;
+  const A0 = 0.05, A1 = 0.8, L0 = -8, L1 = 0;
+  const X = a => pl + (a - A0) / (A1 - A0) * (w - pl - pr), Y = l => pt + (L1 - l) / (L1 - L0) * (hh - pt - pb);
+  x.font = `${11 * dpr}px "IBM Plex Mono", monospace`;
+  for (let l = L0; l <= L1; l += 2){ x.strokeStyle = 'rgba(230,234,240,0.07)'; x.beginPath(); x.moveTo(pl, Y(l)); x.lineTo(w - pr, Y(l)); x.stroke(); x.fillStyle = 'rgba(104,112,132,1)'; x.fillText({ 0: '1', '-2': '10⁻²', '-4': '10⁻⁴', '-6': '10⁻⁶', '-8': '10⁻⁸' }[l], 8 * dpr, Y(l) + 4 * dpr); }
+  for (let a = 0.1; a <= 0.8001; a += 0.1){ x.fillStyle = 'rgba(104,112,132,1)'; x.fillText(`${fmt(a, 1)}${a > 0.75 ? ' nm' : ''}`, X(a) - (a > 0.75 ? 34 : 8) * dpr, hh - 10 * dpr); }
+  const V0 = S.V / HA, E = S.E / HA;
+  x.strokeStyle = 'rgba(255,196,107,0.95)'; x.lineWidth = 1.8 * dpr; x.beginPath();
+  for (let i = 0; i <= 80; i++){ const a = A0 + (A1 - A0) * i / 80, T = Scenes.barrierT(E, V0, a * NM), l = Math.max(L0, Math.log10(T)); i ? x.lineTo(X(a), Y(l)) : x.moveTo(X(a), Y(l)); }
+  x.stroke();
+  for (const r of S.runs){
+    if (Math.abs(r.V - S.V) > 1e-6 || Math.abs(r.E - S.E) > 1e-6) continue;
+    x.fillStyle = 'rgba(143,195,236,1)'; x.beginPath(); x.arc(X(r.a), Y(Math.max(L0, Math.log10(r.T))), 4 * dpr, 0, 6.2832); x.fill();
+  }
+  // current thickness marker
+  x.strokeStyle = 'rgba(230,234,240,0.25)'; x.setLineDash([3 * dpr, 4 * dpr]); x.beginPath(); x.moveTo(X(S.a), pt); x.lineTo(X(S.a), hh - pb); x.stroke(); x.setLineDash([]);
+}
+let last = performance.now();
+function frame(now){
+  requestAnimationFrame(frame);
+  const dtSec = Math.min(0.1, (now - last) / 1000); last = now;
+  if (!S.visible) return;
+  if (S.hold > 0){ S.hold -= dtSec; if (S.hold <= 0) setup(); }
+  else {
+    const t0 = performance.now();
+    while (performance.now() - t0 < 9 && S.t < S.tEnd){ step(g, DT); S.t += DT; }
+    if (S.T == null && S.t >= S.tEnd){
+      S.T = measure();
+      S.runs.push({ V: S.V, E: S.E, a: S.a, T: S.T });
+      drawChart(); S.hold = 1.6;
+    }
+  }
+  draw(); labels();
+}
+function bind(id, key, unit, d){
+  const el = $(id), out = $(id + 'o');
+  const lab = () => { out.textContent = key === 'a' ? `${fmt(S.a, 2)} nm` : `${fmt(S[key], d)} ${unit}`; };
+  el.oninput = () => { S[key] = +el.value; lab(); S.hold = 0; setup(); };
+  lab();
+}
+bind('tunV', 'V', 'eV', 1); bind('tunA', 'a', 'nm', 2); bind('tunE', 'E', 'eV', 1);
+// real tunnelling, in nature and in machines
+const rows = [
+  ['Sunlight', 'Protons fusing in the Sun\'s core', 'Two protons repel each other with a barrier of about <b>1 MeV</b>; at 15 million degrees a typical proton has about 1.4 keV. Without tunnelling the core would have to be roughly ten billion degrees for the Sun to shine.'],
+  ['Radioactivity', 'Alpha decay of heavy nuclei', 'An alpha particle rattles inside the nucleus and tunnels out. Polonium-212 lets one go in <b>0.3 microseconds</b>; uranium-238 takes <b>4.5 billion years</b>. Its alpha particle has only half the energy, and the barrier is that much harder to cross (Gamow, 1928).'],
+  ['Seeing atoms', 'The scanning tunnelling microscope', 'A needle hovers a few tenths of a nanometre above a surface, and electrons tunnel across the gap. The current changes about <b>ten-fold for every 0.1 nm</b>, so the needle feels single atoms (Binnig and Rohrer, Nobel Prize 1986).'],
+  ['Your photos', 'Flash memory', 'Each bit is charge trapped on a tiny island sealed in glass about <b>8 nm</b> thick. A strong electric field thins the barrier so electrons tunnel on or off to write or erase; with the field off they stay put for years.'],
+  ['Medicine', 'Magnetoencephalography (MEG)', 'SQUID sensors, built on tunnelling through an insulating film a couple of nanometres thick, pick up the magnetic fields of firing neurons: about <b>100 femtotesla</b>, a few hundred million times weaker than the Earth\'s field. MEG helps surgeons locate the source of epileptic seizures.'],
+];
+$('tunTable').innerHTML = '<tr><th>Where</th><th>What tunnels</th><th>The numbers</th></tr>' + rows.map(r => `<tr><td class="where"><span class="name">${r[0]}</span></td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('');
+new IntersectionObserver(es => es.forEach(e => { S.visible = e.isIntersecting; last = performance.now(); }), { rootMargin: '200px' }).observe(cv);
+window.addEventListener('resize', resize);
+resize(); setup();
+requestAnimationFrame(frame);
+return { S };
+})();
+
+// The hydrogen atom in 3D: exact orbitals evaluated on the GPU into 3D textures, ray-marched as a glowing
+// cloud whose colour is the wave's phase (gold crests, blue troughs, as on the main stage).
+const AtomView = (canvas) => {
+  const gl = canvas.getContext('webgl2', { antialias: false, alpha: false, preserveDrawingBuffer: !!window.__DEV });
+  if (!gl || !gl.getExtension('EXT_color_buffer_float')) return null;
+  const SIZE = 112; // voxels per side
+  const VS = `#version 300 es
+  out vec2 vUv;
+  void main(){ vec2 p = vec2((gl_VertexID << 1) & 2, gl_VertexID & 2); vUv = p * 2.0 - 1.0; gl_Position = vec4(p * 2.0 - 1.0, 0.0, 1.0); }`;
+  // ψ_nlm (real orbital) at voxel centres of one z-slice
+  const FIELD = `#version 300 es
+  precision highp float;
+  uniform int uN, uL, uM; uniform float uRN, uYN, uB, uZ;
+  out vec4 o;
+  void main(){
+    vec3 idx = vec3(gl_FragCoord.xy, uZ + 0.5);
+    vec3 p = (idx / ${SIZE}.0 - 0.5) * 2.0 * uB;
+    float r = length(p), rho = 2.0 * r / float(uN);
+    int k = uN - uL - 1; float a = float(2 * uL + 1);
+    float L0 = 1.0, L1 = 1.0 + a - rho;
+    for (int i = 1; i < 12; i++){ if (i >= k) break; float L2 = ((2.0 * float(i) + 1.0 + a - rho) * L1 - (float(i) + a) * L0) / float(i + 1); L0 = L1; L1 = L2; }
+    float Lk = k == 0 ? 1.0 : L1;
+    float rl = 1.0; for (int i = 0; i < 12; i++){ if (i >= uL) break; rl *= rho; }
+    float R = uRN * exp(-0.5 * rho) * rl * Lk;
+    float ct = r > 0.0 ? clamp(p.z / r, -1.0, 1.0) : 1.0, phi = atan(p.y, p.x);
+    int am = abs(uM);
+    float pmm = 1.0, s = sqrt(max(0.0, (1.0 - ct) * (1.0 + ct))), f = 1.0;
+    for (int i = 1; i < 12; i++){ if (i > am) break; pmm *= -f * s; f += 2.0; }
+    float P = pmm;
+    if (uL > am){
+      float pm1 = ct * float(2 * am + 1) * pmm;
+      P = pm1;
+      for (int ll = am + 2; ll < 14; ll++){ if (ll > uL) break; float pl = (ct * float(2 * ll - 1) * pm1 - float(ll + am - 1) * pmm) / float(ll - am); pmm = pm1; pm1 = pl; P = pl; }
+    }
+    float trig = uM == 0 ? 1.0 : uM > 0 ? cos(float(am) * phi) : sin(float(am) * phi);
+    o = vec4(R * uYN * P * trig, 0.0, 0.0, 0.0);
+  }`;
+  // ray-march Σ c_i ψ_i (up to two states)
+  const MARCH = `#version 300 es
+  precision highp float; precision highp sampler3D;
+  in vec2 vUv; out vec4 o;
+  uniform sampler3D uA, uBt;
+  uniform vec2 uCA, uCB;        // complex coefficients
+  uniform float uBox, uGain, uAspect, uTan, uDist, uDot, uDotZ;
+  uniform vec3 uNuc0, uNuc1; uniform int uNucN;
+  uniform mat3 uCam;            // columns: right, up, forward
+  vec3 tint(float ph){
+    float cr = 0.5 + 0.5 * cos(ph);
+    return mix(vec3(0.30, 0.55, 1.00), vec3(1.00, 0.78, 0.42), smoothstep(0.0, 1.0, cr)) * (0.6 + 0.4 * abs(cos(ph)));
+  }
+  void main(){
+    vec3 rd = normalize(uCam[2] + uCam[0] * vUv.x * uAspect * uTan + uCam[1] * vUv.y * uTan);
+    vec3 ro = -uCam[2] * uDist;
+    vec3 inv = 1.0 / rd, t0 = (-vec3(uBox) - ro) * inv, t1 = (vec3(uBox) - ro) * inv;
+    vec3 tmin = min(t0, t1), tmax = max(t0, t1);
+    float ta = max(max(tmin.x, tmin.y), tmin.z), tb = min(min(tmax.x, tmax.y), tmax.z);
+    vec3 col = vec3(0.0); float tr = 1.0;
+    if (tb > max(ta, 0.0)){
+      ta = max(ta, 0.0);
+      const int STEPS = 220;
+      float ds = (tb - ta) / float(STEPS);
+      float jit = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453);
+      for (int i = 0; i < STEPS; i++){
+        vec3 p = ro + rd * (ta + (float(i) + jit) * ds);
+        vec3 uvw = p / (2.0 * uBox) + 0.5;
+        float a = texture(uA, uvw).r, b = texture(uBt, uvw).r;
+        vec2 psi = uCA * a + uCB * b;
+        float q = dot(psi, psi) * uGain;
+        float d = q * ds;
+        col += tr * tint(atan(psi.y, psi.x)) * d * 3.2;
+        tr *= exp(-d * 0.55);
+        if (tr < 0.01) break;
+      }
+    }
+    // the nuclei: protons, 100 000 times smaller than the cloud; drawn as points of light
+    for (int k = 0; k < 2; k++){
+      if (k >= uNucN) break;
+      vec3 cp = (k == 0 ? uNuc0 : uNuc1) - ro; float along = dot(cp, rd); float dperp = length(cp - rd * along);
+      col += vec3(1.0, 0.92, 0.85) * uDot * exp(-dperp * dperp / (uBox * uBox * 0.00008)) * 0.9 * max(tr, 0.35);
+    }
+    // the charge centre ⟨z⟩ when the cloud sloshes
+    if (uDotZ != 0.0){
+      vec3 cz = vec3(0.0, 0.0, uDotZ) - ro; float al = dot(cz, rd); float dz = length(cz - rd * al);
+      col += vec3(0.75, 0.95, 1.0) * exp(-dz * dz / (uBox * uBox * 0.00012)) * 0.8;
+    }
+    col = 1.0 - exp(-col * 1.25);
+    o = vec4(col + vec3(0.012, 0.016, 0.026) * tr, 1.0);
+  }`;
+  const sh = (t, s) => { const x = gl.createShader(t); gl.shaderSource(x, s); gl.compileShader(x); if (!gl.getShaderParameter(x, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(x)); return x; };
+  const vs = sh(gl.VERTEX_SHADER, VS);
+  const mk = (fs, names) => { const p = gl.createProgram(); gl.attachShader(p, vs); gl.attachShader(p, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(p); if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p)); const u = {}; names.forEach(n => u[n] = gl.getUniformLocation(p, n)); return { p, u }; };
+  const pField = mk(FIELD, ['uN', 'uL', 'uM', 'uRN', 'uYN', 'uB', 'uZ']);
+  const pMarch = mk(MARCH, ['uA', 'uBt', 'uCA', 'uCB', 'uBox', 'uGain', 'uAspect', 'uTan', 'uDist', 'uCam', 'uDot', 'uDotZ', 'uNuc0', 'uNuc1', 'uNucN']);
+  // H₂⁺: ψ = X(ξ) Y(η) from tabulated factors, protons at z = ±R/2
+  const H2FIELD = `#version 300 es
+  precision highp float; precision highp sampler2D;
+  uniform sampler2D uX, uY; uniform float uR, uXiMax, uB, uZ; uniform int uNX, uNY;
+  out vec4 o;
+  float tab(sampler2D t, int n, float f){ f = clamp(f, 0.0, 1.0) * float(n - 1); int i = min(int(f), n - 2); float a = f - float(i); return mix(texelFetch(t, ivec2(i, 0), 0).r, texelFetch(t, ivec2(i + 1, 0), 0).r, a); }
+  void main(){
+    vec3 p = (vec3(gl_FragCoord.xy, uZ + 0.5) / ${SIZE}.0 - 0.5) * 2.0 * uB;
+    float ra = length(p - vec3(0.0, 0.0, 0.5 * uR)), rb = length(p + vec3(0.0, 0.0, 0.5 * uR));
+    float xi = (ra + rb) / uR, eta = (rb - ra) / uR;
+    float v = xi >= uXiMax ? 0.0 : tab(uX, uNX, (xi - 1.0) / (uXiMax - 1.0)) * tab(uY, uNY, 0.5 * (eta + 1.0));
+    o = vec4(v, 0.0, 0.0, 0.0);
+  }`;
+  const pH2 = mk(H2FIELD, ['uX', 'uY', 'uR', 'uXiMax', 'uB', 'uZ', 'uNX', 'uNY']);
+  const tab1 = (arr) => { const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t); gl.texImage2D(gl.TEXTURE_2D, 0, gl.R32F, arr.length, 1, 0, gl.RED, gl.FLOAT, Float32Array.from(arr)); for (const [k, v] of [[gl.TEXTURE_MIN_FILTER, gl.NEAREST], [gl.TEXTURE_MAG_FILTER, gl.NEAREST]]) gl.texParameteri(gl.TEXTURE_2D, k, v); return t; };
+  function newTex3(){
+    const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_3D, t);
+    gl.texImage3D(gl.TEXTURE_3D, 0, gl.R16F, SIZE, SIZE, SIZE, 0, gl.RED, gl.FLOAT, null);
+    for (const [k, v] of [[gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_MAG_FILTER, gl.LINEAR], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE]]) gl.texParameteri(gl.TEXTURE_3D, k, v);
+    return t;
+  }
+  // fill (or refill) a 3D texture with the H₂⁺ wavefunction wf = H2p.wavefunction(R, parity)
+  function fieldH2(wf, B, tex){
+    const t = tex || newTex3(), tx = tab1(wf.X), ty = tab1(wf.Y);
+    gl.useProgram(pH2.p); gl.bindFramebuffer(gl.FRAMEBUFFER, fb); gl.viewport(0, 0, SIZE, SIZE); gl.bindVertexArray(vao);
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, tx); gl.uniform1i(pH2.u.uX, 0);
+    gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, ty); gl.uniform1i(pH2.u.uY, 1);
+    gl.uniform1f(pH2.u.uR, wf.R); gl.uniform1f(pH2.u.uXiMax, wf.xiMax); gl.uniform1f(pH2.u.uB, B);
+    gl.uniform1i(pH2.u.uNX, wf.X.length); gl.uniform1i(pH2.u.uNY, wf.Y.length);
+    for (let z = 0; z < SIZE; z++){ gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, t, 0, z); gl.uniform1f(pH2.u.uZ, z); gl.drawArrays(gl.TRIANGLES, 0, 3); }
+    gl.deleteTexture(tx); gl.deleteTexture(ty);
+    return t;
+  }
+  const vao = gl.createVertexArray(), fb = gl.createFramebuffer();
+  const fact = k => { let f = 1; for (let i = 2; i <= k; i++) f *= i; return f; };
+  // 3D texture of ψ_nlm over [−B, B]³, cached
+  const cache = new Map();
+  const zero = (() => { const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_3D, t); gl.texImage3D(gl.TEXTURE_3D, 0, gl.R16F, 1, 1, 1, 0, gl.RED, gl.FLOAT, new Float32Array(1)); return t; })();
+  function field(n, l, m, B){
+    const key = `${n},${l},${m},${B}`;
+    if (cache.has(key)) return cache.get(key);
+    const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_3D, t);
+    gl.texImage3D(gl.TEXTURE_3D, 0, gl.R16F, SIZE, SIZE, SIZE, 0, gl.RED, gl.FLOAT, null);
+    for (const [k, v] of [[gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_MAG_FILTER, gl.LINEAR], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE]]) gl.texParameteri(gl.TEXTURE_3D, k, v);
+    gl.useProgram(pField.p); gl.bindFramebuffer(gl.FRAMEBUFFER, fb); gl.viewport(0, 0, SIZE, SIZE); gl.bindVertexArray(vao);
+    const am = Math.abs(m);
+    const RN = Math.sqrt((2 / n) ** 3 * fact(n - l - 1) / (2 * n * fact(n + l)));
+    const YN = Math.sqrt((2 * l + 1) / (4 * Math.PI) * fact(l - am) / fact(l + am)) * (m === 0 ? 1 : Math.SQRT2 * (am % 2 ? -1 : 1));
+    gl.uniform1i(pField.u.uN, n); gl.uniform1i(pField.u.uL, l); gl.uniform1i(pField.u.uM, m);
+    gl.uniform1f(pField.u.uRN, RN); gl.uniform1f(pField.u.uYN, YN); gl.uniform1f(pField.u.uB, B);
+    for (let z = 0; z < SIZE; z++){
+      gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, t, 0, z);
+      gl.uniform1f(pField.u.uZ, z); gl.drawArrays(gl.TRIANGLES, 0, 3);
+    }
+    if (cache.size > 10){ const [k0, t0] = cache.entries().next().value; gl.deleteTexture(t0); cache.delete(k0); }
+    cache.set(key, t);
+    return t;
+  }
+  // box half-size that holds an orbital's cloud
+  const boxFor = n => Math.ceil(2.6 * n * n + 7);
+  // peak |ψ|² of one orbital, by sampling (sets the exposure)
+  const peakCache = new Map();
+  function peak(n, l, m){
+    const key = `${n},${l},${m}`; if (peakCache.has(key)) return peakCache.get(key);
+    const B = boxFor(n); let mx = 0;
+    for (let i = 0; i < 26; i++) for (let j = 0; j < 26; j++) for (let k = 0; k < 26; k++){
+      const x = (i / 25 - 0.5) * 2 * B * 0.9, y = (j / 25 - 0.5) * 2 * B * 0.9, z = (k / 25 - 0.5) * 2 * B * 0.9;
+      mx = Math.max(mx, H.psiReal(n, l, m, x + 0.01, y + 0.013, z + 0.017) ** 2);
+    }
+    peakCache.set(key, mx); return mx;
+  }
+  const V = { gl, field, fieldH2: (wf, B, tex) => fieldH2(wf, B, tex), boxFor, peak, yaw: 0.6, pitch: 0.28, dist: 2.35 };
+  // states: [{ n, l, m, c: [re, im] }] or [{ tex, pk, c }], box B; dotZ: ⟨z⟩ marker (bohr) or 0
+  V.draw = (states, B, gainScale = 1, dotZ = 0, nuclei = [[0, 0, 0]]) => {
+    const w = canvas.width, h = canvas.height;
+    const A = states[0], Bs = states[1];
+    const tA = A.tex || field(A.n, A.l, A.m, B), tB = Bs ? (Bs.tex || field(Bs.n, Bs.l, Bs.m, B)) : zero; // (may switch programs)
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, w, h);
+    gl.useProgram(pMarch.p); gl.bindVertexArray(vao);
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_3D, tA); gl.uniform1i(pMarch.u.uA, 0);
+    gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_3D, tB); gl.uniform1i(pMarch.u.uBt, 1);
+    gl.uniform2f(pMarch.u.uCA, A.c[0], A.c[1]); gl.uniform2f(pMarch.u.uCB, Bs ? Bs.c[0] : 0, Bs ? Bs.c[1] : 0);
+    // exposure: scale the densest state so its peak sits at a fixed brightness per unit box size
+    let pk = 0; for (const s of states) pk = Math.max(pk, (s.pk ?? peak(s.n, s.l, s.m)) * (s.c[0] ** 2 + s.c[1] ** 2));
+    gl.uniform1f(pMarch.u.uBox, B); gl.uniform1f(pMarch.u.uGain, gainScale * 2.2 / (pk * B));
+    const cy = Math.cos(V.yaw), sy = Math.sin(V.yaw), cp = Math.cos(V.pitch), sp = Math.sin(V.pitch);
+    const fwd = [-cp * cy, -cp * sy, -sp], right = [-sy, cy, 0], up = [-sp * cy, -sp * sy, cp];
+    // camera looks at the origin from (cp cy, cp sy, sp)·dist; z (the quantisation axis) points up
+    gl.uniformMatrix3fv(pMarch.u.uCam, false, [...right, ...up, ...fwd]);
+    gl.uniform1f(pMarch.u.uAspect, w / h); gl.uniform1f(pMarch.u.uTan, Math.tan(0.36));
+    gl.uniform1f(pMarch.u.uDist, B * V.dist); gl.uniform1f(pMarch.u.uDot, 1); gl.uniform1f(pMarch.u.uDotZ, dotZ);
+    gl.uniform3f(pMarch.u.uNuc0, ...nuclei[0]); gl.uniform3f(pMarch.u.uNuc1, ...(nuclei[1] || nuclei[0])); gl.uniform1i(pMarch.u.uNucN, nuclei.length);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+  };
+  // project a world point to canvas pixels (for overlays)
+  V.project = (p, B) => {
+    const cy = Math.cos(V.yaw), sy = Math.sin(V.yaw), cp = Math.cos(V.pitch), sp = Math.sin(V.pitch);
+    const fwd = [-cp * cy, -cp * sy, -sp], right = [-sy, cy, 0], up = [-sp * cy, -sp * sy, cp], D = B * V.dist;
+    const q = [p[0] + fwd[0] * D, p[1] + fwd[1] * D, p[2] + fwd[2] * D];
+    const z = q[0] * fwd[0] + q[1] * fwd[1] + q[2] * fwd[2], x = q[0] * right[0] + q[1] * right[1] + q[2] * right[2], y = q[0] * up[0] + q[1] * up[1] + q[2] * up[2];
+    const t = Math.tan(0.36), w = canvas.width, h = canvas.height;
+    return [w / 2 + x / (z * t * w / h) * w / 2, h / 2 - y / (z * t) * h / 2];
+  };
+  return V;
+};
+
+// The atom section: orbital explorer, a two-state superposition that sloshes at the light's frequency,
+// and a glowing gas of atoms cascading down by quantum jumps (real Einstein A rates) that builds a spectrum.
+const ATOM = (() => {
+const $ = id => document.getElementById(id);
+const cv = $('atomCv'); if (!cv) return null;
+const V = AtomView(cv);
+if (!V){ cv.parentNode.insertAdjacentHTML('beforeend', '<div class="nogl">This view needs WebGL2.</div>'); return null; }
+const ov = $('atomOv'), octx = ov.getContext('2d');
+const D = ATOM_DATA, HA_EV = 27.211386, BOHR_A = 0.529177;
+const fmt = (x, d) => x.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+const LN = 'spdfghik';
+const REAL = { 1: { 0: 'z', 1: 'x', '-1': 'y' }, 2: { 0: 'z²', 1: 'xz', '-1': 'yz', 2: 'x²−y²', '-2': 'xy' }, 3: { 0: 'z³', 1: 'xz²', '-1': 'yz²', 2: 'z(x²−y²)', '-2': 'xyz', 3: 'x(x²−3y²)', '-3': 'y(3x²−y²)' } };
+const oname = (n, l, m) => `${n}${LN[l]}${l > 0 && l <= 3 ? `<sub>${REAL[l][m]}</sub>` : l > 3 ? `<sub>m=${m}</sub>` : ''}`;
+const otext = (n, l, m) => oname(n, l, m).replace(/<\/?sub>/g, '');
+const E_eV = n => D.E[n];
+
+// wavelength (nm) → display colour
+function lamRGB(nm){
+  if (nm < 380) return [176, 150, 255];
+  if (nm > 750) return [205, 92, 80];
+  let r, g, b;
+  if (nm < 440){ r = -(nm - 440) / 60; g = 0; b = 1; }
+  else if (nm < 490){ r = 0; g = (nm - 440) / 50; b = 1; }
+  else if (nm < 510){ r = 0; g = 1; b = -(nm - 510) / 20; }
+  else if (nm < 580){ r = (nm - 510) / 70; g = 1; b = 0; }
+  else if (nm < 645){ r = 1; g = -(nm - 645) / 65; b = 0; }
+  else { r = 1; g = 0; b = 0; }
+  const f = nm < 420 ? 0.4 + 0.6 * (nm - 380) / 40 : nm > 700 ? 0.4 + 0.6 * (750 - nm) / 50 : 1;
+  return [r, g, b].map(v => Math.round(255 * Math.pow(Math.max(0, v * f), 0.8)));
+}
+const rgba = (c, a = 1) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+const LINE_NAMES = { '2-1': 'Lyman α', '3-1': 'Lyman β', '3-2': 'H-α', '4-2': 'H-β', '5-2': 'H-γ', '6-2': 'H-δ', '4-3': 'Paschen α', '5-3': 'Paschen β', '5-4': 'Brackett α' };
+
+const S = {
+  mode: 'orbit', n: 3, l: 2, m: 0, pair: 'ha', mix: 0.5, t: 0, visible: false, drag: null,
+  atom: null, wait: 0, life: 0, fade: 0, prev: null, photons: [], counts: {}, tube: false, total: 0, lastLine: null,
+};
+const PAIRS = {
+  lya: { a: [1, 0, 0], b: [2, 1, 0], label: 'Lyman α', sub: '1s ↔ 2p' },
+  lyb: { a: [1, 0, 0], b: [3, 1, 0], label: 'Lyman β', sub: '1s ↔ 3p' },
+  ha: { a: [2, 1, 0], b: [3, 2, 0], label: 'H-α', sub: '2p ↔ 3d' },
+  hb: { a: [2, 1, 0], b: [4, 2, 0], label: 'H-β', sub: '2p ↔ 4d' },
+};
+const MODES = {
+  orbit: { label: 'Orbitals', cap: 'Each orbital is labelled by its <b>energy level n</b>, its <b>shape</b> (s, p, d, f… for 0, 1, 2, 3… units of angular momentum) and its <b>orientation</b>. Gold and blue are the two signs of the wave, crest and trough; where they meet, on a <b>node</b>, the electron is never found. Higher levels hold the electron farther out and less tightly.' },
+  mix: { label: 'Between two states', cap: 'A stationary orbital does not radiate: its cloud is perfectly still. But an electron can be in <b>two states at once</b>. Then the two waves beat against each other and the cloud <b>sloshes</b> up and down at exactly the frequency of the light that connects the two levels. The atom has become a tiny antenna. A laser tuned to that frequency is what pushes it into the mixture.' },
+  glow: { label: 'Glowing hydrogen', cap: 'A spark knocks the electron up to a high level. From there it falls back down in <b>quantum jumps</b>, each jump giving off one photon whose colour is fixed by the energy gap. Which jump comes next, and when, is random; the odds are the real decay rates of hydrogen. The colours add up to hydrogen\'s <b>spectrum</b>, the same lines astronomers see in glowing nebulae.' },
+};
+
+// ---------- controls ----------
+function chip(label, on, fn, small){ const b = document.createElement('button'); b.className = 'chip'; b.innerHTML = label + (small ? ` <small>${small}</small>` : ''); b.setAttribute('aria-pressed', on ? 'true' : 'false'); b.onclick = fn; return b; }
+function buildModes(){
+  const box = $('atomModes'); box.innerHTML = '';
+  for (const k in MODES) box.appendChild(chip(MODES[k].label, S.mode === k, () => setMode(k)));
+}
+function setMode(k){
+  S.mode = k; S.t = 0;
+  buildModes(); buildCtl();
+  $('atomCap').innerHTML = MODES[k].cap;
+  if (k === 'glow' && !S.atom) spark();
+}
+function buildCtl(){
+  const c = $('atomCtl'); c.innerHTML = '';
+  const row = (label, kids) => { const g = document.createElement('div'); g.className = 'group atomrow'; g.innerHTML = `<div class="group-label">${label}</div>`; const ch = document.createElement('div'); ch.className = 'chips'; kids.forEach(x => ch.appendChild(x)); g.appendChild(ch); c.appendChild(g); };
+  if (S.mode === 'orbit'){
+    row('Energy level n', [1, 2, 3, 4, 5, 6].map(n => chip(String(n), S.n === n, () => { S.n = n; S.l = Math.min(S.l, n - 1); S.m = Math.max(-S.l, Math.min(S.l, S.m)); buildCtl(); })));
+    row('Shape', Array.from({ length: S.n }, (_, l) => chip(LN[l], S.l === l, () => { S.l = l; S.m = 0; buildCtl(); })));
+    const ms = []; for (let m = -S.l; m <= S.l; m++) ms.push(m);
+    if (S.l > 0) row('Orientation', ms.map(m => chip(S.l <= 3 ? `${LN[S.l]}<sub>${REAL[S.l][m]}</sub>` : `m = ${m}`, S.m === m, () => { S.m = m; buildCtl(); })));
+  } else if (S.mode === 'mix'){
+    row('Transition', Object.keys(PAIRS).map(k => chip(PAIRS[k].label, S.pair === k, () => { S.pair = k; buildCtl(); }, PAIRS[k].sub)));
+    const g = document.createElement('div'); g.className = 'group atomrow';
+    const P = PAIRS[S.pair];
+    g.innerHTML = `<div class="group-label">How much of each</div><label class="sl">${otext(...P.a)} <input type="range" id="mixR" min="0" max="100" value="${Math.round(S.mix * 100)}" aria-label="Mixture"><output id="mixO">${otext(...P.b)} ${Math.round(S.mix * 100)}%</output></label>`;
+    c.appendChild(g);
+    $('mixR').oninput = e => { S.mix = e.target.value / 100; $('mixO').textContent = `${otext(...P.b)} ${e.target.value}%`; };
+  } else {
+    const b1 = chip('Spark another atom', false, () => spark()); b1.classList.add('act');
+    const b2 = chip('A whole tube of gas', S.tube, () => { S.tube = !S.tube; buildCtl(); });
+    const b3 = chip('Clear the spectrum', false, () => { S.counts = {}; S.total = 0; drawSpec(); });
+    row('Atoms', [b1, b2, b3]);
+  }
+  facts();
+}
+
+// ---------- the glowing gas: Monte Carlo cascades with the real rates ----------
+function excite(){
+  // a discharge leaves atoms in high levels; take n = 3…8 with odds ∝ 1/n, then l, m by their counts
+  const ws = []; let s = 0;
+  for (let n = 3; n <= 8; n++){ s += 1 / n; ws.push([n, s]); }
+  const u = Math.random() * s, n = ws.find(w => u <= w[1])[0];
+  let v = Math.random() * n * n, l = 0;
+  while (v > 2 * l + 1){ v -= 2 * l + 1; l++; }
+  const m = Math.floor(Math.random() * (2 * l + 1)) - l;
+  return { n, l, m };
+}
+// next jump from (n,l,m): returns { to, tau (s), line } where line is "n-n'" or null for 2s → 1s (two photons)
+function decay(st){
+  const key = `${st.n}${st.l}`, tot = D.total[key];
+  if (!tot){ // 2s: decays by emitting two photons together, lifetime 0.122 s
+    return { to: { n: 1, l: 0, m: 0 }, tau: -Math.log(Math.random()) * 0.1216, line: null };
+  }
+  let u = Math.random() * tot, pick = null;
+  for (const k in D.A){
+    if (!k.startsWith(key + '-')) continue;
+    u -= D.A[k]; if (u <= 0){ pick = k; break; }
+  }
+  if (!pick) pick = Object.keys(D.A).filter(k => k.startsWith(key + '-')).pop();
+  const n2 = +pick[3], l2 = +pick[4];
+  const br = D.branch[`${st.l},${st.m}>${l2}`];
+  let m2 = 0;
+  if (br){ let w = Math.random(); m2 = -l2; for (let i = 0; i < br.length; i++){ w -= br[i]; if (w <= 0){ m2 = i - l2; break; } } }
+  return { to: { n: n2, l: l2, m: m2 }, tau: -Math.log(Math.random()) / tot, line: `${st.n}-${n2}` };
+}
+function spark(){
+  S.atom = excite(); S.fade = 0; S.prev = null;
+  S.next = decay(S.atom); S.wait = 0; S.life = displayWait(S.next.tau);
+}
+// lifetimes span nanoseconds to a tenth of a second; on screen they are compressed logarithmically
+const displayWait = tau => Math.min(3.2, Math.max(0.6, 1.0 + 0.55 * Math.log10(tau / 1e-9)));
+function count(line, k = 1){ S.counts[line] = (S.counts[line] || 0) + k; S.total += k; }
+function stepGlow(dt){
+  if (!S.atom) return;
+  S.fade = Math.min(1, S.fade + dt * 3);
+  S.wait += dt;
+  if (S.wait >= S.life){
+    const j = S.next;
+    if (j.line){
+      count(j.line);
+      const lam = D.lam[j.line][1];
+      const ang = Math.random() * 2 * Math.PI;
+      S.photons.push({ lam, a: ang, r: 0, line: j.line });
+      S.lastLine = j.line;
+    }
+    S.lastJump = { from: S.atom, to: j.to, line: j.line, tau: j.tau, age: 0 };
+    S.prev = S.atom; S.atom = j.to; S.fade = 0;
+    if (S.atom.n === 1){ S.next = null; S.life = 1e9; S.restart = 2.2; }
+    else { S.next = decay(S.atom); S.wait = 0; S.life = displayWait(S.next.tau); }
+    facts();
+  }
+  if (S.restart != null && S.atom.n === 1){ S.restart -= dt; if (S.restart <= 0){ S.restart = null; spark(); } }
+  // a whole tube: thousands of atoms cascading each second (only their photons are counted)
+  if (S.tube) for (let i = 0; i < 300; i++){
+    let st = excite(), guard = 0;
+    while (st.n > 1 && guard++ < 40){ const j = decay(st); if (j.line) count(j.line); st = j.to; }
+  }
+}
+
+// ---------- facts ----------
+function facts(){
+  const f = []; let name = '';
+  if (S.mode === 'orbit'){
+    const { n, l, m } = S, r = (3 * n * n - l * (l + 1)) / 2;
+    name = `${oname(n, l, m)}<small>orbital</small>`;
+    f.push(['Energy', `${fmt(E_eV(n), 3)} eV`], ['To pull the electron free', `${fmt(-E_eV(n), 2)} eV`], ['Average distance from the proton', `${fmt(r * BOHR_A, 2)} Å`],
+      ['Spherical nodes (n − l − 1)', `${n - l - 1}`], ['Flat or conical nodes (l)', `${l}`], [`Orbitals at this level (n²)`, `${n * n}`]);
+    if (n > 1){ const tau = D.total[`${n}${l}`]; f.push(['Lifetime before it decays', tau ? fmtTime(1 / tau) : '0.12 s (two-photon)']); }
+    else f.push(['Lifetime', 'forever: the ground state']);
+  } else if (S.mode === 'mix'){
+    const P = PAIRS[S.pair], na = P.a[0], nb = P.b[0], dE = E_eV(nb) - E_eV(na);
+    const nu = dE / 4.135667696e-15, lam = D.lam[`${nb}-${na}`];
+    name = `${otext(...P.a)} + ${otext(...P.b)}<small>${P.label}</small>`;
+    f.push(['Energy gap', `${fmt(dE, 3)} eV`], ['Sloshing frequency', `${fmt(nu / 1e15, 3)} × 10¹⁵ per second`], ['One slosh takes', `${fmt(1e15 / nu, 3)} fs`],
+      ['Light it sends out', `${fmt(lam[na === 1 ? 0 : 1], 1)} nm${na === 1 ? ' (ultraviolet)' : ''}`], ['Slowed down on screen by', `${fmt(nu / 0.6 / 1e15, 1)} × 10¹⁵`]);
+  } else {
+    const a = S.atom;
+    name = a ? `${oname(a.n, a.l, a.m)}<small>${a.n === 1 ? 'ground state' : 'excited'}</small>` : '';
+    if (a){
+      f.push(['Energy level', `n = ${a.n}  (${fmt(E_eV(a.n), 2)} eV)`]);
+      if (S.next) f.push(['This jump came after', fmtTime(S.next.tau)]);
+      if (S.lastJump && S.lastJump.line) f.push(['Last photon', `${fmt(D.lam[S.lastJump.line][1], 1)} nm ${LINE_NAMES[S.lastJump.line] ? '· ' + LINE_NAMES[S.lastJump.line] : ''}`]);
+      else if (S.lastJump) f.push(['Last jump', '2s → 1s, two photons at once']);
+      f.push(['Photons counted', fmt(S.total, 0)]);
+    }
+  }
+  $('atomName').innerHTML = name;
+  $('atomFacts').innerHTML = f.map(([a, b]) => `<dt>${a}</dt><dd>${b}</dd>`).join('');
+}
+function fmtTime(s){
+  if (s < 1e-6) return `${fmt(s * 1e9, s < 1e-8 ? 2 : 1)} ns`;
+  if (s < 1e-3) return `${fmt(s * 1e6, 2)} µs`;
+  return `${fmt(s, 3)} s`;
+}
+
+// ---------- drawing ----------
+let dpr = 1;
+function resize(){
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const r = cv.getBoundingClientRect();
+  cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr);
+  ov.width = cv.width; ov.height = cv.height;
+  const sc = $('specCv'), hb = +sc.dataset.h, rr = sc.getBoundingClientRect();
+  sc.style.height = hb + 'px'; sc.width = Math.round(rr.width * dpr); sc.height = Math.round(hb * dpr);
+  drawSpec();
+}
+function render(dt){
+  let states, B, dotZ = 0, gain = 1;
+  if (S.mode === 'orbit'){
+    B = V.boxFor(S.n); states = [{ n: S.n, l: S.l, m: S.m, c: [1, 0] }];
+  } else if (S.mode === 'mix'){
+    const P = PAIRS[S.pair];
+    B = V.boxFor(P.b[0]);
+    S.t += dt;
+    // relative phase advances at the beat frequency, slowed to 0.6 cycles per second
+    const ph = 2 * Math.PI * 0.6 * S.t, ca = Math.sqrt(1 - S.mix), cb = Math.sqrt(S.mix);
+    states = [{ n: P.a[0], l: P.a[1], m: 0, c: [ca, 0] }, { n: P.b[0], l: P.b[1], m: 0, c: [cb * Math.cos(ph), -cb * Math.sin(ph)] }];
+    // dipole ⟨z⟩ = 2 Re(ca* cb e^{-iφ}) <a|z|b>
+    const zab = H.radInt(P.b[0], P.b[1], P.a[0], P.a[1]) * (Math.max(P.a[1], P.b[1]) / Math.sqrt((2 * P.a[1] + 1) * (2 * P.b[1] + 1)));
+    dotZ = 2 * ca * cb * Math.cos(ph) * zab;
+    S.zab = zab;
+  } else {
+    const a = S.atom || { n: 1, l: 0, m: 0 };
+    B = V.boxFor(Math.max(a.n, S.prev ? S.prev.n : 1, 4));
+    // a jump: the old cloud fades as the new one appears (the jump itself is instantaneous; this is for the eye)
+    if (S.prev && S.fade < 1){
+      const f = S.fade;
+      states = [{ n: S.prev.n, l: S.prev.l, m: S.prev.m, c: [Math.sqrt(1 - f), 0] }, { n: a.n, l: a.l, m: a.m, c: [Math.sqrt(f), 0] }];
+    } else states = [{ n: a.n, l: a.l, m: a.m, c: [1, 0] }];
+    // keep the exposure steady while the cloud changes size
+    gain = 1;
+  }
+  V.draw(states, B, gain, dotZ);
+  overlay(B, dt);
+  // scale bar: 1 Å at the origin's depth
+  const p0 = V.project([0, 0, 0], B), p1 = V.project([0, 1 / BOHR_A, 0].map((v, i) => i === 1 ? v : 0), B);
+  const ex = [-Math.sin(V.yaw), Math.cos(V.yaw), 0], q = V.project(ex.map(v => v / BOHR_A), B);
+  const px = Math.hypot(q[0] - p0[0], q[1] - p0[1]) / dpr;
+  const len = [1, 2, 5, 10, 20].find(v => v * px > 46) || 20;
+  $('atomScale').style.width = len * px + 'px'; $('atomScale').lastChild.textContent = `${len} Å`;
+}
+function overlay(B, dt){
+  const w = ov.width, h = ov.height;
+  octx.clearRect(0, 0, w, h);
+  if (S.mode === 'glow'){
+    // photons fly out from the nucleus
+    const c = V.project([0, 0, 0], B);
+    S.photons = S.photons.filter(p => p.r < 1.3);
+    for (const p of S.photons){
+      p.r += dt * 0.55;
+      const R = p.r * Math.max(w, h) * 0.5, x = c[0] + Math.cos(p.a) * R, y = c[1] + Math.sin(p.a) * R;
+      const col = lamRGB(p.lam), a = Math.max(0, 1 - p.r / 1.3);
+      // a short wave packet: a few wiggles along the direction of travel
+      octx.strokeStyle = rgba(col, a); octx.lineWidth = 2 * dpr; octx.beginPath();
+      for (let s = -18; s <= 18; s++){
+        const u = s * 2.2 * dpr, amp = 6 * dpr * Math.exp(-(s * s) / 90) * Math.sin(s * 0.9);
+        const xx = x + Math.cos(p.a) * u - Math.sin(p.a) * amp, yy = y + Math.sin(p.a) * u + Math.cos(p.a) * amp;
+        s === -18 ? octx.moveTo(xx, yy) : octx.lineTo(xx, yy);
+      }
+      octx.stroke();
+      octx.fillStyle = rgba(col, a); octx.font = `${11 * dpr}px "IBM Plex Mono", monospace`;
+      octx.fillText(`${Math.round(p.lam)} nm`, x + 14 * dpr, y - 10 * dpr);
+    }
+    levels(w, h);
+  }
+}
+// energy-level diagram (Grotrian): levels by n (height) and shape l (column); the last jump as an arrow
+function levels(w, h){
+  // levels spaced as 1/n for legibility (the true energies, −13.6/n² eV, crowd together near the top)
+  const x0 = 18 * dpr, y0 = 46 * dpr, colW = 17 * dpr, H0 = Math.min(h * 0.55, 380 * dpr);
+  const Y = n => y0 + H0 * (1 / n - 1 / 8) / (1 - 1 / 8);
+  octx.font = `${10 * dpr}px "IBM Plex Mono", monospace`;
+  octx.fillStyle = 'rgba(230,234,240,0.45)';
+  for (let l = 0; l < 8; l++) octx.fillText(LN[l], x0 + l * colW + 2 * dpr, y0 - 10 * dpr);
+  for (let n = 1; n <= 8; n++){
+    for (let l = 0; l < n; l++){
+      const on = S.atom && S.atom.n === n && S.atom.l === l;
+      octx.fillStyle = on ? 'rgba(255,196,107,1)' : 'rgba(230,234,240,0.32)';
+      octx.fillRect(x0 + l * colW, Y(n) - (on ? 1.5 : 0.5) * dpr, colW - 4 * dpr, on ? 3 * dpr : 1 * dpr);
+    }
+    if (true){ octx.fillStyle = 'rgba(230,234,240,0.4)'; octx.fillText(`n=${n}`, x0 + 8 * colW + 2 * dpr, Y(n) + 3 * dpr); }
+  }
+  const J = S.lastJump;
+  if (J){
+    J.age = (J.age || 0) + 1 / 60;
+    const a = Math.max(0, 1 - J.age / 2.5);
+    if (a > 0){
+      const xa = x0 + J.from.l * colW + colW / 2 - 2 * dpr, ya = Y(J.from.n), xb = x0 + J.to.l * colW + colW / 2 - 2 * dpr, yb = Y(J.to.n);
+      const col = J.line ? lamRGB(D.lam[J.line][1]) : [200, 200, 200];
+      octx.strokeStyle = rgba(col, a); octx.lineWidth = 1.6 * dpr; octx.beginPath(); octx.moveTo(xa, ya); octx.lineTo(xb, yb); octx.stroke();
+      const an = Math.atan2(yb - ya, xb - xa); octx.fillStyle = rgba(col, a); octx.beginPath();
+      octx.moveTo(xb, yb); octx.lineTo(xb - 7 * dpr * Math.cos(an - 0.4), yb - 7 * dpr * Math.sin(an - 0.4)); octx.lineTo(xb - 7 * dpr * Math.cos(an + 0.4), yb - 7 * dpr * Math.sin(an + 0.4)); octx.fill();
+    }
+  }
+}
+// spectrum: log wavelength axis 90 nm – 8 µm, lines grouped by n → n'
+function drawSpec(){
+  const sc = $('specCv'), c = sc.getContext('2d'), w = sc.width, h = sc.height;
+  c.clearRect(0, 0, w, h);
+  const padL = 10 * dpr, padR = 10 * dpr, top = 26 * dpr, bot = 30 * dpr;
+  const lo = Math.log10(90), hi = Math.log10(8000), X = nm => padL + (Math.log10(nm) - lo) / (hi - lo) * (w - padL - padR);
+  // the visible band as a faint rainbow
+  for (let nm = 380; nm < 750; nm += 2){ c.fillStyle = rgba(lamRGB(nm), 0.10); c.fillRect(X(nm), top, X(nm + 2) - X(nm) + 1, h - top - bot); }
+  c.font = `${11 * dpr}px "IBM Plex Mono", monospace`; c.fillStyle = 'rgba(155,163,180,0.9)';
+  c.fillText('ultraviolet', X(95), top - 9 * dpr); c.fillText('visible', X(400), top - 9 * dpr); c.fillText('infrared', X(900), top - 9 * dpr);
+  c.strokeStyle = 'rgba(230,234,240,0.18)'; c.lineWidth = 1; c.beginPath(); c.moveTo(padL, h - bot); c.lineTo(w - padR, h - bot); c.stroke();
+  c.fillStyle = 'rgba(104,112,132,1)';
+  for (const t of [100, 200, 500, 1000, 2000, 5000]){ const x = X(t); c.fillRect(x, h - bot, 1, 4 * dpr); c.fillText(t >= 1000 ? `${t / 1000} µm` : `${t}`, x - 10 * dpr, h - bot + 16 * dpr); }
+  let mx = 0; for (const k in S.counts) mx = Math.max(mx, S.counts[k]);
+  const lab = [];
+  for (const k in D.lam){
+    const lam = D.lam[k][1], n = S.counts[k] || 0, x = X(lam);
+    if (x < padL || x > w - padR) continue;
+    // faint tick where every line would appear; bright bar for counted photons
+    c.fillStyle = 'rgba(230,234,240,0.10)'; c.fillRect(x, h - bot - 6 * dpr, 1, 6 * dpr);
+    if (!n) continue;
+    const hh = (h - top - bot) * Math.sqrt(n / mx), col = lamRGB(lam);
+    c.fillStyle = rgba(col, 0.95); c.fillRect(x - 1 * dpr, h - bot - hh, 2 * dpr, hh);
+    if (LINE_NAMES[k] && n / mx > 0.03) lab.push([x, h - bot - hh, LINE_NAMES[k], col]);
+  }
+  c.font = `${11 * dpr}px "IBM Plex Sans", sans-serif`;
+  // label the tallest lines first, skipping any that would collide with one already placed
+  lab.sort((a, b) => a[1] - b[1]);
+  const placed = [];
+  for (const [x, y, t, col] of lab){
+    const tw = c.measureText(t).width, ly = Math.max(top + 10 * dpr, y + 10 * dpr);
+    if (placed.some(p => x + 4 * dpr < p[0] + p[2] + 6 * dpr && p[0] < x + 4 * dpr + tw + 6 * dpr && Math.abs(p[1] - ly) < 16 * dpr)) continue;
+    c.fillStyle = rgba(col, 1); c.fillText(t, x + 4 * dpr, ly); placed.push([x + 4 * dpr, ly, tw]);
+  }
+  if (!S.total){ c.fillStyle = 'rgba(155,163,180,0.9)'; c.font = `${13 * dpr}px "IBM Plex Sans", sans-serif`; c.fillText('Choose "Glowing hydrogen" above: every photon the atoms give off lands here.', padL + 8 * dpr, top + 40 * dpr); }
+}
+
+// ---------- loop, input ----------
+let last = performance.now(), specT = 0, factT = 0;
+function frame(now){
+  requestAnimationFrame(frame);
+  const dt = Math.min(0.1, (now - last) / 1000); last = now;
+  if (!S.visible) return;
+  if (!S.drag) V.yaw += dt * 0.12;
+  if (S.mode === 'glow') stepGlow(dt);
+  render(dt);
+  if (now - specT > 250){ drawSpec(); specT = now; }
+  if (S.mode === 'glow' && S.tube && now - factT > 500){ facts(); factT = now; }
+}
+cv.addEventListener('pointerdown', e => { S.drag = { x: e.clientX, y: e.clientY }; cv.setPointerCapture(e.pointerId); });
+cv.addEventListener('pointermove', e => { if (!S.drag) return; V.yaw -= (e.clientX - S.drag.x) * 0.008; V.pitch = Math.max(-1.4, Math.min(1.4, V.pitch + (e.clientY - S.drag.y) * 0.008)); S.drag = { x: e.clientX, y: e.clientY }; });
+cv.addEventListener('pointerup', () => { S.drag = null; });
+new IntersectionObserver(es => es.forEach(e => { S.visible = e.isIntersecting; last = performance.now(); }), { rootMargin: '200px' }).observe(cv);
+window.addEventListener('resize', resize);
+resize(); buildModes(); setMode('orbit');
+requestAnimationFrame(frame);
+return { S, setMode, spark, V };
+})();
+
+// H₂⁺, the simplest chemical bond: exact bonding (1sσg) and antibonding (2pσu) clouds for any proton
+// spacing, the exact potential curves, and the electron hopping between the protons.
+const BOND = (() => {
+const $ = id => document.getElementById(id);
+const cv = $('bondCv'); if (!cv) return null;
+const V = AtomView(cv); if (!V) return null;
+const D = BOND_DATA, HA = 27.211386, BA = 0.529177; // eV/Hartree, Å/bohr
+const fmt = (x, d) => x.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+const S = { mode: 'g', R: 1.06 / BA, t: 0, g: null, u: null, texG: null, texU: null, B: 10, visible: false, drag: null, pend: 0 };
+const MODES = {
+  g: { label: 'Bonding', cap: 'The <b>bonding orbital</b>: the electron\'s wave has the same sign around both protons, so the two halves add up in the middle. The extra charge between the protons pulls both of them inward. At <b>1.06 Å</b> the pull and the protons\' repulsion balance: that is the bond length.' },
+  u: { label: 'Antibonding', cap: 'The <b>antibonding orbital</b>: the wave has opposite signs on the two protons and cancels exactly in the middle, a node where the electron is never found. With no glue between them the protons push apart at every spacing. Exciting the electron into this state breaks the molecule.' },
+  hop: { label: 'Electron hopping', cap: 'Put the electron on <b>one proton</b>. That is not a stationary state but an even mix of bonding and antibonding, and their slightly different energies make the electron <b>tunnel back and forth</b>. Close together it flips in a fraction of a femtosecond; pull the protons apart and the hop slows exponentially.' },
+};
+function solve(){
+  S.B = S.R / 2 + 7.5;
+  S.g = H2p.wavefunction(S.R, 0); S.u = H2p.wavefunction(S.R, 1);
+  const pk = w => { let mx = 0, my = 0; for (const v of w.X) mx = Math.max(mx, Math.abs(v)); for (const v of w.Y) my = Math.max(my, Math.abs(v)); return (mx * my) ** 2; };
+  S.pkG = pk(S.g); S.pkU = pk(S.u);
+  S.texG = V.fieldH2(S.g, S.B, S.texG); S.texU = V.fieldH2(S.u, S.B, S.texU);
+  facts(); drawChart();
+}
+function facts(){
+  const R = S.R, Eg = S.g.E, Eu = S.u.E, dE = Eu - Eg;
+  const bind = (Eg + 0.5) * HA;
+  const f = [['Proton spacing', `${fmt(R * BA, 2)} Å`],
+    ['Bonding energy here', `${fmt(bind, 2)} eV`],
+    ['Antibonding energy here', `${fmt((Eu + 0.5) * HA, 2)} eV`]];
+  // the hop: half a beat period between the two states
+  const hop = Math.PI / dE * 0.02418884; // fs
+  f.push(['Electron hops across every', hop < 1000 ? `${fmt(hop, hop < 1 ? 3 : 1)} fs` : hop < 1e6 ? `${fmt(hop / 1000, 1)} ps` : `${fmt(hop / 1e6, 1)} ns`]);
+  f.push(['Energy to break the bond', `${fmt(-(D.vib[0] + 0.5) * HA, 3)} eV (measured 2.651)`]);
+  $('bondFacts').innerHTML = f.map(([a, b]) => `<dt>${a}</dt><dd>${b}</dd>`).join('');
+  $('bondName').innerHTML = `${fmt(R * BA, 2)} Å<small>${S.mode === 'g' ? 'bonding' : S.mode === 'u' ? 'antibonding' : 'hopping'}</small>`;
+}
+let dpr = 1;
+function resize(){
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const r = cv.getBoundingClientRect(); cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr);
+  const c = $('bondChart'), hb = +c.dataset.h, rr = c.getBoundingClientRect();
+  c.style.height = hb + 'px'; c.width = Math.round(rr.width * dpr); c.height = Math.round(hb * dpr);
+  drawChart();
+}
+function drawChart(){
+  const c = $('bondChart'), x = c.getContext('2d'), w = c.width, h = c.height;
+  if (!w || !S.g) return;
+  x.clearRect(0, 0, w, h);
+  const pl = 34 * dpr, pr = 10 * dpr, pt = 10 * dpr, pb = 26 * dpr;
+  const R0 = 0.3, R1 = 4.2, E0 = -3.2, E1 = 4;
+  const X = r => pl + (r - R0) / (R1 - R0) * (w - pl - pr), Y = e => pt + (E1 - e) / (E1 - E0) * (h - pt - pb);
+  x.font = `${11 * dpr}px "IBM Plex Mono", monospace`; x.fillStyle = 'rgba(104,112,132,1)';
+  for (let e = -3; e <= 4; e++){ x.strokeStyle = e === 0 ? 'rgba(230,234,240,0.22)' : 'rgba(230,234,240,0.06)'; x.beginPath(); x.moveTo(pl, Y(e)); x.lineTo(w - pr, Y(e)); x.stroke(); if (e % 1 === 0) x.fillText(String(e), 6 * dpr, Y(e) + 4 * dpr); }
+  for (let r = 0.5; r <= 4; r += 0.5) x.fillText(r % 1 ? '' : `${r} Å`, X(r) - 10 * dpr, h - 8 * dpr);
+  const curve = (arr, col) => {
+    x.strokeStyle = col; x.lineWidth = 1.8 * dpr; x.beginPath(); let first = true;
+    D.R.forEach((rb, i) => { const r = rb * BA, e = (arr[i] + 0.5) * HA; if (r < R0 || r > R1) return; const y = Y(Math.min(E1 + 1, e)); first ? x.moveTo(X(r), y) : x.lineTo(X(r), y); first = false; });
+    x.stroke();
+  };
+  curve(D.Eg, 'rgba(255,196,107,0.95)'); curve(D.Eu, 'rgba(143,195,236,0.95)');
+  // lowest vibrational level: between the classical turning points on the bonding curve
+  const ev0 = (D.vib[0] + 0.5) * HA; let ra = null, rb = null;
+  D.R.forEach((r, i) => { const e = (D.Eg[i] + 0.5) * HA; if (e <= ev0){ if (ra == null) ra = r; rb = r; } });
+  x.strokeStyle = 'rgba(143,211,168,0.95)'; x.lineWidth = 1.5 * dpr; x.beginPath(); x.moveTo(X(ra * BA), Y(ev0)); x.lineTo(X(rb * BA), Y(ev0)); x.stroke();
+  x.fillStyle = 'rgba(143,211,168,0.95)'; x.fillText('lowest vibration: 2.65 eV to break', X(ra * BA) + 2 * dpr, Y(ev0) + 16 * dpr);
+  // current spacing
+  const r = S.R * BA;
+  x.strokeStyle = 'rgba(230,234,240,0.3)'; x.setLineDash([3 * dpr, 4 * dpr]); x.beginPath(); x.moveTo(X(r), pt); x.lineTo(X(r), h - pb); x.stroke(); x.setLineDash([]);
+  for (const [E, col] of [[S.g.E, '#ffc46b'], [S.u.E, '#8fc3ec']]){ const e = (E + 0.5) * HA; if (e > E1) continue; x.fillStyle = col; x.beginPath(); x.arc(X(r), Y(e), 4.5 * dpr, 0, 6.2832); x.fill(); }
+}
+function render(dt){
+  let states;
+  if (S.mode === 'g') states = [{ tex: S.texG, pk: S.pkG, c: [1, 0] }];
+  else if (S.mode === 'u') states = [{ tex: S.texU, pk: S.pkU, c: [1, 0] }];
+  else {
+    // ψ = (g + e^{−iΔE t} u)/√2, one hop shown every 2.5 s whatever the real speed
+    S.t += dt;
+    const ph = Math.PI * S.t / 2.5, s = Math.SQRT1_2;
+    states = [{ tex: S.texG, pk: S.pkG, c: [s, 0] }, { tex: S.texU, pk: Math.max(S.pkG, S.pkU), c: [s * Math.cos(ph), -s * Math.sin(ph)] }];
+  }
+  // exposure: the density peaks in a sharp cusp at each proton, so lift the bulk of the cloud
+  V.draw(states, S.B, S.mode === 'hop' ? 2.2 : 3, 0, [[0, 0, S.R / 2], [0, 0, -S.R / 2]]);
+  const p0 = V.project([0, 0, 0], S.B), q = V.project([-Math.sin(V.yaw) / BA, Math.cos(V.yaw) / BA, 0], S.B);
+  $('bondScale').style.width = Math.hypot(q[0] - p0[0], q[1] - p0[1]) / dpr + 'px';
+}
+function setMode(k){
+  S.mode = k; S.t = 0;
+  const box = $('bondModes'); box.innerHTML = '';
+  for (const m in MODES){ const b = document.createElement('button'); b.className = 'chip'; b.textContent = MODES[m].label; b.setAttribute('aria-pressed', m === k ? 'true' : 'false'); b.onclick = () => setMode(m); box.appendChild(b); }
+  $('bondCap').innerHTML = MODES[k].cap;
+  if (S.g) facts();
+}
+const rIn = $('bondR');
+const rLab = () => { $('bondRo').textContent = `${fmt(+rIn.value, 2)} Å`; };
+rIn.oninput = () => { rLab(); clearTimeout(S.pend); S.pend = setTimeout(() => { S.R = +rIn.value / BA; solve(); }, 40); };
+rLab();
+let last = performance.now();
+function frame(now){
+  requestAnimationFrame(frame);
+  const dt = Math.min(0.1, (now - last) / 1000); last = now;
+  if (!S.visible) return;
+  if (!S.drag) V.yaw += dt * 0.1;
+  render(dt);
+}
+cv.addEventListener('pointerdown', e => { S.drag = { x: e.clientX, y: e.clientY }; cv.setPointerCapture(e.pointerId); });
+cv.addEventListener('pointermove', e => { if (!S.drag) return; V.yaw -= (e.clientX - S.drag.x) * 0.008; V.pitch = Math.max(-1.4, Math.min(1.4, V.pitch + (e.clientY - S.drag.y) * 0.008)); S.drag = { x: e.clientX, y: e.clientY }; });
+cv.addEventListener('pointerup', () => { S.drag = null; });
+new IntersectionObserver(es => es.forEach(e => { S.visible = e.isIntersecting; last = performance.now(); }), { rootMargin: '200px' }).observe(cv);
+window.addEventListener('resize', resize);
+V.pitch = 0.12; V.dist = 2.1;
+setMode('g'); resize(); solve();
+requestAnimationFrame(frame);
+return { S, setMode };
+})();
+
+// Bloch equations for MRI, in the frame rotating at the Larmor frequency. A voxel is a set of
+// isochromats (groups of protons) with slightly different precession rates from field inhomogeneity
+// (a Lorentzian spread of width 1/T2′, so the free decay is exactly exp(−t/T2*), 1/T2* = 1/T2 + 1/T2′).
+// Each step is exact: precession about z, then T1/T2 relaxation. RF pulses are instantaneous rotations.
+const Bloch = (() => {
+  const GAMMA_MHZ_T = 42.577478; // proton gyromagnetic ratio / 2π
+  // tissues at 3 T, 37 °C: Stanisz et al. 2005 (MRM 54:507) except fat (de Bazelaire et al. 2004,
+  // Radiology 230:652) and CSF (typical in-vivo values; literature T2 spans 0.2–2.2 s). PD: relative
+  // water (proton) density, approximate.
+  const TISSUES = {
+    wm: { name: 'White matter', T1: 1084, T2: 69, PD: 0.70 },
+    gm: { name: 'Grey matter', T1: 1820, T2: 99, PD: 0.80 },
+    csf: { name: 'Cerebrospinal fluid', T1: 4000, T2: 2000, PD: 1.00, approx: true },
+    fat: { name: 'Fat', T1: 382, T2: 68, PD: 0.90 },
+    blood: { name: 'Blood', T1: 1932, T2: 275, PD: 0.85 },
+    muscle: { name: 'Muscle', T1: 1412, T2: 50, PD: 0.75 },
+    liver: { name: 'Liver', T1: 818, T2: 42, PD: 0.75 },
+  };
+  function makeVoxel(n, T1, T2, T2p, seed = 1){
+    let s = seed;
+    const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
+    const iso = [];
+    for (let i = 0; i < n; i++){
+      // stratified Lorentzian offsets (rad/ms): tan(π(u − ½)) / T2′
+      const u = (i + 0.5) / n, dw = Math.tan(Math.PI * (u - 0.5)) / T2p;
+      iso.push({ x: 0, y: 0, z: 1, dw, ph: rnd() });
+    }
+    return { iso, T1, T2, T2p, t: 0 };
+  }
+  // rotate every isochromat by angle a (radians) about the x axis (an RF pulse along x)
+  function pulse(v, a, axis = 'x'){
+    const c = Math.cos(a), s = Math.sin(a);
+    for (const m of v.iso){
+      if (axis === 'x'){ const y = m.y * c - m.z * s, z = m.y * s + m.z * c; m.y = y; m.z = z; }
+      else { const x = m.x * c + m.z * s, z = -m.x * s + m.z * c; m.x = x; m.z = z; }
+    }
+  }
+  function free(v, dt){ // dt in ms
+    const e2 = Math.exp(-dt / v.T2), e1 = Math.exp(-dt / v.T1);
+    for (const m of v.iso){
+      const a = m.dw * dt, c = Math.cos(a), s = Math.sin(a);
+      const x = m.x * c - m.y * s, y = m.x * s + m.y * c;
+      m.x = x * e2; m.y = y * e2; m.z = 1 + (m.z - 1) * e1;
+    }
+    v.t += dt;
+  }
+  function signal(v){ let x = 0, y = 0, z = 0; for (const m of v.iso){ x += m.x; y += m.y; z += m.z; } const n = v.iso.length; return { x: x / n, y: y / n, z: z / n, mxy: Math.hypot(x, y) / n }; }
+  // steady-state spin-echo signal (90°–180°, TR ≫ TE): the image contrast equation
+  const spinEcho = (t, TR, TE) => t.PD * (1 - Math.exp(-TR / t.T1)) * Math.exp(-TE / t.T2);
+  const larmorMHz = B => GAMMA_MHZ_T * B;
+  // excess fraction of proton spins aligned with the field at body temperature: tanh(ħω/2kT) ≈ ħω/2kT
+  const polarisation = (B, T = 310.15) => Math.tanh(6.62607015e-34 * larmorMHz(B) * 1e6 / (2 * 1.380649e-23 * T));
+  return { TISSUES, makeVoxel, pulse, free, signal, spinEcho, larmorMHz, polarisation, GAMMA_MHZ_T };
+})();
+
+// MRI section: a voxel of proton spins under the Bloch equations (tip, dephase, refocus, recover),
+// and a head phantom imaged with the spin-echo signal equation using measured 3 T relaxation times.
+const MRI = (() => {
+const $ = id => document.getElementById(id);
+const cv = $('spinCv'); if (!cv) return null;
+const ctx = cv.getContext('2d'), sig = $('sigCv'), sctx = sig.getContext('2d'), scan = $('scanCv'), gctx = scan.getContext('2d');
+const T = Bloch.TISSUES, fmt = (x, d) => x.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+const T2P = 30; // ms: field inhomogeneity across the voxel (sets T2*)
+const S = { tissue: 'wm', v: null, auto: true, TE: 60, TR: 1500, tSeq: 0, hist: [], rate: 50, visible: false, yaw: 0.5, marks: [], TRimg: 500, TEimg: 15, w: 't1' };
+function newVoxel(){ const t = T[S.tissue]; S.v = Bloch.makeVoxel(240, t.T1, t.T2, T2P, 7); S.hist = []; S.marks = []; S.tSeq = 0; S.started = false; }
+function p90(){ Bloch.pulse(S.v, Math.PI / 2); S.marks.push([S.v.t, '90°']); }
+function p180(){ Bloch.pulse(S.v, Math.PI, 'y'); S.marks.push([S.v.t, '180°']); }
+
+let dpr = 1;
+function size(c, hb){ const r = c.getBoundingClientRect(); if (hb){ c.style.height = hb + 'px'; } c.width = Math.round(r.width * dpr); c.height = Math.round((hb || r.height) * dpr); }
+function resize(){ dpr = Math.min(window.devicePixelRatio || 1, 2); size(cv); size(sig, +sig.dataset.h); size(scan); drawScan(); }
+
+// ---------- the spin voxel ----------
+function proj(x, y, z){
+  const c = Math.cos(S.yaw), s = Math.sin(S.yaw);
+  const X = x * c - y * s, Y = x * s * 0.35 + y * c * 0.35;
+  return [X, -z + Y];
+}
+function drawSpins(){
+  const w = cv.width, h = cv.height, R = Math.min(w, h) * 0.44, cx = w / 2, cy = h * 0.6;
+  ctx.fillStyle = '#05070b'; ctx.fillRect(0, 0, w, h);
+  // axes and the transverse plane
+  ctx.strokeStyle = 'rgba(230,234,240,0.12)'; ctx.lineWidth = 1 * dpr; ctx.beginPath();
+  for (let a = 0; a <= 64; a++){ const [x, y] = proj(Math.cos(a / 64 * 6.2832), Math.sin(a / 64 * 6.2832), 0); a ? ctx.lineTo(cx + x * R, cy + y * R) : ctx.moveTo(cx + x * R, cy + y * R); }
+  ctx.stroke();
+  const axis = (v, lab) => { const [x, y] = proj(...v); ctx.strokeStyle = 'rgba(230,234,240,0.25)'; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + x * R * 1.15, cy + y * R * 1.15); ctx.stroke(); ctx.fillStyle = 'rgba(155,163,180,0.9)'; ctx.font = `${11 * dpr}px "IBM Plex Mono", monospace`; ctx.fillText(lab, cx + x * R * 1.2, cy + y * R * 1.2); };
+  axis([0, 0, 1], 'B₀ field'); axis([1, 0, 0], 'x'); axis([0, 1, 0], 'y');
+  // isochromats: gold precess faster than average, blue slower
+  for (let i = 0; i < S.v.iso.length; i += 3){
+    const m = S.v.iso[i], [x, y] = proj(m.x, m.y, m.z), f = Math.atan(m.dw * T2P) / Math.PI + 0.5;
+    ctx.strokeStyle = `rgba(${Math.round(77 + 178 * f)},${Math.round(140 + 60 * f)},${Math.round(255 - 148 * f)},0.55)`; ctx.lineWidth = 1 * dpr;
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + x * R, cy + y * R); ctx.stroke();
+  }
+  // the net magnetisation
+  const s = Bloch.signal(S.v), [x, y] = proj(s.x, s.y, s.z);
+  ctx.strokeStyle = 'rgba(255,255,255,0.95)'; ctx.lineWidth = 3 * dpr; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + x * R, cy + y * R); ctx.stroke();
+  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(cx + x * R, cy + y * R, 4 * dpr, 0, 6.2832); ctx.fill();
+  $('spinLab').innerHTML = `${T[S.tissue].name} · seen turning with the spins at 127.7 MHz<br><b>${fmt(S.v.t, 0)} ms</b><br>signal ${fmt(s.mxy * 100, 0)}% · along field ${fmt(s.z * 100, 0)}%`;
+}
+function drawSignal(){
+  const w = sig.width, h = sig.height, span = 3000, t1 = S.v.t, t0 = t1 - span;
+  sctx.clearRect(0, 0, w, h);
+  const X = t => (t - t0) / span * w, Y = v => h * 0.5 - v * h * 0.42;
+  sctx.strokeStyle = 'rgba(230,234,240,0.12)'; sctx.beginPath(); sctx.moveTo(0, Y(0)); sctx.lineTo(w, Y(0)); sctx.stroke();
+  sctx.font = `${10 * dpr}px "IBM Plex Mono", monospace`;
+  for (const [t, lab] of S.marks){ if (t < t0) continue; sctx.fillStyle = 'rgba(255,157,92,0.8)'; sctx.fillRect(X(t), 4 * dpr, 1 * dpr, h - 8 * dpr); sctx.fillText(lab, X(t) + 3 * dpr, 12 * dpr); }
+  for (const [k, col] of [[2, 'rgba(143,211,168,0.9)'], [1, 'rgba(255,196,107,0.95)']]){
+    sctx.strokeStyle = col; sctx.lineWidth = 1.5 * dpr; sctx.beginPath(); let first = true;
+    for (const p of S.hist){ if (p[0] < t0) continue; first ? sctx.moveTo(X(p[0]), Y(p[k])) : sctx.lineTo(X(p[0]), Y(p[k])); first = false; }
+    sctx.stroke();
+  }
+  sctx.fillStyle = 'rgba(104,112,132,1)'; sctx.fillText('3 s of scanner time ←', w - 150 * dpr, h - 6 * dpr);
+}
+function stepSpins(dtSec){
+  // playback: rate 0…100 maps to 5…500 ms of scanner time per second
+  const ms = dtSec * 5 * Math.pow(100, S.rate / 100);
+  const sub = Math.max(1, Math.ceil(ms / 0.5)), d = ms / sub;
+  for (let i = 0; i < sub; i++){
+    if (S.auto){
+      // 90° at the start of each repeat, 180° at TE/2, echo at TE
+      const before = S.tSeq; S.tSeq += d;
+      if (!S.started){ p90(); S.started = true; S.tSeq = 0; }
+      else if (before < S.TE / 2 && S.tSeq >= S.TE / 2) p180();
+      else if (S.tSeq >= S.TR){ p90(); S.tSeq = 0; }
+    }
+    Bloch.free(S.v, d);
+    const s = Bloch.signal(S.v);
+    S.hist.push([S.v.t, s.mxy, s.z]);
+  }
+  const cut = S.v.t - 3200; while (S.hist.length && S.hist[0][0] < cut) S.hist.shift();
+}
+
+// ---------- the head phantom ----------
+const NP = 220, lab = new Float32Array(NP * NP * 6); // fractions of: bone, fat, csf, gm, wm, blood(none) → 6 slots
+const KEYS = ['bone', 'fat', 'csf', 'gm', 'wm', 'muscle'];
+(function phantom(){
+  const L = new Uint8Array(NP * NP);
+  for (let j = 0; j < NP; j++) for (let i = 0; i < NP; i++){
+    const x = (i + 0.5) / NP * 2 - 1, y = (j + 0.5) / NP * 2 - 1;
+    const r = Math.hypot(x / 0.74, y / 0.9), th = Math.atan2(y, x);
+    let k = 255;
+    if (r < 1){
+      k = 1; // scalp fat
+      if (r < 0.955) k = 0; // skull
+      if (r < 0.905) k = 2; // CSF over the brain
+      const cortex = 0.885 - 0.035 * (0.5 + 0.5 * Math.sin(13 * th + 1.3 * Math.sin(3 * th)));
+      if (r < cortex) k = 3; // grey matter
+      const wmEdge = cortex - 0.12 - 0.05 * (0.5 + 0.5 * Math.sin(13 * th + 1.3 * Math.sin(3 * th)));
+      if (r < wmEdge) k = 4; // white matter
+      // sulci: thin CSF clefts into the cortex
+      if (r < 0.905 && r > wmEdge && Math.abs(Math.sin(6.5 * th + 0.65 * Math.sin(3 * th))) < 0.06) k = 2;
+      // lateral ventricles (two crescents) and deep grey nuclei
+      const v1 = Math.hypot((x - 0.11) / 0.07, (y + 0.08) / 0.26), v2 = Math.hypot((x + 0.11) / 0.07, (y + 0.08) / 0.26);
+      if (Math.hypot((x - 0.2) / 0.08, (y - 0.1) / 0.13) < 1 || Math.hypot((x + 0.2) / 0.08, (y - 0.1) / 0.13) < 1) k = 3;
+      if (v1 < 1 || v2 < 1) k = 2;
+      // interhemispheric fissure
+      if (Math.abs(x) < 0.012 && Math.abs(y) > 0.36 && r < 0.905) k = 2;
+    }
+    L[i + NP * j] = k;
+  }
+  // partial volume: average labels over a small neighbourhood
+  for (let j = 0; j < NP; j++) for (let i = 0; i < NP; i++){
+    let n = 0;
+    for (let b = -1; b <= 1; b++) for (let a = -1; a <= 1; a++){
+      const ii = Math.min(NP - 1, Math.max(0, i + a)), jj = Math.min(NP - 1, Math.max(0, j + b)), k = L[ii + NP * jj];
+      if (k < 6) lab[6 * (i + NP * j) + k] += 1; n++;
+    }
+    for (let k = 0; k < 6; k++) lab[6 * (i + NP * j) + k] /= n;
+  }
+})();
+const noise = Float32Array.from({ length: NP * NP }, () => (Math.random() + Math.random() + Math.random() - 1.5) * 0.035);
+function drawScan(){
+  const w = scan.width, h = scan.height; if (!w) return;
+  const img = gctx.createImageData(NP, NP), I = KEYS.map(k => k === 'bone' ? 0 : Bloch.spinEcho(T[k], S.TRimg, S.TEimg));
+  let mx = 0; for (const v of I) mx = Math.max(mx, v);
+  for (let p = 0; p < NP * NP; p++){
+    let v = 0, inside = 0;
+    for (let k = 0; k < 6; k++){ v += lab[6 * p + k] * I[k]; inside += lab[6 * p + k]; }
+    v = inside > 0 ? v / mx + noise[p] * inside : 0;
+    const g = Math.round(255 * Math.max(0, Math.min(1, v)) ** 0.85);
+    img.data[4 * p] = g; img.data[4 * p + 1] = g; img.data[4 * p + 2] = g; img.data[4 * p + 3] = 255;
+  }
+  const off = document.createElement('canvas'); off.width = NP; off.height = NP; off.getContext('2d').putImageData(img, 0, 0);
+  gctx.fillStyle = '#000'; gctx.fillRect(0, 0, w, h); gctx.imageSmoothingEnabled = true;
+  const s = Math.min(w, h) * 0.96; gctx.drawImage(off, (w - s) / 2, (h - s) / 2, s, s);
+  $('scanLab').innerHTML = `TR ${fmt(S.TRimg, 0)} ms · TE ${fmt(S.TEimg, 0)} ms<br><b>${{ t1: 'T1-weighted', t2: 'T2-weighted', pd: 'Proton density' }[S.w] || 'Your own mix'}</b>`;
+}
+const WEIGHTS = {
+  t1: { label: 'T1-weighted', TR: 500, TE: 15, cap: 'Short repeat, short echo. Tissues with a short T1 recover between pulses and shine: <b>fat is bright, fluid is dark</b>, and white matter is a shade brighter than grey. The view for anatomy.' },
+  t2: { label: 'T2-weighted', TR: 4000, TE: 100, cap: 'Long repeat, long echo. Every tissue has recovered, and what remains is how long its spins stay in step: <b>water is bright</b>. The spinal fluid glows, and so would oedema, inflammation or most tumours.' },
+  pd: { label: 'Proton density', TR: 4000, TE: 15, cap: 'Long repeat, short echo. Neither relaxation matters much, so the brightness simply counts <b>how many protons</b> each tissue holds. Contrast is gentle.' },
+};
+function setWeight(k){
+  S.w = k; const W = WEIGHTS[k];
+  if (W){ S.TRimg = W.TR; S.TEimg = W.TE; $('mriTR').value = W.TR; $('mriTE').value = W.TE; $('mriCap').innerHTML = W.cap; }
+  else $('mriCap').innerHTML = 'Your own timing. Watch which tissues trade places as the echo time grows.';
+  [...$('weightChips').children].forEach(b => b.setAttribute('aria-pressed', b.dataset.k === k ? 'true' : 'false'));
+  $('mriTRo').textContent = `${fmt(S.TRimg, 0)} ms`; $('mriTEo').textContent = `${fmt(S.TEimg, 0)} ms`;
+  drawScan();
+}
+for (const k in WEIGHTS){ const b = document.createElement('button'); b.className = 'chip'; b.dataset.k = k; b.textContent = WEIGHTS[k].label; b.onclick = () => setWeight(k); $('weightChips').appendChild(b); }
+$('mriTR').oninput = e => { S.TRimg = +e.target.value; setWeight('custom'); };
+$('mriTE').oninput = e => { S.TEimg = +e.target.value; setWeight('custom'); };
+for (const k of ['wm', 'gm', 'csf', 'fat', 'blood']){
+  const b = document.createElement('button'); b.className = 'chip'; b.dataset.k = k; b.textContent = T[k].name;
+  b.onclick = () => { S.tissue = k; newVoxel(); [...$('tissueChips').children].forEach(c => c.setAttribute('aria-pressed', c.dataset.k === k ? 'true' : 'false')); };
+  b.setAttribute('aria-pressed', k === S.tissue ? 'true' : 'false'); $('tissueChips').appendChild(b);
+}
+$('p90').onclick = () => { S.auto = false; $('pAuto').setAttribute('aria-pressed', 'false'); p90(); };
+$('p180').onclick = () => { S.auto = false; $('pAuto').setAttribute('aria-pressed', 'false'); p180(); };
+$('pAuto').onclick = () => { S.auto = !S.auto; $('pAuto').setAttribute('aria-pressed', S.auto ? 'true' : 'false'); S.started = false; };
+const rate = $('mriRate'), rateLab = () => { const ms = 5 * Math.pow(100, S.rate / 100); $('mriRateO').textContent = `${fmt(1000 / ms, 0)}× (${fmt(ms, 0)} ms per second)`; };
+rate.oninput = () => { S.rate = +rate.value; rateLab(); }; S.rate = +rate.value; rateLab();
+$('mriTable').innerHTML = '<tr><th>Tissue at 3 T</th><th>T1</th><th>T2</th></tr>' + ['wm', 'gm', 'csf', 'fat', 'blood', 'muscle', 'liver'].map(k => `<tr><td>${T[k].name}${T[k].approx ? '<span class="why">typical value; published T2 varies widely</span>' : ''}</td><td>${fmt(T[k].T1, 0)} ms</td><td>${fmt(T[k].T2, 0)} ms</td></tr>`).join('') + '<tr><td colspan="3"><span class="why">Measured at 37 °C: Stanisz et al. 2005; fat from de Bazelaire et al. 2004.</span></td></tr>';
+let last = performance.now();
+function frame(now){
+  requestAnimationFrame(frame);
+  const dt = Math.min(0.1, (now - last) / 1000); last = now;
+  if (!S.visible) return;
+  S.yaw += dt * 0.15;
+  stepSpins(dt); drawSpins(); drawSignal();
+}
+new IntersectionObserver(es => es.forEach(e => { S.visible = e.isIntersecting; last = performance.now(); }), { rootMargin: '200px' }).observe(cv);
+window.addEventListener('resize', resize);
+newVoxel(); resize(); setWeight('t1');
+requestAnimationFrame(frame);
+return { S, setWeight };
+})();
+
+// Field guide entries (with "show me" buttons that drive the main stage) and the comparison table.
+(() => {
+const $ = id => document.getElementById(id);
+const stage = () => $('stage').scrollIntoView({ behavior: 'smooth', block: 'start' });
+const setRange = (id, v) => { const el = $(id); el.value = v; el.oninput(); };
+const show = (scene, opts = {}) => () => {
+  if (!APP) return;
+  if (opts.eV) setRange('energy', opts.eV);
+  if (opts.sep) setRange('sep', opts.sep);
+  APP.loadScene(scene);
+  if (opts.fast && !APP.state.fast) $('fast').click();
+  stage();
+};
+const G = [
+  ['Two slits', 'One electron, one dot', 'Each electron is a wave that passes through both slits, yet it lands at a single spot. The stripes only build up over thousands of electrons. In 1989 Akira Tonomura\'s team at Hitachi filmed exactly this build-up with real electrons, arriving one at a time.', show('double', { eV: 54.4, sep: 20, fast: true }), 'Fire thousands'],
+  ['Watch which slit', 'Looking destroys the stripes', 'A detector that learns which slit each electron used collapses its wave to one side. A plain hump replaces the stripes. The electron hasn\'t been pushed; what changed is the information.', show('watch', { eV: 54.4, sep: 20, fast: true }), 'Watch the slits'],
+  ['Wavelength', 'Faster electrons, finer stripes', 'An electron\'s wavelength is Planck\'s constant divided by its momentum. Speed it up and the stripes crowd together. At 54 eV (the energy Davisson and Germer used in 1927 to prove electrons are waves) it is 0.167 nm; at 150 eV, 0.100 nm.', show('double', { eV: 150, sep: 20 }), 'Fire 150 eV electrons'],
+  ['Spacing', 'Slits apart, stripes together', 'The stripes sit where the paths from the two slits differ by whole wavelengths. Spread the slits and the angle between stripes shrinks: θ ≈ λ/d.', show('double', { eV: 54.4, sep: 38 }), 'Spread the slits'],
+  ['One slit', 'Squeeze it and it spreads', 'Confine the wave to a 0.2 nm gap and it fans out widely. Pin down where something is and you lose track of where it is going: Heisenberg\'s uncertainty principle.', show('single', { eV: 54.4 }), 'Show one slit'],
+  ['Barrier', 'Through a wall it cannot climb', 'A wall taller than the electron\'s energy still lets part of the wave through. Each electron either bounces or appears on the far side; the odds come from the wave.', show('barrier', { eV: 54.4 }), 'Show tunnelling'],
+];
+$('guide').innerHTML = G.map((g, i) => `<div class="entry"><div class="where">${g[0]}</div><h3>${g[1]}</h3><p>${g[2]}</p><button class="show" data-i="${i}">${g[4]} →</button></div>`).join('');
+[...$('guide').querySelectorAll('.show')].forEach(b => { b.onclick = G[+b.dataset.i][3]; });
+
+const C = [
+  ['Double-slit stripe spacing', '2.30 nm', '2.32 nm', 'sin θ = λ/d with λ 0.166 nm, d 1.06 nm; the effective screen distance is uncertain by ~1%'],
+  ['Stripe contrast, slits unwatched → watched', '0.995 → none', '1 → none', 'watched, the stripes vanish and only a smooth hump remains'],
+  ['Tunnelling, 58 eV wall, 0.1 nm thick', '28.5%', '28.5%', 'exact transfer-matrix calculation for the same wall'],
+  ['Tunnelling lab, down to 1 in 50,000', 'within 0.4%', 'exact', 'over the whole range of the sliders'],
+  ['Energy to ionise hydrogen', '13.598 eV', '13.598 eV', 'NIST'],
+  ['H-α line (red, in air)', '656.29 nm', '656.28 nm', 'NIST; the 0.01 nm is spin and relativity, left out'],
+  ['Lyman α line (ultraviolet)', '121.57 nm', '121.57 nm', 'NIST'],
+  ['Lifetime of the 2p state', '1.596 ns', '1.596 ns', 'NIST, from the measured decay rate'],
+  ['Lifetime of the 3d state', '15.47 ns', '15.47 ns', 'NIST'],
+  ['H₂⁺ bond length', '1.0569 Å', '1.0569 Å', 'exact Born–Oppenheimer value'],
+  ['H₂⁺ energy to break the bond', '2.650 eV', '2.651 eV', 'measured; the rest is from protons not being infinitely heavy'],
+  ['H₂⁺ vibration frequency', '2191 cm⁻¹', '2191 cm⁻¹', 'measured fundamental'],
+  ['Proton precession at 3 T', '127.73 MHz', '127.73 MHz', 'CODATA gyromagnetic ratio'],
+  ['Spin-echo strength at TE', 'e^(−TE/T2)', 'e^(−TE/T2)', 'to 1 part in 10,000 for a voxel of 20,000 spins'],
+];
+$('cmpTable').innerHTML = '<tr><th>Quantity</th><th>This page</th><th>Exact or measured</th></tr>' + C.map(r => `<tr><td>${r[0]}<span class="why">${r[3]}</span></td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('');
+})();
+
+</script>

@@ -1,0 +1,402 @@
+<title>The Chirp</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root {
+    color-scheme: dark;
+    --void: #04060a;
+    --deep: #090c13;
+    --ink: #e6eaf0;
+    --muted: #9ba3b4;
+    --faint: #687084;
+    --line: rgba(230, 234, 240, 0.12);
+    --line-strong: rgba(230, 234, 240, 0.24);
+    --wave: #8fd3e8;
+    --hot: #ffb35c;
+    --h1: #dc6a45;
+    --l1: #4f93e0;
+    --display: "Newsreader", "Iowan Old Style", Georgia, serif;
+    --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { background: var(--void); color: var(--ink); }
+  body { font-family: var(--body); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding-inline: 16px; }
+  @media (min-width: 720px) { .wrap { padding-inline: 32px; } }
+
+  header.top { padding-block: 40px 22px; display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px 40px; }
+  .eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--hot); }
+  h1 { font-family: var(--display); font-weight: 300; font-size: clamp(46px, 8.4vw, 104px); line-height: 0.92; letter-spacing: -0.025em; margin: 10px 0 0; text-wrap: balance; }
+  h1 em { font-style: italic; color: var(--wave); }
+  .lede { max-width: 48ch; color: var(--muted); margin: 0; font-size: 17px; }
+  .lede strong { color: var(--ink); font-weight: 500; }
+
+  .stage { position: relative; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: #000; overflow: hidden; }
+  #sky { display: block; width: 100%; height: clamp(460px, 76vh, 880px); cursor: grab; touch-action: none; }
+  #sky:active { cursor: grabbing; }
+  .hud { position: absolute; background: rgba(4, 6, 10, 0.64); backdrop-filter: blur(6px); border: 1px solid var(--line); border-radius: 4px; font-family: var(--mono); font-size: 12px; line-height: 1.55; font-variant-numeric: tabular-nums; }
+  .readout { top: 14px; left: 14px; display: grid; grid-template-columns: auto auto; gap: 2px 14px; padding: 10px 14px; pointer-events: none; max-width: calc(100% - 28px); }
+  .readout dt { color: var(--faint); }
+  .readout dd { margin: 0; text-align: right; }
+  .readout .big { font-size: 15px; color: var(--wave); }
+  .readout .rate { color: var(--hot); }
+  .scope { right: 14px; bottom: 14px; width: min(400px, calc(100% - 28px)); padding: 8px 10px 6px; }
+  .scope canvas { display: block; width: 100%; height: 96px; }
+  .scope .lab { display: flex; justify-content: space-between; gap: 10px; color: var(--faint); font-size: 11px; }
+  .scope .lab b { font-weight: 400; color: var(--muted); }
+  .scope .keys { display: flex; gap: 12px; }
+  .scope .keys span { display: inline-flex; align-items: center; gap: 6px; }
+  .scope .keys i { width: 14px; height: 2px; display: inline-block; }
+  .arm { top: 14px; right: 14px; width: 176px; padding: 8px 10px; pointer-events: none; }
+  .arm canvas { display: block; width: 100%; height: 140px; }
+  .arm .lab { color: var(--faint); font-size: 11px; line-height: 1.35; }
+  .arm .lab b { color: var(--ink); font-weight: 400; }
+  .arm.flash { border-color: var(--hot); }
+  @media (max-width: 760px) { .arm { display: none; } .scope canvas { height: 70px; } }
+  .phase { position: absolute; left: 14px; bottom: 14px; font-family: var(--display); font-style: italic; font-weight: 300; font-size: clamp(22px, 3vw, 34px); color: var(--ink); pointer-events: none; text-shadow: 0 1px 12px #000; max-width: calc(100% - 450px); }
+  .phase small { display: block; font-family: var(--mono); font-style: normal; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+  @media (max-width: 760px) { .phase { bottom: auto; top: auto; left: 14px; max-width: calc(100% - 28px); bottom: 150px; } }
+  .hint { position: absolute; left: 50%; transform: translateX(-50%); bottom: 12px; font-family: var(--mono); font-size: 11px; color: rgba(230, 234, 240, 0.45); pointer-events: none; white-space: nowrap; }
+  @media (max-width: 1100px) { .hint { display: none; } }
+  .tag { position: absolute; left: 0; top: 0; pointer-events: none; font-family: var(--mono); font-size: 11px; line-height: 1.35; color: var(--ink); background: rgba(4, 6, 10, 0.7); border: 1px solid var(--line-strong); border-radius: 3px; padding: 3px 7px; white-space: nowrap; transition: opacity .3s; }
+  .tag b { color: var(--hot); font-weight: 500; }
+  .nogl { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: var(--muted); }
+
+  .transport { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 14px; padding-block: 16px 4px; }
+  .btn { appearance: none; font: 500 14px/1 var(--body); color: var(--void); background: var(--ink); border: 1px solid var(--ink); border-radius: 999px; padding: 10px 18px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+  .btn.ghost { background: transparent; color: var(--ink); border-color: var(--line-strong); }
+  .btn.sound { background: transparent; color: var(--wave); border-color: var(--wave); }
+  .btn.sound[aria-pressed="true"] { background: var(--wave); color: var(--void); }
+  .btn:hover { filter: brightness(1.1); }
+  .btn.ghost:hover { border-color: rgba(230, 234, 240, 0.5); }
+  .btn svg { width: 16px; height: 16px; }
+  .speed { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); white-space: nowrap; flex: 1 1 280px; max-width: 440px; margin-left: auto; }
+  .speed output { font-family: var(--mono); font-size: 12px; color: var(--ink); min-width: 7em; text-align: right; font-variant-numeric: tabular-nums; }
+
+  .controls { display: grid; gap: 22px 40px; grid-template-columns: 1fr; padding-block: 18px 8px; }
+  @media (min-width: 900px) { .controls { grid-template-columns: 1.2fr 1fr; } }
+  .group { display: grid; gap: 10px; align-content: start; }
+  .group-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--faint); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { appearance: none; font: 500 13px/1 var(--body); color: var(--muted); background: transparent; border: 1px solid var(--line-strong); border-radius: 999px; padding: 9px 14px; cursor: pointer; transition: color .15s, border-color .15s, background .15s; display: inline-flex; align-items: center; gap: 8px; }
+  .chip:hover { color: var(--ink); border-color: rgba(230, 234, 240, 0.45); }
+  .chip:focus-visible, .btn:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--wave); outline-offset: 2px; }
+  .chip[aria-pressed="true"] { color: var(--void); background: var(--ink); border-color: var(--ink); }
+  .chip .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; opacity: .55; }
+  .chip[aria-pressed="true"] .dot { opacity: 1; }
+  .chip.ev[aria-pressed="true"] { background: var(--hot); border-color: var(--hot); }
+  .chip.pitch[aria-pressed="true"] { background: var(--wave); border-color: var(--wave); }
+  .chip small { font-family: var(--mono); font-size: 11px; opacity: .75; font-weight: 400; }
+  .caption { margin: 4px 0 0; padding-left: 14px; border-left: 2px solid var(--hot); color: var(--muted); font-size: 15px; max-width: 64ch; min-height: 4.8em; }
+  .caption b { color: var(--ink); font-weight: 500; }
+  .note { margin: 0; font-size: 13px; color: var(--faint); max-width: 58ch; }
+  .note b { color: var(--muted); font-weight: 500; }
+
+  .slider { display: grid; grid-template-columns: 9.5em 1fr 8.5em; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); }
+  .slider output { font-family: var(--mono); font-size: 12px; color: var(--ink); text-align: right; font-variant-numeric: tabular-nums; }
+  @media (max-width: 480px) { .slider { grid-template-columns: 1fr auto; } .slider input { grid-column: 1 / -1; grid-row: 2; } }
+  .derived { display: grid; grid-template-columns: 1fr auto; margin: 4px 0 0; border-top: 1px solid var(--line); font-size: 14px; }
+  .derived dt, .derived dd { padding: 7px 0; border-bottom: 1px solid var(--line); margin: 0; }
+  .derived dt { color: var(--muted); }
+  .derived dd { font-family: var(--mono); font-size: 13px; text-align: right; font-variant-numeric: tabular-nums; }
+
+  input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 22px; background: transparent; }
+  input[type=range]::-webkit-slider-runnable-track { height: 2px; background: var(--line-strong); }
+  input[type=range]::-moz-range-track { height: 2px; background: var(--line-strong); }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--wave); margin-top: -6px; border: 0; }
+  input[type=range]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: var(--wave); border: 0; }
+
+  section { padding-block: 72px 8px; }
+  h2 { font-family: var(--display); font-weight: 300; font-size: clamp(34px, 5vw, 58px); line-height: 1.02; letter-spacing: -0.015em; margin: 8px 0 14px; text-wrap: balance; }
+  h2 em { font-style: italic; color: var(--wave); }
+  .section-lede { color: var(--muted); max-width: 64ch; margin: 0 0 28px; }
+  .section-lede strong { color: var(--ink); font-weight: 500; }
+
+  .chart-wrap { position: relative; border: 1px solid var(--line); border-radius: 4px; padding: 14px 14px 8px; background: var(--deep); }
+  .chart-title { font-size: 14px; color: var(--ink); margin: 0 0 2px 4px; font-weight: 500; }
+  .chart-unit { font-size: 12px; color: var(--faint); margin: 0 0 8px 4px; }
+  #overview { display: block; width: 100%; height: 360px; cursor: crosshair; touch-action: pan-y; }
+  .tip { position: absolute; top: 12px; left: 0; min-width: 190px; pointer-events: none; background: rgba(4, 6, 10, 0.94); border: 1px solid var(--line-strong); border-radius: 4px; padding: 8px 10px; font-size: 12px; display: grid; gap: 3px; }
+  .tip .when { color: var(--muted); font-family: var(--mono); font-size: 11px; }
+  .tip b { font-family: var(--mono); font-weight: 500; }
+  .tip span { color: var(--muted); }
+  .tip .go { color: var(--faint); font-size: 11px; }
+  details.data { margin-top: 10px; font-size: 13px; color: var(--muted); }
+  details.data summary { cursor: pointer; padding: 6px 4px; }
+  details.data table { min-width: 0; font-size: 13px; }
+  details.data th, details.data td { padding: 6px 10px; }
+
+  .guide { display: grid; gap: 1px; grid-template-columns: 1fr; background: var(--line); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+  @media (min-width: 700px) { .guide { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 1040px) { .guide { grid-template-columns: 1fr 1fr 1fr; } }
+  .entry { background: var(--void); padding: 26px 24px 24px; display: grid; grid-template-rows: auto auto 1fr auto; gap: 10px; }
+  .entry .where { font-family: var(--mono); font-size: 12px; color: var(--hot); letter-spacing: 0.04em; }
+  .entry h3 { font-family: var(--display); font-weight: 400; font-size: 27px; line-height: 1.12; margin: 0; text-wrap: balance; }
+  .entry p { margin: 0; color: var(--muted); font-size: 15px; }
+  .entry p b { color: var(--ink); font-weight: 500; }
+  .show { justify-self: start; margin-top: 8px; appearance: none; background: none; border: 0; border-bottom: 1px solid var(--wave); color: var(--wave); font: 500 14px/1.4 var(--body); padding: 2px 0; cursor: pointer; text-align: left; }
+  .show:hover { color: var(--ink); border-color: var(--ink); }
+
+  .numbers { display: grid; gap: 28px; grid-template-columns: 1fr; align-items: start; }
+  @media (min-width: 900px) { .numbers { grid-template-columns: 1fr 1.15fr; } }
+  .numbers p { margin: 0 0 14px; color: var(--muted); max-width: 60ch; }
+  .numbers p b { color: var(--ink); font-weight: 500; }
+
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 4px; }
+  table { width: 100%; border-collapse: collapse; min-width: 720px; font-size: 14px; }
+  th, td { text-align: left; padding: 14px 18px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  th { font-family: var(--mono); font-weight: 400; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); }
+  td.num { font-family: var(--mono); font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td .name { font-family: var(--display); font-size: 21px; display: block; }
+  td .sub { color: var(--faint); font-size: 13px; }
+  td button { margin-top: 6px; display: block; }
+  tr.kind td { padding-block: 10px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--hot); background: var(--deep); }
+  .cmp { min-width: 0; }
+  .cmp td, .cmp th { padding: 10px 14px; }
+  .cmp td:nth-child(2), .cmp td:nth-child(3) { font-family: var(--mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+  .cmp td:nth-child(2) { color: var(--wave); }
+  .cmp .why { color: var(--faint); font-size: 12px; display: block; font-family: var(--body); }
+
+  footer { padding-block: 64px 48px; color: var(--faint); font-size: 13px; }
+  footer p { max-width: 78ch; margin: 0 0 8px; }
+  footer i { color: var(--muted); }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">Gravitational waves · live simulation with sound</div>
+      <h1>The <em>Chirp</em></h1>
+    </div>
+    <p class="lede">Two black holes circle each other, faster and closer, until they merge. The collision shakes space itself, and the ripples reached Earth <strong>1.3 billion years later</strong>, stretching LIGO's 4 km arms by less than a proton's width. They also fall in the range of human hearing. <strong>Turn the sound on</strong>, and drag the picture to turn it.</p>
+  </header>
+</div>
+
+<div class="stage" id="stage">
+  <canvas id="sky" aria-label="Two black holes spiraling together on a sheet representing space, sending out spiral ripples"></canvas>
+  <dl class="hud readout" id="readout">
+    <dt>wave frequency</dt><dd class="big" id="rFreq">—</dd>
+    <dt>time to merger</dt><dd id="rTime">—</dd>
+    <dt>separation</dt><dd id="rSep">—</dd>
+    <dt>orbital speed</dt><dd id="rSpeed">—</dd>
+    <dt>energy radiated</dt><dd id="rEnergy">—</dd>
+    <dt>power now</dt><dd id="rPower">—</dd>
+    <dt>strain at Earth</dt><dd id="rStrain">—</dd>
+    <dt>LIGO arm change</dt><dd id="rArm">—</dd>
+    <dt>playback</dt><dd class="rate" id="rRate">—</dd>
+  </dl>
+  <div class="hud arm" id="armHud">
+    <canvas id="arm" aria-label="A LIGO detector's two arms stretching and squeezing, hugely exaggerated"></canvas>
+    <div class="lab">LIGO arms, stretch <b id="armX">exaggerated 10²⁰×</b></div>
+  </div>
+  <div class="hud scope">
+    <div class="lab"><b id="scopeTitle">Strain at Earth</b><span class="keys" id="scopeKeys" hidden><span><i style="background:var(--l1)"></i>Livingston</span><span><i style="background:var(--h1)"></i>Hanford</span></span><span id="scopeSpan">—</span></div>
+    <canvas id="scope" aria-label="Live trace of the gravitational-wave strain"></canvas>
+  </div>
+  <div class="phase" id="phase"><small id="phaseSmall">—</small><span id="phaseText">Inspiral</span></div>
+  <div class="hint" id="hint">drag to turn · scroll or pinch to zoom</div>
+  <div class="tag" id="tag0" hidden></div>
+  <div class="tag" id="tag1" hidden></div>
+  <div class="tag" id="tag2" hidden></div>
+</div>
+
+<div class="wrap">
+  <div class="transport">
+    <button class="btn" id="playBtn">Pause</button>
+    <button class="btn ghost" id="restartBtn">Restart</button>
+    <button class="btn sound" id="soundBtn" aria-pressed="false"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 6h3l4-3v10l-4-3H2z"/><path d="M11.5 5.5a3.5 3.5 0 0 1 0 5M13 3.5a6 6 0 0 1 0 9"/></svg><span id="soundLabel">Turn sound on</span></button>
+    <button class="btn ghost" id="realBtn">Hear it at real speed</button>
+    <label class="speed" for="speed">Slow motion <input id="speed" type="range" min="-100" max="100" value="0"><output id="speedOut" for="speed">normal</output></label>
+  </div>
+
+  <div class="controls">
+    <div class="group">
+      <div class="group-label">Real detections</div>
+      <div class="chips" id="events">
+        <button class="chip ev" data-ev="gw150914" aria-pressed="true">GW150914 <small>first</small></button>
+        <button class="chip ev" data-ev="gw170817" aria-pressed="false">GW170817 <small>neutron stars</small></button>
+        <button class="chip ev" data-ev="gw190521" aria-pressed="false">GW190521 <small>heaviest</small></button>
+        <button class="chip ev" data-ev="custom" aria-pressed="false">Your own</button>
+      </div>
+      <p class="caption" id="caption">—</p>
+      <div class="group-label" style="margin-top:8px">Sound pitch</div>
+      <div class="chips" id="pitches">
+        <button class="chip pitch" data-p="1" aria-pressed="false">True pitch</button>
+        <button class="chip pitch" data-p="4" aria-pressed="true">Two octaves up</button>
+        <button class="chip pitch" data-p="16" aria-pressed="false">Four octaves up</button>
+      </div>
+      <p class="note">The real signal is a low thump that many laptop and phone speakers can't reproduce. Shifting it up keeps the shape of the chirp and makes it audible. In slow motion the sound is stretched in time but keeps its pitch, so you hear the note the ripples would make right now.</p>
+      <div class="group-label" style="margin-top:8px">Show</div>
+      <div class="chips" id="toggles">
+        <button class="chip" data-key="two" aria-pressed="false"><span class="dot"></span>Both LIGO detectors</button>
+        <button class="chip" data-key="grid" aria-pressed="true"><span class="dot"></span>Grid</button>
+        <button class="chip" data-key="spin" aria-pressed="true"><span class="dot"></span>Slow turn</button>
+        <button class="chip" id="resetView"><span class="dot"></span>Reset view</button>
+      </div>
+    </div>
+    <div class="group">
+      <div class="group-label">Build your own merger</div>
+      <label class="slider" for="m1">Heavier object<input id="m1" type="range" min="0" max="1000" value="700"><output id="m1Out" for="m1">—</output></label>
+      <label class="slider" for="m2">Lighter object<input id="m2" type="range" min="0" max="1000" value="600"><output id="m2Out" for="m2">—</output></label>
+      <label class="slider" for="dist">Distance<input id="dist" type="range" min="0" max="1000" value="500"><output id="distOut" for="dist">—</output></label>
+      <p class="note">Masses are in suns. Anything up to <b>2.5 suns</b> is drawn as a neutron star, and heavier objects as black holes. Two neutron stars collide and throw out a kilonova. A neutron star meeting a black hole is swallowed whole in this model.</p>
+      <dl class="derived">
+        <dt>Chirp mass, what the pitch rise measures</dt><dd id="dChirp">—</dd>
+        <dt>Final object</dt><dd id="dFinal">—</dd>
+        <dt>Mass turned into waves</dt><dd id="dErad">—</dd>
+        <dt>Ringdown pitch at Earth</dt><dd id="dRing">—</dd>
+        <dt>Time the signal traveled</dt><dd id="dTravel">—</dd>
+        <dt>Peak strain at Earth</dt><dd id="dStrain">—</dd>
+      </dl>
+    </div>
+  </div>
+
+  <section id="signal">
+    <div class="eyebrow">What the detectors record</div>
+    <h2>The whole <em>signal</em></h2>
+    <p class="section-lede">The top panel is the strain, the fraction by which space stretches as the wave passes. The bottom panel is the wave's frequency, the pitch you hear. Watch both climb to the merger and stop. <strong>Click anywhere on the chart</strong> to jump the simulation there.</p>
+    <div class="chart-wrap">
+      <p class="chart-title" id="ovTitle">GW150914</p>
+      <p class="chart-unit" id="ovUnit">strain at Earth (top) and wave frequency in hertz (bottom), against time before the merger</p>
+      <canvas id="overview" role="img" aria-label="Strain and frequency of the gravitational wave over time"></canvas>
+      <div class="tip" id="ovTip" hidden>
+        <div class="when" id="tipWhen">—</div>
+        <div><b id="tipF">—</b> <span>wave frequency</span></div>
+        <div><b id="tipH">—</b> <span>strain</span></div>
+        <div class="go">click to jump here</div>
+      </div>
+      <details class="data"><summary>Show the numbers as a table</summary>
+        <div class="table-wrap"><table><thead><tr><th>Time to merger</th><th>Frequency</th><th>Strain amplitude</th><th>Separation</th><th>Orbital speed</th></tr></thead><tbody id="ovRows"></tbody></table></div>
+      </details>
+    </div>
+  </section>
+
+  <section id="guide">
+    <div class="eyebrow">Field guide</div>
+    <h2>What you are <em>hearing</em></h2>
+    <p class="section-lede">Each note below can set up the simulation to show you. The sheet stands for space, seen from above the orbit. The dents are the black holes' pull, and the spiral ripples are the gravitational waves, <strong>moving outward at the speed of light</strong>, drawn true to scale against the orbit but with their height exaggerated enormously.</p>
+    <div class="guide">
+      <article class="entry">
+        <div class="where">chirp mass ≈ 30 suns</div>
+        <h3>The chirp gives away the masses</h3>
+        <p>As the pair loses energy the orbit shrinks, speeds up, and the pitch rises. How fast the pitch climbs at a given pitch depends almost only on one blend of the two masses, the <b>chirp mass</b>. GW150914's came out near 30 suns. Heavier pairs chirp lower and end sooner. Neutron stars sweep up to over a thousand hertz.</p>
+        <button class="show" data-show="masses">Watch the pitch climb →</button>
+      </article>
+      <article class="entry">
+        <div class="where">Hanford ↔ Livingston · 3,002 km</div>
+        <h3>Why the detectors were 7 ms apart</h3>
+        <p>The waves travel at the speed of light, which takes 10 ms to cross the distance between the two LIGO sites. GW150914 reached Livingston first and Hanford <b>6.9 ms</b> later, which put the source somewhere on a ring in the southern sky. Hanford's arms point differently, so its trace comes out flipped.</p>
+        <button class="show" data-show="twodet">Show both detectors →</button>
+      </article>
+      <article class="entry">
+        <div class="where">4 km arm · 4 × 10⁻¹⁸ m</div>
+        <h3>A fraction of a proton</h3>
+        <p>A strain of 10⁻²¹ changes a 4 km arm by about 4 × 10⁻¹⁸ m. At GW150914's loudest moment that was <b>1/400 of a proton's width</b>, and for most of the chirp around 1/1000. LIGO bounces laser light hundreds of times along each arm and compares the two. The inset at the top right exaggerates the stretch about 10²⁰ times.</p>
+        <button class="show" data-show="proton">Go to the loudest moment →</button>
+      </article>
+      <article class="entry">
+        <div class="where">3 suns · 5 × 10⁴⁷ joules</div>
+        <h3>Where the energy went</h3>
+        <p>Three suns' worth of mass left as gravitational waves in a fraction of a second. At the peak the power was <b>3.6 × 10⁴⁹ watts</b>, which LIGO put at more than 50 times the light of every star in the observable universe. The waves pass through matter almost untouched, so by Earth they were a quiver of 10⁻²¹.</p>
+        <button class="show" data-show="energy">Watch the peak →</button>
+      </article>
+      <article class="entry">
+        <div class="where">≈ 0.5 c · 75 orbits a second</div>
+        <h3>Half the speed of light</h3>
+        <p>Each black hole was about <b>200 km across</b>, the size of a small country, and together they held 65 suns. In the final orbits they whirled around each other about 75 times a second at <b>half the speed of light</b>, then touched and merged within a few thousandths of a second.</p>
+        <button class="show" data-show="fast">Slow down the last orbits →</button>
+      </article>
+      <article class="entry">
+        <div class="where">≈ 250 Hz · fades in 4 ms</div>
+        <h3>The new hole rings like a bell</h3>
+        <p>The merged black hole starts out lopsided and settles into a smooth, spinning shape by shaking off ripples at one pitch. They die away within milliseconds. The pitch and the fade depend only on the hole's mass and spin. GW250114, the loudest event so far, rang clearly enough to confirm Hawking's rule that a black hole's surface can only grow.</p>
+        <button class="show" data-show="ring">Replay the ringdown →</button>
+      </article>
+      <article class="entry">
+        <div class="where">35 → 250 Hz · real sound</div>
+        <h3>Why you can hear it</h3>
+        <p>Mergers of star-sized black holes happen to sing in the range of human hearing, so the signal can be played straight through a speaker with no translation. At true pitch GW150914 is a low thump lasting a fraction of a second, below what small speakers can play, which is why this page can move it up two or four octaves.</p>
+        <button class="show" data-show="hear">Hear it at real speed →</button>
+      </article>
+      <article class="entry">
+        <div class="where">NGC 4993 · 130 million ly</div>
+        <h3>Neutron-star mergers make gold</h3>
+        <p>When two neutron stars collide, a few percent of a sun is flung out as neutron-rich debris. Its nuclei soak up neutrons faster than they can decay and build heavy elements such as gold, platinum and uranium. The glow of that cloud, a <b>kilonova</b>, was seen after GW170817. It made several Earths' worth of gold.</p>
+        <button class="show" data-show="gold">Collide two neutron stars →</button>
+      </article>
+      <article class="entry">
+        <div class="where">85 + 66 → 142 suns</div>
+        <h3>The heaviest: GW190521</h3>
+        <p>Stars shouldn't leave black holes between roughly 65 and 130 suns, because a star that big blows itself apart first. GW190521's 85-sun hole sits in that gap, so it was probably born in an earlier merger. The signal lasted about a tenth of a second, only <b>four cycles</b> in the detectors, at a pitch you feel more than hear.</p>
+        <button class="show" data-show="heavy">Load GW190521 →</button>
+      </article>
+    </div>
+  </section>
+
+  <section id="numbers">
+    <div class="eyebrow">Checking the model</div>
+    <h2>GW150914, <em>simulated</em> and measured</h2>
+    <div class="numbers">
+      <div>
+        <p>This page doesn't play back a recording. It computes the waveform from the physics, and the numbers on the right come straight out of that calculation for 36 and 29 suns at 410 megaparsecs, next to what LIGO measured.</p>
+        <p>The long approach uses <b>post-Newtonian theory</b>: Newton's orbits plus Einstein's corrections, worked out to high order, with the orbit shrinking as the waves carry energy away. The final plunge and merger can't be done that way, so the model hands over to a formula fitted to <b>supercomputer simulations</b> of merging black holes. The ringdown uses the true ringing pitch and fade of a spinning black hole, and the final mass and spin come from fits to the same simulations.</p>
+        <p>The biggest difference is in the timing. LIGO's paper described the signal as rising "over 0.2 s, in about 8 cycles, from 35 to 150 Hz", a rough figure from the simplest version of the theory. With the higher-order terms included, as here, the last stretch goes faster.</p>
+      </div>
+      <div class="table-wrap"><table class="cmp"><thead><tr><th>Quantity</th><th>This model</th><th>LIGO measured</th></tr></thead><tbody id="cmpRows"></tbody></table></div>
+    </div>
+  </section>
+
+  <section id="real">
+    <div class="eyebrow">Catalog</div>
+    <h2>Real events and the <em>detectors</em></h2>
+    <p class="section-lede">LIGO, Virgo and KAGRA have now caught <strong>hundreds</strong> of mergers. A few that changed the field are below; each can be loaded into the simulation with its measured masses and distance.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Event</th><th>Masses (suns)</th><th>Distance</th><th>Why it matters</th></tr></thead>
+        <tbody>
+          <tr class="kind"><td colspan="4">Black hole pairs</td></tr>
+          <tr><td><span class="name">GW150914</span><span class="sub">14 September 2015</span><button class="show" data-ev="gw150914">Load it →</button></td><td class="num">36 + 29 → 62</td><td class="num">1.3 billion ly</td><td>The first gravitational waves ever detected, 100 years after Einstein predicted them. Nobel Prize in Physics 2017 for Rainer Weiss, Barry Barish and Kip Thorne.</td></tr>
+          <tr><td><span class="name">GW151226</span><span class="sub">26 December 2015</span><button class="show" data-load="14.2,7.5,440,GW151226">Load it →</button></td><td class="num">14 + 7.5 → 21</td><td class="num">1.4 billion ly</td><td>The second detection, on Boxing Day. Lighter holes chirp longer: about a second and 55 cycles in the detectors. First sign that black holes spin.</td></tr>
+          <tr><td><span class="name">GW170814</span><span class="sub">14 August 2017</span><button class="show" data-load="30.5,25.3,540,GW170814">Load it →</button></td><td class="num">31 + 25 → 53</td><td class="num">1.8 billion ly</td><td>The first event seen by three detectors after Virgo joined. A third site shrank the patch of sky from about 1,000 to 60 square degrees.</td></tr>
+          <tr><td><span class="name">GW190521</span><span class="sub">21 May 2019</span><button class="show" data-ev="gw190521">Load it →</button></td><td class="num">85 + 66 → 142</td><td class="num">≈ 7 billion years ago</td><td>The heaviest merger at the time, and the first black hole caught forming in the "intermediate" range of 100 to 100,000 suns.</td></tr>
+          <tr><td><span class="name">GW190814</span><span class="sub">14 August 2019</span><button class="show" data-load="23.2,2.59,241,GW190814">Load it →</button></td><td class="num">23 + 2.6 → 25</td><td class="num">800 million ly</td><td>A lopsided 9-to-1 pair. The lighter object, 2.6 suns, is either the heaviest neutron star or the lightest black hole ever found.</td></tr>
+          <tr><td><span class="name">GW250114</span><span class="sub">14 January 2025</span><button class="show" data-load="33.6,32.2,440,GW250114">Load it →</button></td><td class="num">≈ 34 + 32 → 63</td><td class="num">≈ 1.3 billion ly</td><td>The clearest signal yet, a near twin of GW150914. Its ringdown confirmed that the merged hole's surface area was larger than the two before, as Hawking predicted in 1971.</td></tr>
+          <tr class="kind"><td colspan="4">Neutron stars</td></tr>
+          <tr><td><span class="name">GW170817</span><span class="sub">17 August 2017</span><button class="show" data-ev="gw170817">Load it →</button></td><td class="num">1.46 + 1.27</td><td class="num">130 million ly</td><td>The first neutron-star merger: 100 seconds of chirp, a gamma-ray burst 1.7 s later, then a kilonova in galaxy NGC 4993 watched by about 70 observatories. It also measured the expansion rate of the universe.</td></tr>
+          <tr><td><span class="name">GW190425</span><span class="sub">25 April 2019</span><button class="show" data-load="2.0,1.4,159,GW190425">Load it →</button></td><td class="num">≈ 2.0 + 1.4</td><td class="num">520 million ly</td><td>An unusually heavy pair, 3.4 suns in total, heavier than any double neutron star seen in our galaxy. Caught by one detector only, and no light was found.</td></tr>
+          <tr><td><span class="name">GW200115</span><span class="sub">15 January 2020</span><button class="show" data-load="5.9,1.44,300,GW200115">Load it →</button></td><td class="num">5.9 + 1.4</td><td class="num">1 billion ly</td><td>A black hole swallowing a neutron star, one of the first two such mergers found. The star went in whole, so there was no flash.</td></tr>
+          <tr><td><span class="name">GW230529</span><span class="sub">29 May 2023</span><button class="show" data-load="3.6,1.4,201,GW230529">Load it →</button></td><td class="num">3.6 + 1.4</td><td class="num">650 million ly</td><td>The heavier object sits in the "mass gap" between the heaviest neutron stars and the lightest black holes known.</td></tr>
+          <tr class="kind"><td colspan="4">Detectors</td></tr>
+          <tr><td><span class="name">LIGO Hanford</span><span class="sub">Washington, USA</span><button class="show" data-show="twodet">Show both LIGOs →</button></td><td class="num">4 km arms</td><td class="num">since 2015</td><td>One of the two LIGO observatories. Its laser light travels each arm about 300 times, making an effective path over 1,000 km long.</td></tr>
+          <tr><td><span class="name">LIGO Livingston</span><span class="sub">Louisiana, USA</span></td><td class="num">4 km arms</td><td class="num">3,002 km from Hanford</td><td>Light takes 10 ms between the two sites, so a real signal must show up in both within 10 ms. Local noise, like a truck passing, doesn't.</td></tr>
+          <tr><td><span class="name">Virgo</span><span class="sub">Cascina, Italy</span></td><td class="num">3 km arms</td><td class="num">joined 2017</td><td>The European detector. With three sites, arrival times pin the source down far better than two.</td></tr>
+          <tr><td><span class="name">KAGRA</span><span class="sub">Kamioka, Japan</span></td><td class="num">3 km arms</td><td class="num">joined 2020</td><td>Built underground in a mine to escape vibration, with mirrors cooled to about 20 kelvin to cut thermal noise.</td></tr>
+          <tr><td><span class="name">GEO600</span><span class="sub">Hannover, Germany</span></td><td class="num">600 m arms</td><td class="num">since 2002</td><td>A smaller test bed where techniques later used in LIGO were proven, including "squeezed" light that beats quantum noise.</td></tr>
+          <tr><td><span class="name">LIGO-India</span><span class="sub">Maharashtra, India</span></td><td class="num">4 km arms</td><td class="num">planned, 2030s</td><td>A third LIGO, placed far from the others to sharpen sky positions.</td></tr>
+          <tr><td><span class="name">LISA</span><span class="sub">ESA with NASA, in space</span></td><td class="num">2.5 million km</td><td class="num">launch ≈ 2035</td><td>Three spacecraft trailing Earth around the Sun. It will hear millihertz waves, far too low for any ground detector, from merging giant black holes in galaxy centers.</td></tr>
+          <tr><td><span class="name">Pulsar timing arrays</span><span class="sub">NANOGrav, EPTA, PPTA, others</span></td><td class="num">galaxy-sized</td><td class="num">evidence 2023</td><td>Dozens of pulsars used as cosmic clocks. Tiny shifts in their ticking revealed a slow background hum, likely from pairs of supermassive black holes orbiting over years.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    <p>How it works: the waveform is the main (quadrupole) gravitational-wave mode of two non-spinning bodies. The inspiral is the TaylorT4 post-Newtonian approximation, with the orbital frequency evolved to 3.5 post-Newtonian order and amplitude to 2nd order. For black holes it hands over at v²/c² = 0.16 to the "backwards one body" merger model of McWilliams (2019), whose frequency rises smoothly to the ringdown tone of the final hole (Berti, Cardoso &amp; Will 2006 fits). Peak amplitude, final mass, final spin and radiated energy follow fits to numerical-relativity simulations. Neutron stars are treated as points until their surfaces, 12 km in radius, touch; after that the page shows a short, faint ringing of the merged star at about 2.8 kHz, the collapse to a black hole, a kilonova and a jet. The kilonova and jet are drawn much faster than their real timescales of seconds to days. Distances convert to redshift with Planck-like cosmology, and every frequency and time is as observed at Earth.</p>
+    <p>The sheet is a picture, not a measurement. Its dents are shaped like the pull of each body, and its ripples show the wave pattern in the plane of the orbit at the right wavelength, travelling outward at the speed of light and read off at the delayed time for each distance. Their height is enlarged beyond any real scale and grows more gently than the real 1/distance fall-off. The "strain at Earth" readouts assume an average orientation of the orbit and detectors, calibrated so GW150914 peaks near its measured 1.0 × 10⁻²¹. The sound is the computed waveform itself, with only its pitch optionally raised by whole octaves.</p>
+    <p>Simplifications: spins are ignored except in the final black hole, so events with strongly spinning or precessing black holes (GW190521 among them) come out slightly different from the published values. There is no detector noise; real signals are buried in noise and dug out by matching them against thousands of model waveforms like this one.</p>
+  </footer>
+</div>
+
+<script>
+/*WAVE*/
+</script>
+<script>
+/*ENGINE*/
+</script>
+<script>
+/*APP*/
+</script>

@@ -1,0 +1,13 @@
+<section class="wrap" id="check-sec">
+  <div class="eyebrow">Honest numbers</div>
+  <h2>How close is this to <em>nature?</em></h2>
+  <div class="numbers">
+    <div>
+      <p>Every simulation on this page was checked against an exact result or a measurement before any graphics were drawn, using the same code that runs here. The quantum world is a good place for this, because its simplest cases can be solved exactly.</p>
+      <p><b>The electron waves</b> (the main stage and the tunnelling lab) use the <b>split-operator method</b>: the wave is advanced alternately in position space, where the walls act, and in momentum space, where its motion is exact, with a fast Fourier transform carrying it between the two. It conserves probability by construction. On the graphics card one step, two Fourier transforms of a million-point grid, takes about a third of a millisecond, and the result agrees with an independent double-precision version on the CPU.</p>
+      <p><b>The hydrogen atom</b> is drawn from its exact solution: Laguerre polynomials for the distance from the proton, spherical harmonics for the direction. The decay rates come from the exact overlap of each pair of orbitals. <b>H₂⁺</b> is solved exactly too, in coordinates shaped like rugby balls around the two protons, where its equation separates into two simple ones. <b>MRI</b> uses the Bloch equations, the standard description of how proton spins tip, dephase and recover.</p>
+      <p>What is left out: the main stage is two-dimensional, the electron's spin and relativity are ignored (they shift hydrogen's lines by about one part in 70,000), the protons are held still while the electron moves, and the which-slit detector is an ideal, instantaneous measurement.</p>
+    </div>
+    <div class="table-wrap"><table class="cmp" id="cmpTable"></table></div>
+  </div>
+</section>
