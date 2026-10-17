@@ -6,20 +6,27 @@ function Engine(canvas, opts) {
   if (!gl) throw new Error('WebGL2 unavailable');
   E.gl = gl;
   const extCBF = gl.getExtension('EXT_color_buffer_float');
+  if (!extCBF) throw new Error('this browser or GPU cannot render to floating-point textures (EXT_color_buffer_float is missing)');
   gl.getExtension('OES_texture_float_linear');
   const NLAT = opts.nlat, NLON = opts.nlon;
 
   // ---------------- helpers ----------------
   function sh(type, src) {
     const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
-    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) { const log = gl.getShaderInfoLog(s); console.error('SHADER ' + log); throw new Error(log); }
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) { const log = gl.getShaderInfoLog(s); console.error('SHADER ' + log); throw new Error(`${type === gl.VERTEX_SHADER ? 'vertex' : 'fragment'} shader failed to compile: ${log}`); }
     return s;
   }
-  function prog(vs, fs) {
+  // Every program records how many texture samplers it uses: WebGL2 only guarantees 16 per shader stage
+  // (MAX_TEXTURE_IMAGE_UNITS; Windows/ANGLE/D3D11 allows exactly 16, some Linux drivers 32), checked after boot.
+  const SAMPLER_TYPES = new Set([gl.SAMPLER_2D, gl.SAMPLER_3D, gl.SAMPLER_CUBE, gl.SAMPLER_2D_SHADOW, gl.SAMPLER_2D_ARRAY, gl.SAMPLER_2D_ARRAY_SHADOW, gl.SAMPLER_CUBE_SHADOW,
+    gl.INT_SAMPLER_2D, gl.INT_SAMPLER_3D, gl.INT_SAMPLER_CUBE, gl.INT_SAMPLER_2D_ARRAY, gl.UNSIGNED_INT_SAMPLER_2D, gl.UNSIGNED_INT_SAMPLER_3D, gl.UNSIGNED_INT_SAMPLER_CUBE, gl.UNSIGNED_INT_SAMPLER_2D_ARRAY]);
+  E.samplerReport = [];
+  function prog(vs, fs, name) {
     const p = gl.createProgram(); gl.attachShader(p, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(p, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(p);
-    if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
-    const u = {}; const n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS);
-    for (let i = 0; i < n; i++) { const info = gl.getActiveUniform(p, i); u[info.name.replace('[0]', '')] = gl.getUniformLocation(p, info.name); }
+    if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(`shader program "${name}" failed to link: ${gl.getProgramInfoLog(p)}`);
+    const u = {}; const n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS); let ns = 0;
+    for (let i = 0; i < n; i++) { const info = gl.getActiveUniform(p, i); u[info.name.replace('[0]', '')] = gl.getUniformLocation(p, info.name); if (SAMPLER_TYPES.has(info.type)) ns += info.size; }
+    E.samplerReport.push({ program: name, samplers: ns });
     return { p, u };
   }
   function tex(w, h, ifmt, fmt, type, data, filter, wrapS, wrapT) {
@@ -124,6 +131,11 @@ function Engine(canvas, opts) {
   E.fields = [[], []];
   for (let s = 0; s < 2; s++) for (let f = 0; f < NF; f++) E.fields[s].push(tex(NLON, NLAT, gl.RGBA16F, gl.RGBA, gl.FLOAT, null, gl.LINEAR, gl.REPEAT, gl.CLAMP_TO_EDGE));
   E.snap = 0; // index of the newest snapshot
+  // the fields at the displayed moment: the two snapshots blended once per frame in a small pass (the blend and the
+  // smooth B-spline sampling are both linear, so this equals blending inside each shader, with half the samplers)
+  E.blended = []; const blendFB = [];
+  for (let f = 0; f < NF; f++) { const t = tex(NLON, NLAT, gl.RGBA16F, gl.RGBA, gl.FLOAT, null, gl.LINEAR, gl.REPEAT, gl.CLAMP_TO_EDGE); E.blended.push(t); blendFB.push(fbo(t)); }
+  let blendKey = '', uploads = 0;
   const upBuf = new Float32Array(NLON * NLAT * 4);
   // fieldsIn: array of 24 Float32Arrays (nlat*nlon) in DISP_FIELDS order
   E.upload = function (F) {
@@ -133,28 +145,50 @@ function Engine(canvas, opts) {
       gl.bindTexture(gl.TEXTURE_2D, E.fields[E.snap][f]);
       gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, NLON, NLAT, gl.RGBA, gl.FLOAT, upBuf);
     }
+    uploads++;
   };
+  const blendP = prog(VS_FULL, `#version 300 es
+  precision highp float; uniform sampler2D uS0, uS1; uniform float uMix; out vec4 o;
+  void main(){ ivec2 c = ivec2(gl_FragCoord.xy); o = mix(texelFetch(uS0, c, 0), texelFetch(uS1, c, 0), uMix); }`, 'blend snapshots');
+  function blendFields() {
+    const key = uploads + ':' + E.snap + ':' + E.mix;
+    if (key === blendKey) return;
+    blendKey = key;
+    // runs in the middle of other passes: put back the program, framebuffer, viewport, blending, texture unit and VAO it changes
+    const prevFB = gl.getParameter(gl.FRAMEBUFFER_BINDING), vp = gl.getParameter(gl.VIEWPORT), blendOn = gl.isEnabled(gl.BLEND);
+    const prevProg = gl.getParameter(gl.CURRENT_PROGRAM), prevUnit = gl.getParameter(gl.ACTIVE_TEXTURE), prevVAO = gl.getParameter(gl.VERTEX_ARRAY_BINDING);
+    gl.disable(gl.BLEND); gl.useProgram(blendP.p); gl.viewport(0, 0, NLON, NLAT); gl.bindVertexArray(quadVAO);
+    gl.uniform1f(blendP.u.uMix, E.mix); gl.uniform1i(blendP.u.uS0, 0); gl.uniform1i(blendP.u.uS1, 1);
+    for (let f = 0; f < NF; f++) {
+      gl.bindFramebuffer(gl.FRAMEBUFFER, blendFB[f]);
+      gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, E.fields[E.snap ^ 1][f]);
+      gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, E.fields[E.snap][f]);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+    }
+    gl.bindFramebuffer(gl.FRAMEBUFFER, prevFB); gl.viewport(vp[0], vp[1], vp[2], vp[3]); if (blendOn) gl.enable(gl.BLEND);
+    gl.useProgram(prevProg); gl.activeTexture(prevUnit); gl.bindVertexArray(prevVAO);
+  }
 
   // ---------------- cloud texture: baked noise atlas + advected origin maps ----------------
-  const FIELD_UNI = `uniform sampler2D uA0, uA1, uB0, uB1, uC0, uC1, uD0, uD1, uE0, uE1, uF0, uF1; uniform float uMix;`;
+  const FIELD_UNI = `uniform sampler2D uA, uB, uC, uD, uE, uF;`;
   const FIELD_FN = `
-    vec4 FA(vec2 uv){ return mix(bsp(uA0,uv), bsp(uA1,uv), uMix); }
-    vec4 FB(vec2 uv){ return mix(bsp(uB0,uv), bsp(uB1,uv), uMix); }
-    vec4 FC(vec2 uv){ return mix(bsp(uC0,uv), bsp(uC1,uv), uMix); }
-    vec4 FD(vec2 uv){ return mix(texture(uD0,uv), texture(uD1,uv), uMix); }
-    vec4 FE(vec2 uv){ return mix(texture(uE0,uv), texture(uE1,uv), uMix); }
-    vec4 FF(vec2 uv){ return mix(bsp(uF0,uv), bsp(uF1,uv), uMix); }
-    vec4 FDs(vec2 uv){ return mix(bsp(uD0,uv), bsp(uD1,uv), uMix); }
-    vec4 FEs(vec2 uv){ return mix(bsp(uE0,uv), bsp(uE1,uv), uMix); }`;
+    vec4 FA(vec2 uv){ return bsp(uA,uv); }
+    vec4 FB(vec2 uv){ return bsp(uB,uv); }
+    vec4 FC(vec2 uv){ return bsp(uC,uv); }
+    vec4 FD(vec2 uv){ return texture(uD,uv); }
+    vec4 FE(vec2 uv){ return texture(uE,uv); }
+    vec4 FF(vec2 uv){ return bsp(uF,uv); }
+    vec4 FDs(vec2 uv){ return bsp(uD,uv); }
+    vec4 FEs(vec2 uv){ return bsp(uE,uv); }`;
   function bindFields(P, unit0) {
+    blendFields();
     const names = ['A', 'B', 'C', 'D', 'E', 'F'];
     let u = unit0;
-    for (let f = 0; f < NF; f++) for (let s = 0; s < 2; s++) {
-      const loc = P.u['u' + names[f] + s]; if (!loc) continue;
-      gl.activeTexture(gl.TEXTURE0 + u); gl.bindTexture(gl.TEXTURE_2D, E.fields[s === 0 ? E.snap ^ 1 : E.snap][f]); gl.uniform1i(loc, u); u++;
+    for (let f = 0; f < NF; f++) {
+      const loc = P.u['u' + names[f]]; if (!loc) continue;
+      gl.activeTexture(gl.TEXTURE0 + u); gl.bindTexture(gl.TEXTURE_2D, E.blended[f]); gl.uniform1i(loc, u); u++;
     }
     if (P.u.uRowLUT) { gl.activeTexture(gl.TEXTURE0 + u); gl.bindTexture(gl.TEXTURE_2D, E.tex.rowLUT); gl.uniform1i(P.u.uRowLUT, u); u++; }
-    if (P.u.uMix) gl.uniform1f(P.u.uMix, E.mix);
     return u;
   }
   // noise atlas (equirectangular, lon 0 at x = 0): R cumulus fbm, G cirrus (stretched) fbm, B cellular, A fine fbm
@@ -176,7 +210,7 @@ function Engine(canvas, opts) {
       float b = 0.5 + 0.9*fbm(p*26.0 + 7.0, 6);
       float a = 0.5 + 0.9*fbm(p*90.0 + 3.3, 5);
       o = vec4(clamp(r,0.0,1.0), clamp(g,0.0,1.0), clamp(b,0.0,1.0), clamp(a,0.0,1.0));
-    }`);
+    }`, 'cloud noise atlas');
     const f = fbo(noiseTex); gl.bindFramebuffer(gl.FRAMEBUFFER, f); gl.viewport(0, 0, NW, NH);
     gl.useProgram(P.p); gl.bindVertexArray(quadVAO); gl.drawArrays(gl.TRIANGLES, 0, 3);
     gl.bindTexture(gl.TEXTURE_2D, noiseTex); gl.generateMipmap(gl.TEXTURE_2D);
@@ -184,12 +218,20 @@ function Engine(canvas, opts) {
   }
   // origin maps: for 2 layers (low: 850 hPa wind, high: 250 hPa wind) x 2 phases, ping-pong
   const OW = 1024, OH = 512;
-  const orig = [];
-  for (let l = 0; l < 4; l++) { const t2 = [0, 1].map(() => tex(OW, OH, gl.RGBA32F, gl.RGBA, gl.FLOAT, null, gl.LINEAR, gl.REPEAT, gl.CLAMP_TO_EDGE)); orig.push({ t: t2, f: t2.map(fbo), cur: 0 }); }
+  // the four maps (layer = deck * 2 + phase) live in one 4-layer texture array, so a shader needs a single sampler
+  const origArr = [0, 1].map(() => {
+    const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D_ARRAY, t);
+    gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA32F, OW, OH, 4);
+    gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.REPEAT); gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    return t;
+  });
+  const origFB = origArr.map(t => [0, 1, 2, 3].map(l => { const f = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, f); gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, t, 0, l); return f; }));
+  let origCur = 0;
   const origP = prog(VS_FULL, `#version 300 es
   ${COMMON} ${FIELD_UNI} ${FIELD_FN}
   in vec2 vUv; out vec4 o;
-  uniform sampler2D uPrev; uniform float uDt, uReset, uLayer;
+  uniform highp sampler2DArray uPrev; uniform float uDt, uReset, uLayer, uMapLayer;
   void main(){
     float lon = vUv.x*2.0*PI, lat = (0.5 - vUv.y)*PI;
     vec3 p = sph(lon, lat);
@@ -199,9 +241,9 @@ function Engine(canvas, opts) {
     vec3 e = normalize(vec3(-p.y, p.x, 0.0) + vec3(1e-7, 0.0, 0.0)); vec3 n = cross(p, e);
     vec3 q = normalize(p - (e*w.x + n*w.y) * uDt / 6.371e6);
     vec2 ll = lonlat(q);
-    vec3 src = texture(uPrev, vec2(ll.x/(2.0*PI), 0.5 - ll.y/PI)).xyz;
+    vec3 src = texture(uPrev, vec3(ll.x/(2.0*PI), 0.5 - ll.y/PI, uMapLayer)).xyz;
     o = vec4(normalize(src), 0.0);
-  }`);
+  }`, 'cloud origin advection');
   E.cyc = { T: 0.8 * 86400, phase: [0, 0.5], rot: [0, 0, 0, 0].map(() => Math.random() * 6.283), last: null };
   E.advectClouds = function (dtSim, time, init) {
     const cy = E.cyc;
@@ -209,25 +251,24 @@ function Engine(canvas, opts) {
     bindFields(origP, 1);
     gl.uniform1f(origP.u.uDt, dtSim);
     gl.viewport(0, 0, OW, OH); gl.bindVertexArray(quadVAO);
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D_ARRAY, origArr[origCur]); gl.uniform1i(origP.u.uPrev, 0);
     for (let ph = 0; ph < 2; ph++) {
       const newPh = init ? (ph ? 0.5 : 0) : cy.phase[ph] + dtSim / cy.T;
       const reset = init || newPh >= 1;
       cy.phase[ph] = newPh % 1;
       for (let layer = 0; layer < 2; layer++) {
-        const o = orig[layer * 2 + ph];
-        if (reset) cy.rot[layer * 2 + ph] = Math.random() * 6.283;
-        gl.bindFramebuffer(gl.FRAMEBUFFER, o.f[o.cur ^ 1]);
-        gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, o.t[o.cur]); gl.uniform1i(origP.u.uPrev, 0);
-        gl.uniform1f(origP.u.uReset, reset ? 1 : 0); gl.uniform1f(origP.u.uLayer, layer);
+        const l = layer * 2 + ph;
+        if (reset) cy.rot[l] = Math.random() * 6.283;
+        gl.bindFramebuffer(gl.FRAMEBUFFER, origFB[origCur ^ 1][l]);
+        gl.uniform1f(origP.u.uReset, reset ? 1 : 0); gl.uniform1f(origP.u.uLayer, layer); gl.uniform1f(origP.u.uMapLayer, l);
         gl.drawArrays(gl.TRIANGLES, 0, 3);
-        o.cur ^= 1;
       }
     }
+    origCur ^= 1;
   };
   function bindClouds(P, u) {
     const cy = E.cyc;
-    const names = ['uOL0', 'uOL1', 'uOH0', 'uOH1'];
-    for (let i = 0; i < 4; i++) { if (!P.u[names[i]]) continue; gl.activeTexture(gl.TEXTURE0 + u); gl.bindTexture(gl.TEXTURE_2D, orig[i].t[orig[i].cur]); gl.uniform1i(P.u[names[i]], u); u++; }
+    if (P.u.uOrig) { gl.activeTexture(gl.TEXTURE0 + u); gl.bindTexture(gl.TEXTURE_2D_ARRAY, origArr[origCur]); gl.uniform1i(P.u.uOrig, u); u++; }
     if (P.u.uNoise) { gl.activeTexture(gl.TEXTURE0 + u); gl.bindTexture(gl.TEXTURE_2D, noiseTex); gl.uniform1i(P.u.uNoise, u); u++; }
     if (P.u.uPhase) gl.uniform2f(P.u.uPhase, cy.phase[0], cy.phase[1]);
     if (P.u.uRot) gl.uniform4f(P.u.uRot, cy.rot[0], cy.rot[1], cy.rot[2], cy.rot[3]);
@@ -261,7 +302,7 @@ function Engine(canvas, opts) {
     s.z -= 1.0; s.w = spd;
     if (s.z < 0.0) { vec2 r = vec2(hash12(gl_FragCoord.xy + uSeed), hash12(gl_FragCoord.yx*1.37 + uSeed*3.1)); s.x = r.x*2.0*PI; s.y = asin(r.y*2.0 - 1.0); s.z = 40.0 + 60.0*hash12(gl_FragCoord.xy*0.7 + uSeed*1.9); s.w = -1.0; }
     o = s;
-  }`);
+  }`, 'wind particle update');
   const partDraw = prog(`#version 300 es
   precision highp float; uniform sampler2D uP0, uP1; out float vA; out float vS;
   void main(){
@@ -275,10 +316,10 @@ function Engine(canvas, opts) {
     gl_Position = vec4(xy, 0.0, 1.0);
   }`, `#version 300 es
   precision highp float; in float vA; in float vS; out vec4 o;
-  void main(){ if (vA < 0.5) discard; o = vec4(vS, 1.0, 0.0, 1.0); }`);
+  void main(){ if (vA < 0.5) discard; o = vec4(vS, 1.0, 0.0, 1.0); }`, 'wind particle trails');
   const fadeP = prog(VS_FULL, `#version 300 es
   precision highp float; in vec2 vUv; out vec4 o; uniform sampler2D uT; uniform float uFade;
-  void main(){ vec4 t = texture(uT, vUv); o = vec4(t.r, t.g * uFade, 0.0, 1.0); }`);
+  void main(){ vec4 t = texture(uT, vUv); o = vec4(t.r, t.g * uFade, 0.0, 1.0); }`, 'trail fade');
   E.stepParticles = function (level, stepSec) {
     // update positions
     gl.bindFramebuffer(gl.FRAMEBUFFER, partFB[partCur ^ 1]); gl.viewport(0, 0, PW, PH);
@@ -329,23 +370,25 @@ function Engine(canvas, opts) {
   vec3 cmapWind(float s){ float x = clamp(s/40.0, 0.0, 1.0); vec3 a = vec3(0.25,0.45,0.85), b = vec3(0.3,0.85,0.75), c = vec3(0.95,0.9,0.4), d = vec3(0.95,0.4,0.25), e = vec3(0.9,0.3,0.8);
     if (x < 0.25) return mix(a,b,x/0.25); if (x < 0.5) return mix(b,c,(x-0.25)/0.25); if (x < 0.75) return mix(c,d,(x-0.5)/0.25); return mix(d,e,(x-0.75)/0.25); }
 
-  uniform sampler2D uOL0, uOL1, uOH0, uOH1, uNoise; uniform vec2 uPhase; uniform vec4 uRot;
+  uniform highp sampler2DArray uOrig; uniform sampler2D uNoise; uniform vec2 uPhase; uniform vec4 uRot;
   vec4 noiseAt(vec3 q, float rot){ // rotate the sphere to decorrelate cycles, then look up the atlas
     float c = cos(rot), s = sin(rot); q = vec3(c*q.x - s*q.y, s*q.x + c*q.y, q.z);
     q = vec3(q.x, c*q.y - s*q.z, s*q.y + c*q.z);
     vec2 ll = lonlat(q); return texture(uNoise, vec2(ll.x/(2.0*PI), 0.5 - ll.y/PI));
   }
   // flow-advected texture: two staggered phases cross-faded, contrast renormalised
-  vec4 flowNoise(vec2 cuv, sampler2D o0, sampler2D o1, float r0, float r1){
+  vec3 orig(vec2 c, float l){ return texture(uOrig, vec3(c, l)).xyz; }
+  vec4 flowNoise(vec2 cuv, float l0, float l1, float r0, float r1){
     vec3 p = sph(cuv.x*2.0*PI, (0.5 - cuv.y)*PI);
     vec2 dx = vec2(1.0/1024.0, 0.0), dy = vec2(0.0, 1.0/512.0);
     float cl = max(cos((0.5 - cuv.y)*PI), 0.05);
     vec4 n = vec4(0.0); float ws = 0.0;
     for (int k = 0; k < 2; k++) {
       vec2 c0 = cuv;
-      vec3 a = k == 0 ? texture(o0, c0).xyz : texture(o1, c0).xyz;
-      vec3 ax = k == 0 ? texture(o0, c0 + dx).xyz - texture(o0, c0 - dx).xyz : texture(o1, c0 + dx).xyz - texture(o1, c0 - dx).xyz;
-      vec3 ay = k == 0 ? texture(o0, c0 + dy).xyz - texture(o0, c0 - dy).xyz : texture(o1, c0 + dy).xyz - texture(o1, c0 - dy).xyz;
+      float l = k == 0 ? l0 : l1;
+      vec3 a = orig(c0, l);
+      vec3 ax = orig(c0 + dx, l) - orig(c0 - dx, l);
+      vec3 ay = orig(c0 + dy, l) - orig(c0 - dy, l);
       // local stretching of the origin map relative to an undistorted map
       float sx = length(ax) / (2.0*2.0*PI/1024.0*cl), sy = length(ay) / (2.0*PI/512.0);
       float st = max(max(sx, sy), 1.0/max(min(sx, sy), 0.05));
@@ -362,15 +405,15 @@ function Engine(canvas, opts) {
   Cl cloudsD(vec3 p, vec2 uv, float det){
     float lon = atan(p.y, p.x), lat = asin(clamp(p.z,-1.0,1.0));
     vec2 cuv = vec2(lon/(2.0*PI), 0.5 - lat/PI);
-    vec4 nl4 = flowNoise(cuv, uOL0, uOL1, uRot.x, uRot.y);
-    vec4 nh4 = flowNoise(cuv, uOH0, uOH1, uRot.z, uRot.w);
+    vec4 nl4 = flowNoise(cuv, 0.0, 1.0, uRot.x, uRot.y);
+    vec4 nh4 = flowNoise(cuv, 2.0, 3.0, uRot.z, uRot.w);
     vec4 A = FA(uv);
     float cl = clamp(max(A.x, A.y*0.9), 0.0, 1.0), ch = clamp(A.z, 0.0, 1.0), cc = clamp(A.w, 0.0, 1.0);
     Cl r;
     float fine = nl4.a - 0.5;
     // high-frequency detail at the advected position (only for the visible layer, when zoomed in)
     float hf = 0.0;
-    if (det > 0.0) { vec3 q = texture(uOL0, cuv).xyz; hf = det * (0.6*snoise(q*260.0) + 0.3*snoise(q*560.0)); }
+    if (det > 0.0) { vec3 q = orig(cuv, 0.0); hf = det * (0.6*snoise(q*260.0) + 0.3*snoise(q*560.0)); }
     float brk = 1.0 - smoothstep(0.2, 0.55, cl);
     float nl = mix(nl4.r, nl4.b, 0.35*brk) + 0.05*fine + 0.07*hf;
     r.low = smoothstep(1.0 - cl - 0.2, 1.0 - cl + 0.2, nl) * smoothstep(0.03, 0.2, cl);
@@ -568,7 +611,15 @@ function Engine(canvas, opts) {
     col = col / (1.0 + col*0.6);
     col = pow(col, vec3(1.0/2.2));
     o = vec4(col, 1.0);
-  }`);
+  }`, 'globe and map');
+
+  // every shader must fit the 16 texture units WebGL2 guarantees (and Windows enforces): report, and stop with a clear message
+  {
+    const maxUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
+    console.info(`texture samplers per shader (this GPU allows ${maxUnits}): ` + E.samplerReport.map(r => `${r.program} ${r.samplers}`).join(', '));
+    const over = E.samplerReport.filter(r => r.samplers > Math.min(maxUnits, 16));
+    if (over.length) throw new Error(`shader "${over[0].program}" uses ${over[0].samplers} texture samplers; WebGL2 guarantees ${Math.min(maxUnits, 16)} (this GPU allows ${maxUnits})`);
+  }
 
   // ---------------- camera & draw ----------------
   E.cam = { lon: -20 * Math.PI / 180, lat: 40 * Math.PI / 180, dist: 3.1, fov: 32 * Math.PI / 180 };

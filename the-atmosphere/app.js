@@ -56,7 +56,7 @@
     const [day, night, land, elev] = await Promise.all([IMG.day, IMG.night, IMG.land, IMG.elev].map(loadImg));
     try {
       E = new Engine(canvas, { nlat, nlon, lats: S.lat, preserve: /[?&]shot/.test(location.search) });
-    } catch (e) { console.error('engine: ' + e.message); showNoGL(); return; }
+    } catch (e) { console.error('engine: ' + e.message); showNoGL(e); return; }
     A.E = E;
     E.setImages({ day, night, land, elev });
     for (let f = 0; f < 24; f++) fields.push(new Float32Array(nG));
@@ -69,7 +69,17 @@
     setupUI();
     requestAnimationFrame(frame);
   }
-  function showNoGL() { $('status').hidden = true; const d = document.createElement('div'); d.className = 'nogl'; d.textContent = 'This page needs WebGL 2 with floating-point render targets. Try a recent Chrome, Edge, Firefox or Safari on a computer.'; $('stage').appendChild(d); }
+  // say what actually failed: no WebGL2, no float render targets, or a shader this GPU rejected (with its message)
+  function showNoGL(e) {
+    $('status').hidden = true;
+    const msg = (e && e.message) || '', d = document.createElement('div'); d.className = 'nogl';
+    const what = /WebGL2 unavailable/.test(msg) ? 'This page needs WebGL 2, which this browser doesn’t provide.'
+      : /floating-point/.test(msg) ? 'This page needs WebGL 2 with floating-point render targets, which this browser or GPU doesn’t provide.'
+      : 'The graphics engine could not start on this GPU.';
+    const box = document.createElement('div'); box.textContent = what + ' Try a recent Chrome, Edge, Firefox or Safari on a computer.'; d.appendChild(box);
+    if (msg && !/WebGL2 unavailable/.test(msg)) { const p = document.createElement('small'); p.textContent = 'Details: ' + msg.slice(0, 400); p.style.cssText = 'display:block;max-width:70ch;margin:10px auto 0;opacity:.7;font-family:var(--mono, monospace);font-size:11px;word-break:break-word'; box.appendChild(p); }
+    $('stage').appendChild(d);
+  }
 
   // ---------------- simulation client (workers) ----------------
   const sim = { coord: null, comps: [], W: 0, time: 0, rate: 0, running: true, stampParts: new Map(), snaps: [], zm: null };
